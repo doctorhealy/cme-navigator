@@ -109,7 +109,7 @@ const QUESTIONS = [
     type:"single",
     options:[
       { value:"single", icon:"📌", label:"A one-time event", tag:"Live Course", sublabel:"A conference, course, symposium, or workshop offered once to one group" },
-      { value:"repeated", icon:"🔁", label:"The same course, running multiple times", tag:"Live Course (Repeated)", sublabel:"Identical content and faculty, offered again for a new group — e.g. a skills course run 4×/year, a touring workshop. Each run needs its own separate application." },
+      { value:"repeated", icon:"🔁", label:"The same course, running multiple times", tag:"Live Course (Repeated)", sublabel:"Identical content and faculty presenters, offered again for a new group — e.g. a skills course run 4×/year, a touring workshop. Each run needs its own separate application." },
       { value:"rss", icon:"📅", label:"A recurring series with changing content", tag:"Regularly Scheduled Series (RSS)", sublabel:"Regular sessions where topics and presenters vary — grand rounds, tumor board, M&M conference, department journal club" },
     ]
   },
@@ -219,7 +219,7 @@ const QUESTIONS = [
     hint:"Planning details unlock commendation criteria that are often missed — take a moment to check everything that applies.",
     type:"multi",
     options:[
-      { value:"multi_prof", label:"The planning committee includes people from more than one health profession", sublabel:"🏅 IPCE Opportunity: If both your planning committee and your faculty include people from more than one profession, this activity can receive the Interprofessional Continuing Education (IPCE) Credit designation — one of the most valued in CME. IPCE credit appears on all attendee certificates alongside standard credits, and every qualifying activity builds toward our goal of achieving Joint Accreditation. Flag this to your OCME&LL representative." },
+      { value:"multi_prof", label:"The planning committee includes people from more than one health profession", sublabel:"🏅 IPCE Opportunity: If both your planning committee and your faculty presenters include people from more than one profession, this activity can receive the Interprofessional Continuing Education (IPCE) Credit designation — one of the most valued in CME. IPCE credit appears on all attendee certificates alongside standard credits, and every qualifying activity builds toward our goal of achieving Joint Accreditation. Flag this to your OCME&LL representative." },
       { value:"patient_engagement", label:"A patient, family member, or community representative was involved in planning" },
       { value:"students_involved", label:"Health professions students are involved in planning or presenting" },
       { value:"multi_org", label:"Another organization (outside your department or institution) is involved" },
@@ -293,7 +293,7 @@ function deriveResults(answers) {
     appAction = "Contact your OCME&LL representative to register the series before the first session. Keep attendance records for every individual session throughout the year.";
   } else if (isRepeated) {
     appType = "Live Course — Repeated (separate application per run)";
-    appNote = "Because you are running the same course multiple times, each run requires its own separate CME application — even if the content, faculty, and credit hours are completely identical. This is an ACCME requirement. Plan ahead: if you are running this course 4 times, you will need 4 separate applications.";
+    appNote = "Because you are running the same course multiple times, each run requires its own separate CME application — even if the content, faculty presenters, and credit hours are completely identical. This is an ACCME requirement. Plan ahead: if you are running this course 4 times, you will need 4 separate applications.";
     appAction = "Submit a separate application to OCME&LL for each individual run of the course. Keep separate attendance records and evaluation forms for each run.";
   } else {
     if (isLive) { appType = "Live Activity"; appNote = "A standard in-person event. One application covers all in-person attendees."; appAction = "Submit one CME application to OCME&LL for this event."; }
