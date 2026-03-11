@@ -81,18 +81,19 @@ const COMMENDATION_CRITERIA = [
 const QUESTIONS = [
   {
     id: "activity_structure",
-    question: "Is this a single event or a regularly scheduled series?",
-    hint: "This determines the ACCME activity type and how sessions are registered in PARS.",
+    question: "What best describes the structure of this activity?",
+    hint: "This is one of the most important distinctions in CME — it determines the ACCME activity type and how the activity is registered in PARS.",
     type: "single",
     options: [
-      { value:"single", label:"Single Event — one-time conference, symposium, workshop, or course", icon:"📌" },
-      { value:"rss", label:"Regularly Scheduled Series (RSS) — recurring sessions such as grand rounds, tumor board, M&M, or department conference", icon:"📅" },
+      { value:"single", label:"Single Event — one-time conference, symposium, workshop, or course offered once to one audience", icon:"📌" },
+      { value:"repeated", label:"Repeated Course — same content, same faculty, same planning; offered multiple times to different audiences or at different sites/dates (e.g. a skills course run 4x/year, a touring workshop)", icon:"🔁", highlight:true },
+      { value:"rss", label:"Regularly Scheduled Series (RSS) — recurring sessions with varying topics/faculty, planned primarily for and by the organization's own professional staff (e.g. grand rounds, tumor board, M&M conference)", icon:"📅" },
     ]
   },
   {
     id: "delivery_format",
     question: "What is the delivery format?",
-    hint: "Choose how the activity will actually be delivered to learners. This applies to both single events and RSS.",
+    hint: "Choose how the activity will actually be delivered to learners. This applies regardless of whether it is a single event, repeated course, or RSS.",
     type: "single",
     options: [
       { value:"live", label:"Live / In-person only — all learners physically present", icon:"🏛️" },
@@ -235,6 +236,7 @@ function deriveRecommendations(answers) {
 
   const isRSS = a.activity_structure === "rss";
   const isSingle = a.activity_structure === "single";
+  const isRepeated = a.activity_structure === "repeated";
   const fmt = a.delivery_format;
   const isHybrid = fmt === "hybrid";
   const isEnduring = fmt === "enduring";
@@ -261,6 +263,11 @@ function deriveRecommendations(answers) {
     else if (isHybrid) { accmeType = "RSS — Hybrid"; accmeNote = "Each RSS session carries the hybrid format. Live + live-stream components share one RSS application. If sessions are recorded and released publicly, a separate Enduring Material application is required per release."; }
     else if (isEnduring) { accmeType = "RSS — Enduring Material"; accmeNote = "Rare format — a recurring self-paced series (e.g., monthly online modules). Register as Enduring Material; each module or release may need its own application entry."; }
     else if (isSimulation) { accmeType = "RSS — Simulation"; accmeNote = "Recurring simulation sessions. Register the series in PARS. Each session date must be logged individually."; }
+  } else if (isRepeated) {
+    if (isLive) { accmeType = "Live Course (Repeated)"; accmeNote = "In PARS, each repetition of the course is reported as a separate Live Course activity — even if the content, faculty, and planning are identical. ACCME's PARS form will ask whether the activity occurred more than once with the same content; answer yes and enter each date separately."; }
+    else if (isHybrid) { accmeType = "Live Course (Repeated, Hybrid)"; accmeNote = "Each run of the course is reported as a separate Live Course activity in PARS, even with identical content. See Hybrid Application Strategy below for the live vs. enduring application split within each run."; }
+    else if (isEnduring) { accmeType = "Enduring Material (Repeated/Multi-site)"; accmeNote = "If the same enduring material is made available at multiple sites or platforms simultaneously, it is generally registered as a single Enduring Material activity. Confirm with your accredited provider whether site-specific reporting is required."; }
+    else if (isSimulation) { accmeType = "Live Course — Simulation (Repeated)"; accmeNote = "Each run of the simulation course is reported as a separate Live Course activity in PARS, even with identical content and faculty."; }
   } else {
     if (isLive) { accmeType = "Live Activity"; accmeNote = "All in-person attendees receive credit for the same live event. Faculty disclosures must be complete before the event date."; }
     else if (isHybrid) { accmeType = "Live Activity (Hybrid)"; accmeNote = "See Hybrid Application Strategy below for details on single vs. dual applications."; }
@@ -280,8 +287,29 @@ function deriveRecommendations(answers) {
       ? "Submit via your accredited provider (MiCME/CloudCME). See Hybrid Activity notice below."
       : isRSS
         ? "Register the series in PARS as a Regularly Scheduled Series. Log each session date. Submit via MiCME/CloudCME."
-        : "Apply via your accredited provider (MiCME/CloudCME) application.",
+        : isRepeated
+          ? "File a separate CME application for each run of the course (each date/site), even if content is identical. Submit each via MiCME/CloudCME."
+          : "Apply via your accredited provider (MiCME/CloudCME) application.",
   });
+
+  // ── Repeated Course notice ──
+  if (isRepeated) {
+    recs.primary.push({
+      id:"repeated_notice",
+      label:"🔁 Repeated Course — Application Requirements",
+      required:true,
+      isRepeatedNotice:true,
+      description:"A repeated course uses the same content, same faculty, and same planning across multiple runs for different audiences or at different sites/dates. This is fundamentally different from an RSS — each run is a separate Live Course activity in PARS, not a series.",
+      items:[
+        { icon:"📋", heading:"One Application Per Run in PARS", body:"ACCME requires each course run to be reported as a separate Live Course activity in PARS — even if content, faculty, planning, and credit hours are completely identical. ACCME's PARS form asks whether the activity occurred more than once with the same content; answer yes and register each date/site separately with its own Activity ID.", status:"required" },
+        { icon:"🔢", heading:"Program Size Implications", body:"Each run counts as a separate activity toward your program size calculation for Accreditation with Commendation purposes. A course run 4 times = 4 activities. Plan accordingly when tracking your program size category (small/medium/large/extra-large).", status:"info" },
+        { icon:"⭐", heading:"Commendation Criteria Caution", body:"Different runs of the same course content do NOT count as separate examples of compliance for certain commendation criteria — including Collaborates Effectively, Engages in Research/Scholarship, Demonstrates Creativity/Innovation, Improves Healthcare Quality, and Improves Patient/Community Health. You must demonstrate these criteria through genuinely different activities.", status:"advisory" },
+        { icon:"📝", heading:"Faculty Disclosures", body:"Faculty disclosures must be completed and COI resolved independently for each run, as the date of disclosure must precede the activity date. Retain a separate disclosure record for each course run.", status:"required" },
+        { icon:"🎓", heading:"MOC Reporting", body:"Register each run separately in PARS. Each run receives its own Activity ID and MOC credits are reported independently per run. Learners attending multiple runs may earn credit for each run they attend.", status:"info" },
+      ],
+      action:"File a separate CME application (MiCME/CloudCME) and PARS entry for each run of the course. Maintain independent disclosure records, evaluations, and attendance records per run.",
+    });
+  }
 
   // ── RSS-specific notice ──
   if (isRSS) {
@@ -318,7 +346,9 @@ function deriveRecommendations(answers) {
       components: componentList,
       description: isRSS
         ? "Each hybrid RSS session combines in-person and live-stream audiences under the single series registration. A separate Enduring Material application is only needed if session recordings are released publicly to new audiences."
-        : "Hybrid activities span multiple ACCME activity types. The live and live-streamed components share a single live application. A separately released enduring recording requires its own distinct application.",
+        : isRepeated
+          ? "Each run of this hybrid repeated course requires its own separate CME application. Within each run, the live and live-streamed components share one application; a publicly released recording requires a second separate Enduring Material application."
+          : "Hybrid activities span multiple ACCME activity types. The live and live-streamed components share a single live application. A separately released enduring recording requires its own distinct application.",
       items:[
         { icon:"🏛️📡", heading: isRSS ? "RSS Application — In-person + Live-stream Sessions" : "Application 1 — Live Activity (in-person + live-stream)", body: isRSS ? "All in-person and simultaneously live-streamed attendees for each session are covered under the single RSS series registration. No separate application needed for the live-stream component." : "The in-person and simultaneously live-streamed audiences are considered a single live activity and covered under one CME application. Apply as a Live Activity. All faculty disclosures and COI resolution must be complete before the event date.", status:"required" },
         hasEnduringComponent ? { icon:"🎬", heading: isRSS ? "Enduring Material Application — Public Recording Releases" : "Application 2 — Enduring Material (public recording release)", body: isRSS ? "If RSS session recordings are released to a broader audience (beyond original registrants), each public release constitutes a separate Enduring Material activity requiring its own CME application, learning objectives review, updated disclosures, and credit designation." : "Once the recording is released to a broader audience beyond original registrants, it becomes a separate Enduring Material activity requiring its own CME application, learning objectives review, updated disclosures, and credit hours. Submit as a new Enduring activity with a distinct PARS Activity ID.", status:"required" } : null,
@@ -375,9 +405,11 @@ function deriveRecommendations(answers) {
     const conditions = [];
     const alerts = [];
 
-    // RSS-specific MOC note
+    // RSS/Repeated-specific MOC note
     if (isRSS) {
       conditions.push({ type:"info", text:`ℹ️ RSS MOC Reporting: Diplomates accumulate ${board.name} MOC credit per session attended. Report completions per session in PARS using the series Activity ID. Confirm minimum session requirements with ${board.name} if applicable.` });
+    } else if (isRepeated) {
+      conditions.push({ type:"info", text:`ℹ️ Repeated Course MOC Reporting: Each run of the course has its own PARS Activity ID. Report learner completions separately per run. Diplomates attending multiple runs may earn MOC credit for each run.` });
     }
 
     if (board.id === "abim") {
@@ -394,7 +426,7 @@ function deriveRecommendations(answers) {
       if (hasQI) conditions.push({ type:"highlight", text:"📊 MOCA 2.0® Type 4 Quality Improvement credit also available — register for MOC Part IV in PARS." });
     } else if (board.id === "abfm") {
       conditions.push({ type:"ok", text:"✅ ABFM does not require a pre/post test. Standard accredited CME qualifies automatically." });
-      if (!isRSS) conditions.push({ type:"info", text:"ℹ️ For multi-session activities, ABFM requires diplomates to complete ALL sessions to collect MOC points — partial credit is not awarded." });
+      if (!isRSS && !isRepeated) conditions.push({ type:"info", text:"ℹ️ For multi-session activities, ABFM requires diplomates to complete ALL sessions to collect MOC points — partial credit is not awarded." });
     } else if (board.id === "abp") {
       conditions.push({ type:"ok", text:"✅ ABP does not require a pre/post test for standard Lifelong Learning MOC credit." });
       conditions.push({ type:"info", text:"ℹ️ ABP Part II points are automatically transmitted to diplomate portfolios within 30 days of provider reporting completion in PARS." });
@@ -438,8 +470,10 @@ function deriveRecommendations(answers) {
   }
   if (profCount >= 1 && !hasIPCEPlanning) recs.warnings.push("Multiple professions will attend, but the planning committee is not interprofessional. Consider adding non-physician planners to qualify for IPCE designation.");
   if (isRSS && isEnduring) recs.warnings.push("An RSS of enduring materials is an uncommon format. Confirm with your accredited provider whether this should be registered as one Enduring Material series or individual applications per module.");
+  if (isRepeated && isEnduring) recs.warnings.push("A repeated enduring material is typically registered as a single activity in PARS, not as separate entries per site. Confirm the correct approach with your accredited provider.");
+  if (isRepeated) recs.warnings.push("Reminder: each run of a repeated course counts as a separate activity in PARS and toward your program size. Different runs of the same content do NOT count as separate examples for several ACCME commendation criteria.");
   if (a.target_specialty === "anesthesiology" && !hasPatientSafety) recs.warnings.push("For ABA MOCA 2.0®: if any content addresses cross-disciplinary patient safety topics, consider applying for the separate ABA Patient Safety CME Credit designation in addition to standard MOCA Lifelong Learning credit.");
-  if (isHybrid && hasEnduringComponent) recs.warnings.push(isRSS ? "Your hybrid RSS includes publicly released recordings — each public recording release requires a separate Enduring Material CME application." : "Your hybrid activity includes a public recording release — this requires TWO separate CME applications: one Live Activity and one Enduring Material.");
+  if (isHybrid && hasEnduringComponent) recs.warnings.push(isRSS ? "Your hybrid RSS includes publicly released recordings — each public recording release requires a separate Enduring Material CME application." : isRepeated ? "Each run of your hybrid repeated course that includes a public recording release requires TWO applications per run: one Live Activity and one Enduring Material." : "Your hybrid activity includes a public recording release — this requires TWO separate CME applications: one Live Activity and one Enduring Material.");
   if (isHybrid && !hybridComponents.length) recs.warnings.push("Please confirm which hybrid components your activity includes — this affects whether one or two CME applications are required.");
 
   return recs;
@@ -500,24 +534,26 @@ function QuestionStep({ q, value, onChange, onNext, onBack, stepNum, total }) {
   );
 }
 
-function NoticeCard({ r, isRSS }) {
+function NoticeCard({ r }) {
   const statusColors = { required:"#2563eb", advisory:"#f59e0b", info:colors.muted };
   const statusBg = { required:"rgba(37,99,235,0.1)", advisory:"rgba(245,158,11,0.08)", info:"rgba(255,255,255,0.03)" };
   const statusBorder = { required:"rgba(37,99,235,0.25)", advisory:"rgba(245,158,11,0.25)", info:colors.border };
-  const accentColor = r.isRSSNotice ? "#06b6d4" : "#f59e0b";
-  const headerBg = r.isRSSNotice ? "rgba(6,182,212,0.1)" : "rgba(245,158,11,0.1)";
-  const headerBorder = r.isRSSNotice ? "rgba(6,182,212,0.2)" : "rgba(245,158,11,0.2)";
-  const titleColor = r.isRSSNotice ? "#22d3ee" : "#fbbf24";
-  const subtitleColor = r.isRSSNotice ? "#0891b2" : "#d97706";
-  const actionBg = r.isRSSNotice ? "rgba(6,182,212,0.08)" : "rgba(245,158,11,0.08)";
-  const actionColor = r.isRSSNotice ? "#67e8f9" : "#fcd34d";
+
+  let accentColor, headerBg, headerBorder, titleColor, subtitleColor, actionBg, actionColor, icon, title;
+  if (r.isRSSNotice) {
+    accentColor="#06b6d4"; headerBg="rgba(6,182,212,0.1)"; headerBorder="rgba(6,182,212,0.2)"; titleColor="#22d3ee"; subtitleColor="#0891b2"; actionBg="rgba(6,182,212,0.08)"; actionColor="#67e8f9"; icon="📅"; title="RSS Application Requirements";
+  } else if (r.isRepeatedNotice) {
+    accentColor="#a855f7"; headerBg="rgba(168,85,247,0.1)"; headerBorder="rgba(168,85,247,0.2)"; titleColor="#d8b4fe"; subtitleColor="#9333ea"; actionBg="rgba(168,85,247,0.08)"; actionColor="#e9d5ff"; icon="🔁"; title="Repeated Course — Application Requirements";
+  } else {
+    accentColor="#f59e0b"; headerBg="rgba(245,158,11,0.1)"; headerBorder="rgba(245,158,11,0.2)"; titleColor="#fbbf24"; subtitleColor="#d97706"; actionBg="rgba(245,158,11,0.08)"; actionColor="#fcd34d"; icon="🔀"; title="Hybrid Activity — Application Strategy";
+  }
 
   return (
     <Card accent={accentColor} style={{ padding:"0", overflow:"hidden" }}>
       <div style={{ background:headerBg, borderBottom:`1px solid ${headerBorder}`, padding:"14px 20px", display:"flex", alignItems:"center", gap:"10px" }}>
-        <span style={{ fontSize:"20px" }}>{r.isRSSNotice ? "📅" : "🔀"}</span>
+        <span style={{ fontSize:"20px" }}>{icon}</span>
         <div style={{ flex:1 }}>
-          <div style={{ fontWeight:"700", fontSize:"15px", color:titleColor }}>{r.isRSSNotice ? "RSS Application Requirements" : "Hybrid Activity — Application Strategy"}</div>
+          <div style={{ fontWeight:"700", fontSize:"15px", color:titleColor }}>{title}</div>
           {r.components && <div style={{ fontSize:"12px", color:subtitleColor, marginTop:"2px" }}>Components: {r.components.join(" + ")}</div>}
         </div>
         <Badge color={accentColor}>Required</Badge>
@@ -588,7 +624,7 @@ function ResultsPanel({ answers, onRestart }) {
       {openSection === "primary" && (
         <div style={{ display:"flex", flexDirection:"column", gap:"14px" }}>
           {recs.primary.map(r => {
-            if (r.isHybridNotice || r.isRSSNotice) return <NoticeCard key={r.id} r={r} />;
+            if (r.isHybridNotice || r.isRSSNotice || r.isRepeatedNotice) return <NoticeCard key={r.id} r={r} />;
             return (
               <Card key={r.id} accent="#22c55e">
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:"6px" }}>
@@ -764,6 +800,7 @@ function CMENavigator() {
   };
 
   const isRSS = answers.activity_structure === "rss";
+  const isRepeated = answers.activity_structure === "repeated";
   const isHybrid = answers.delivery_format === "hybrid";
 
   return (
@@ -777,6 +814,7 @@ function CMENavigator() {
         {step > 0 && !done && (
           <div style={{ marginLeft:"auto", display:"flex", alignItems:"center", gap:"8px" }}>
             {isRSS && <span style={{ fontSize:"11px", color:"#22d3ee", border:"1px solid rgba(6,182,212,0.3)", borderRadius:"10px", padding:"2px 8px", background:"rgba(6,182,212,0.08)" }}>📅 RSS</span>}
+            {isRepeated && <span style={{ fontSize:"11px", color:"#d8b4fe", border:"1px solid rgba(168,85,247,0.3)", borderRadius:"10px", padding:"2px 8px", background:"rgba(168,85,247,0.08)" }}>🔁 Repeated</span>}
             {isHybrid && <span style={{ fontSize:"11px", color:"#f59e0b", border:"1px solid rgba(245,158,11,0.3)", borderRadius:"10px", padding:"2px 8px", background:"rgba(245,158,11,0.08)" }}>🔀 Hybrid</span>}
             <div style={{ display:"flex", gap:"4px" }}>
               {visibleQs.map((_,i)=><div key={i} style={{ width:"22px", height:"4px", borderRadius:"2px", background:i<step?colors.accent:colors.border, transition:"all 0.3s" }} />)}
@@ -792,7 +830,7 @@ function CMENavigator() {
             <h1 style={{ margin:"0 0 14px", fontSize:"28px", fontWeight:"700", color:"#fff", lineHeight:1.2 }}>CME Credit Application Navigator</h1>
             <p style={{ margin:"0 auto 16px", fontSize:"15px", color:colors.text, lineHeight:1.8, maxWidth:"520px" }}>Answer a few focused questions about your planned activity. The navigator will tell you exactly which CME credits to apply for — including designations you may not have considered.</p>
             <div style={{ display:"flex", flexWrap:"wrap", justifyContent:"center", gap:"8px", marginBottom:"32px" }}>
-              {["AMA PRA Category 1","MOC / MOCA 2.0®","IPCE / Joint Accreditation","ANCC · ACPE · AAPA","PI CME / MOC Part IV","ABA Patient Safety","Single Event & RSS","Hybrid Activities","ACCME Commendation","Michigan Mandatory Topics"].map(t=>(
+              {["AMA PRA Category 1","MOC / MOCA 2.0®","IPCE / Joint Accreditation","ANCC · ACPE · AAPA","PI CME / MOC Part IV","ABA Patient Safety","Single · Repeated · RSS","Hybrid Activities","ACCME Commendation","Michigan Mandatory Topics"].map(t=>(
                 <span key={t} style={{ fontSize:"11px", color:colors.muted, border:`1px solid ${colors.border}`, borderRadius:"12px", padding:"3px 10px" }}>{t}</span>
               ))}
             </div>
