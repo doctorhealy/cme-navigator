@@ -4,15 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CME Credit Application Navigator</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%232563eb'/><text y='.9em' font-size='72' x='12'>⚕</text></svg>" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%231d4ed8'/><text y='.9em' font-size='72' x='12'>⚕</text></svg>" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #070f1f; font-family: 'Georgia', 'Times New Roman', serif; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    @media print { header { display: none !important; } button { display: none !important; } }
+    body { background: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; color: #0f172a; line-height: 1.6; }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    @media print { .no-print { display:none !important; } body { background:#fff; } }
   </style>
 </head>
 <body>
@@ -20,223 +20,247 @@
 <script type="text/babel">
 const { useState } = React;
 
-// ─── MOC BOARDS ───────────────────────────────────────────────────────────────
+const tk = {
+  brand:"#1d4ed8", brandDark:"#1e3a8a", brandLight:"#eff6ff", brandBorder:"#bfdbfe",
+  green:"#15803d", greenLight:"#f0fdf4", greenBorder:"#bbf7d0",
+  amber:"#b45309", amberLight:"#fffbeb", amberBorder:"#fde68a",
+  purple:"#6d28d9", purpleLight:"#f5f3ff", purpleBorder:"#ddd6fe",
+  teal:"#0e7490", tealLight:"#ecfeff", tealBorder:"#a5f3fc",
+  rose:"#be123c", roseLight:"#fff1f2", roseBorder:"#fecdd3",
+  text:"#0f172a", textMid:"#334155", textLight:"#64748b",
+  white:"#ffffff", bg:"#f1f5f9", border:"#e2e8f0",
+};
 
-const MOC_BOARDS = [
-  { id:"abim", name:"ABIM", full:"American Board of Internal Medicine", mocLabel:"ABIM MOC Part II (Medical Knowledge)", evalRequired:true, patientSafety:true, peerReview:true, action:"Register in ACCME PARS before the activity. Select ABIM from the board list. Collect 6-digit ABIM IDs from learners at registration. Set a minimum participation threshold and provide post-activity feedback.", pars:true },
-  { id:"aba", name:"ABA", full:"American Board of Anesthesiology", mocLabel:"ABA MOCA 2.0® Lifelong Learning", evalRequired:false, patientSafety:true, peerReview:false, action:"Register in ACCME PARS. Tag content area from ABA MOCA Content Outline. For Patient Safety credit, also tag as Patient Safety CME. Collect 8-digit ABA IDs (begin with '3') from learners — they self-report Patient Safety credits directly to ABA.", mocaName:"MOCA 2.0®", pars:true },
-  { id:"abfm", name:"ABFM", full:"American Board of Family Medicine", mocLabel:"ABFM Continuing Certification (CC) Credit", evalRequired:false, patientSafety:false, peerReview:false, action:"Register in ACCME PARS. ABFM credit is automatically applied to diplomate portfolios when the accredited provider reports completion. No separate board application needed.", pars:true },
-  { id:"abp", name:"ABP", full:"American Board of Pediatrics", mocLabel:"ABP MOC Part II (Lifelong Learning)", evalRequired:false, patientSafety:true, peerReview:false, action:"Register in ACCME PARS. ABP Part II points appear automatically in diplomate portfolios within 30 days of provider reporting completion. Collect ABP ID numbers from learners.", pars:true },
-  { id:"abpn", name:"ABPN", full:"American Board of Psychiatry & Neurology", mocLabel:"ABPN Continuing Certification (CC) Credit", evalRequired:false, patientSafety:true, peerReview:false, action:"Register in ACCME PARS. ABPN diplomates must self-report CME credits. Collect ABPN ID numbers from learners. Note: 16 of 90 required credits per cycle must include self-assessment activities.", pars:true },
-  { id:"abos", name:"ABOS", full:"American Board of Orthopaedic Surgery", mocLabel:"ABOS MOC CME Credit", evalRequired:false, patientSafety:false, peerReview:false, action:"Register in ACCME PARS. ABOS diplomates self-report credits. Note: SAE credits are a separate requirement and must come from ABOS-approved self-assessment activities.", pars:true },
-  { id:"abs", name:"ABS", full:"American Board of Surgery", mocLabel:"ABS Continuous Certification CME", evalRequired:false, patientSafety:false, peerReview:false, action:"Register in ACCME PARS. Report learner completions to ABS via PARS by December 31 each year. Contact: cmeactivities@absurgery.org", pars:true },
-  { id:"abohns", name:"ABOHNS", full:"American Board of Otolaryngology–Head & Neck Surgery", mocLabel:"ABOHNS Continuing Certification Credit", evalRequired:false, patientSafety:false, peerReview:false, action:"Register in ACCME PARS. Report learner completions annually. Self-assessment requirement is separate and must be ABOHNS-approved.", pars:true },
-  { id:"abpath", name:"ABPath", full:"American Board of Pathology", mocLabel:"ABPath Lifelong Learning Credit", evalRequired:false, patientSafety:false, peerReview:false, action:"Register in ACCME PARS. Diplomates self-report via ABPath. Contact: John@abpath.org for reporting questions.", pars:true },
-  { id:"abpmr", name:"ABPMR", full:"American Board of Physical Medicine & Rehabilitation", mocLabel:"ABPMR Continuing Certification CME", evalRequired:false, patientSafety:false, peerReview:false, action:"Register in ACCME PARS. Contact ABPMR at office@abpmr.org for reporting questions.", pars:true },
-  { id:"abts", name:"ABTS", full:"American Board of Thoracic Surgery", mocLabel:"ABTS Continuous Certification CME", evalRequired:false, patientSafety:false, peerReview:false, action:"Register in ACCME PARS. Submit learner completion data by December 31 each year.", pars:true },
-  { id:"abem", name:"ABEM", full:"American Board of Emergency Medicine", mocLabel:"ABEM Continuous Certification (ConCert™) CME", evalRequired:false, patientSafety:false, peerReview:false, action:"Confirm current ABEM CC requirements at abem.org. Standard CME supports learning but ABEM uses an examination-based model — verify PARS reporting applicability with ABEM directly.", pars:false },
-  { id:"abr", name:"ABR", full:"American Board of Radiology", mocLabel:"ABR Continuing Certification (OLA/CME)", evalRequired:false, patientSafety:false, peerReview:false, action:"Standard accredited CME qualifies. Diplomates manage their ABR CC requirements via the myABR portal. Verify current PARS reporting requirements with ABR.", pars:false },
-  { id:"abog", name:"ABOG", full:"American Board of Obstetrics & Gynecology", mocLabel:"ABOG Continuous Certification CME", evalRequired:false, patientSafety:false, peerReview:false, action:"Register in ACCME PARS as applicable. Verify current ABOG CC requirements at abog.org.", pars:true },
-  { id:"abpm", name:"ABPM", full:"American Board of Preventive Medicine", mocLabel:"ABPM Continuing Certification CME", evalRequired:false, patientSafety:false, peerReview:false, action:"Diplomates self-attest credits via the ABPM Physician Portal. No PARS reporting required from the provider for ABPM.", pars:false },
-];
+// ─── MOC DATA ─────────────────────────────────────────────────────────────────
+const SPECIALTY_MOC = {
+  internal_med:     { boards:"ABIM (MOC Part II)", flag:"Your physician attendees who hold ABIM certification may be able to claim Maintenance of Certification (MOC) credit for this activity. This requires a specific type of evaluation — flag this to the OCME&LL and ask whether a pre/post knowledge assessment should be added." },
+  anesthesiology:   { boards:"ABA (MOCA 2.0®)", flag:"Anesthesiologists may claim ABA MOCA 2.0® Lifelong Learning credit. If your activity covers patient safety topics — especially themes that apply across clinical settings, not just anesthesia — there may also be a separate ABA Patient Safety CME designation available. Mention both to your OCME&LL representative." },
+  family_med:       { boards:"ABFM Continuing Certification", flag:"Family physicians may claim ABFM Continuing Certification credit. Your OCME&LL representative will handle the registration." },
+  pediatrics:       { boards:"ABP MOC Part II", flag:"Pediatricians may claim ABP MOC credit. Your OCME&LL representative will handle the registration. Credits are automatically sent to physician portfolios once reported." },
+  psychiatry_neuro: { boards:"ABPN Continuing Certification", flag:"Psychiatrists and neurologists may claim ABPN credit. If you are including a self-assessment or reflective practice component, mention this to your OCME&LL representative — it has additional value for ABPN requirements." },
+  surgery:          { boards:"ABOS / ABS / ABTS", flag:"Surgeons (orthopaedic, general, thoracic) may claim board credit through their respective certifying boards. Mention the surgical subspecialties in your audience to your OCME&LL representative so the right boards are registered." },
+  ob_gyn:           { boards:"ABOG Continuing Certification", flag:"OB/GYN physicians may claim ABOG board credit. Your OCME&LL representative will handle registration." },
+  radiology:        { boards:"ABR Continuing Certification", flag:"Radiologists and radiation oncologists may claim ABR credit. Your OCME&LL representative will advise on the correct reporting pathway for this board." },
+  emergency_med:    { boards:"ABEM Continuing Certification", flag:"Emergency medicine physicians may be eligible for credit toward ABEM continuing certification. Your OCME&LL representative will confirm the current requirements for this board." },
+  multi_specialty:  { boards:"Multiple boards (ABIM, ABFM, ABP, ABPN and others)", flag:"With a multi-specialty audience, several board certification programs may apply. Let your OCME&LL representative know all the specialties represented — they will identify which boards to register with." },
+  other_specialty:  { boards:null, flag:null },
+};
 
-// ─── COMMENDATION CRITERIA ────────────────────────────────────────────────────
-
-const COMMENDATION_CRITERIA = [
-  { category:"Promotes Team-Based Education", color:"#7c3aed", criteria:[
-    { id:"C23", code:"C23", label:"Engages Teams", desc:"Interprofessional teams engaged in planning & delivery of IPCE", triggers:["multi_prof","ipce_yes"] },
-    { id:"C24", code:"C24", label:"Engages Patients/Public", desc:"Patient or public representatives engaged in planning & delivery", triggers:["patient_engagement"] },
-    { id:"C25", code:"C25", label:"Engages Students", desc:"Students of health professions engaged in planning & delivery", triggers:["students_involved"] },
-  ]},
-  { category:"Addresses Public Health Priorities", color:"#0891b2", criteria:[
-    { id:"C26", code:"C26", label:"Addresses Population Health", desc:"Factors beyond clinical care affecting health of populations", triggers:["population_health","sdoh"] },
-    { id:"C27", code:"C27", label:"Collaborates Effectively", desc:"Collaborates with other organizations to address population health", triggers:["multi_org"] },
-    { id:"C28", code:"C28", label:"Advances Data Use", desc:"Uses data/analytics to improve learner performance or patient outcomes", triggers:["data_driven","qi_activity"] },
-  ]},
-  { category:"Enhances Skills", color:"#059669", criteria:[
-    { id:"C29", code:"C29", label:"Optimizes Communication Skills", desc:"CME designed to improve communication skills of learners", triggers:["communication"] },
-    { id:"C30", code:"C30", label:"Optimizes Technical/Procedural Skills", desc:"CME designed to improve technical or procedural skills", triggers:["simulation","procedural"] },
-    { id:"C31", code:"C31", label:"Creates Individualized Learning Plans", desc:"Individualized learning pathways for participants", triggers:["individualized","self_assessment_format"] },
-  ]},
-  { category:"Demonstrates Educational Leadership", color:"#d97706", criteria:[
-    { id:"C32", code:"C32", label:"Utilizes Support Strategies", desc:"Uses strategies to support/reinforce change beyond the activity itself", triggers:["follow_up","performance_improvement"] },
-    { id:"C33", code:"C33", label:"Engages in Research/Scholarship", desc:"CME program engages in research and scholarship", triggers:["research"] },
-    { id:"C34", code:"C34", label:"Supports CPD for CME Team", desc:"Supports continuous development of its own CME team", triggers:["internal_training"] },
-    { id:"C35", code:"C35", label:"Demonstrates Creativity/Innovation", desc:"Creative and innovative educational formats or delivery", triggers:["simulation","technology"] },
-  ]},
-  { category:"Achieves Outcomes ★ (Required)", color:"#dc2626", required:true, criteria:[
-    { id:"C36", code:"C36", label:"Improves Performance", desc:"Demonstrates improvement in learner performance", triggers:["performance_outcome","pre_post"] },
-    { id:"C37", code:"C37", label:"Improves Healthcare Quality", desc:"Demonstrates healthcare quality improvement", triggers:["qi_activity","quality_metrics"] },
-    { id:"C38", code:"C38", label:"Demonstrates Impact on Patients/Community", desc:"Demonstrates impact of education on patients or community", triggers:["patient_outcome","community_impact"] },
-  ]},
+// ─── COMMENDATION DATA ────────────────────────────────────────────────────────
+const COMMENDATION = [
+  {
+    category:"Team-Based & Interprofessional Education",
+    color:tk.purple, colorLight:tk.purpleLight, colorBorder:tk.purpleBorder, icon:"🤝",
+    whyItMatters:"Activities that bring different professions together in planning and delivery are a foundation of your organization's Accreditation with Commendation. Flag any of these to your OCME&LL representative.",
+    criteria:[
+      { code:"C23", label:"Interprofessional planning committee", desc:"Your planning team includes people from more than one health profession — e.g. a physician and a nurse or pharmacist planned this together", triggers:["multi_prof"] },
+      { code:"C24", label:"Patient or community voice in planning", desc:"A patient, family member, or community representative helped plan or will present at this activity", triggers:["patient_engagement"] },
+      { code:"C25", label:"Health professions students involved", desc:"Students (medical, nursing, pharmacy, PA, etc.) are involved in planning or presenting", triggers:["students_involved"] },
+    ]
+  },
+  {
+    category:"Public Health & Community Impact",
+    color:tk.teal, colorLight:tk.tealLight, colorBorder:tk.tealBorder, icon:"🌍",
+    whyItMatters:"Activities that address population health, health equity, or cross-organizational collaboration are highly valued. Flag these to your OCME&LL representative.",
+    criteria:[
+      { code:"C26", label:"Addresses population health or health equity", desc:"Content goes beyond individual patient care — covering health disparities, social determinants of health, or community-level health issues", triggers:["population_health","sdoh"] },
+      { code:"C27", label:"Collaboration with another organization", desc:"Your department or institution is partnering with an outside organization to deliver this activity", triggers:["multi_org"] },
+      { code:"C28", label:"Activity was designed using real data", desc:"You used actual institutional, community, or quality data to identify the educational gap that this activity addresses", triggers:["data_driven","qi_activity"] },
+    ]
+  },
+  {
+    category:"Skills Development",
+    color:tk.green, colorLight:tk.greenLight, colorBorder:tk.greenBorder, icon:"🎯",
+    whyItMatters:"Skill-building activities — especially simulation and communication training — are recognized under commendation. Let your OCME&LL representative know what specific skills this activity develops.",
+    criteria:[
+      { code:"C29", label:"Communication skills training", desc:"The activity is specifically designed to improve how clinicians communicate — with patients, families, or colleagues", triggers:["communication"] },
+      { code:"C30", label:"Hands-on procedural or technical skills", desc:"Learners practice procedures, techniques, or clinical skills — simulation lab, skills station, procedural workshop", triggers:["simulation","procedural"] },
+      { code:"C31", label:"Individualized or self-directed learning", desc:"Learners receive a personalized learning plan, self-assessment, or tailored feedback rather than a uniform experience", triggers:["individualized","self_assessment_format"] },
+    ]
+  },
+  {
+    category:"Educational Leadership & Innovation",
+    color:tk.amber, colorLight:tk.amberLight, colorBorder:tk.amberBorder, icon:"💡",
+    whyItMatters:"If your activity goes beyond a standard lecture format, or connects to follow-up, research, or innovation — flag it. These details matter for commendation and are often missed at the application stage.",
+    criteria:[
+      { code:"C32", label:"Follow-up support after the activity", desc:"There is a planned follow-up — a check-in survey, coaching session, reminder materials, or resources to help attendees apply what they learned", triggers:["follow_up","performance_improvement"] },
+      { code:"C33", label:"Connected to research or scholarship", desc:"This activity is linked to a research project, QI study, or is expected to result in a publication or presentation", triggers:["research"] },
+      { code:"C35", label:"Innovative or creative format", desc:"This activity uses a creative or novel educational approach — technology-enhanced, simulation-based, or otherwise not a standard didactic lecture", triggers:["simulation","technology"] },
+    ]
+  },
+  {
+    category:"Demonstrating Real-World Impact ★",
+    color:tk.rose, colorLight:tk.roseLight, colorBorder:tk.roseBorder, icon:"⭐", required:true,
+    whyItMatters:"★ This is the most important category for Accreditation with Commendation — at least one qualifying activity must show measurable real-world impact. If your activity can demonstrate this, flag it prominently to your OCME&LL representative.",
+    criteria:[
+      { code:"C36", label:"Measuring change in clinical behavior", desc:"You plan to follow up and measure whether attendees actually changed their practice after this activity — not just whether they learned something on the day", triggers:["performance_outcome","pre_post"] },
+      { code:"C37", label:"Linked to a quality improvement initiative", desc:"This activity is directly connected to a QI project, and you plan to measure whether care quality actually improved", triggers:["qi_activity"] },
+      { code:"C38", label:"Measuring impact on patients or community", desc:"You will collect data showing whether this education made a measurable difference for patients or the community — not just for the learners", triggers:["patient_outcome","community_impact"] },
+    ]
+  },
 ];
 
 // ─── QUESTIONS ────────────────────────────────────────────────────────────────
-// Two independent dimensions asked first:
-//   1. activity_structure  — single event vs. RSS
-//   2. delivery_format     — how it's delivered (live / hybrid / enduring / simulation)
-// Then hybrid sub-question (conditional), then everything else.
-// PI CME moves to content_focus as a credit framework, not a format.
-
 const QUESTIONS = [
   {
-    id: "activity_structure",
-    question: "What best describes the structure of this activity?",
-    hint: "This is one of the most important distinctions in CME — it determines the ACCME activity type and how the activity is registered in PARS.",
-    type: "single",
-    options: [
-      { value:"single", label:"Single Event — one-time conference, symposium, workshop, or course offered once to one audience", icon:"📌" },
-      { value:"repeated", label:"Repeated Course — same content, same faculty, same planning; offered multiple times to different audiences or at different sites/dates (e.g. a skills course run 4x/year, a touring workshop)", icon:"🔁", highlight:true },
-      { value:"rss", label:"Regularly Scheduled Series (RSS) — recurring sessions with varying topics/faculty, planned primarily for and by the organization's own professional staff (e.g. grand rounds, tumor board, M&M conference)", icon:"📅" },
+    id:"activity_structure",
+    question:"What kind of activity is this?",
+    hint:"This is the most important first question — it determines which application type you need.",
+    type:"single",
+    options:[
+      { value:"single", icon:"📌", label:"A one-time event", tag:"Live Course", sublabel:"A conference, course, symposium, or workshop offered once to one group" },
+      { value:"repeated", icon:"🔁", label:"The same course, running multiple times", tag:"Live Course (Repeated)", sublabel:"Identical content and faculty, offered again for a new group — e.g. a skills course run 4×/year, a touring workshop. Each run needs its own separate application.", highlight:true },
+      { value:"rss", icon:"📅", label:"A recurring series with changing content", tag:"Regularly Scheduled Series (RSS)", sublabel:"Regular sessions where topics and presenters vary — grand rounds, tumor board, M&M conference, department journal club" },
     ]
   },
   {
-    id: "delivery_format",
-    question: "What is the delivery format?",
-    hint: "Choose how the activity will actually be delivered to learners. This applies regardless of whether it is a single event, repeated course, or RSS.",
-    type: "single",
-    options: [
-      { value:"live", label:"Live / In-person only — all learners physically present", icon:"🏛️" },
-      { value:"hybrid", label:"Hybrid — combines in-person, live-stream, and/or recorded components", icon:"🔀", highlight:true },
-      { value:"enduring", label:"Enduring Material — online module, podcast, recorded lecture, journal CME (self-paced, no live component)", icon:"💻" },
-      { value:"simulation", label:"Simulation-Based — skills lab, standardized patients, procedural simulation", icon:"🩺" },
+    id:"delivery_format",
+    question:"How will people attend?",
+    hint:"Choose the primary way learners will participate. This applies whether it's a one-time event, a repeated course, or a series.",
+    type:"single",
+    options:[
+      { value:"live", icon:"🏛️", label:"In person only", tag:"Live Activity", sublabel:"All attendees physically present together — no online component" },
+      { value:"livestream", icon:"📡", label:"Live streamed only", tag:"Live Activity — Virtual", sublabel:"All attendees join remotely via live stream — no in-person component" },
+      { value:"hybrid", icon:"🔀", label:"In person and live streamed", tag:"Live Activity (Hybrid)", sublabel:"Some attend in the room, others join via live stream — and/or a recording may be available afterward", highlight:true },
+      { value:"enduring", icon:"💻", label:"Online / self-paced only", tag:"Enduring Material", sublabel:"An online module, podcast, recorded lecture, or journal article — completed independently, no live session" },
+      { value:"simulation", icon:"🩺", label:"Simulation or hands-on skills lab", tag:"Live Activity — Simulation", sublabel:"Learners practice on simulators, mannequins, or in a procedural skills setting" },
     ]
   },
   {
-    id: "hybrid_components",
-    question: "Which components will your hybrid activity include?",
-    hint: "Each component may require a separate CME application. Select all that apply.",
-    type: "multi",
-    showIf: (a) => a.delivery_format === "hybrid",
-    options: [
-      { value:"hybrid_inperson", label:"Live in-person attendance (same-day, same room)", icon:"🏛️" },
-      { value:"hybrid_livestream", label:"Simultaneous live-stream for remote participants", icon:"📡" },
-      { value:"hybrid_enduring", label:"Recording released afterward as standalone enduring material (public release)", icon:"🎬" },
-      { value:"hybrid_enduring_bundled", label:"Recording available only to registered attendees (not broadly released)", icon:"🔒" },
+    id:"hybrid_components",
+    question:"Which of these apply to your activity?",
+    hint:"Important: whether a recording is available to everyone (or just registered attendees) affects whether you need one application or two.",
+    type:"multi",
+    showIf:(a)=>a.delivery_format==="hybrid",
+    options:[
+      { value:"hybrid_inperson", icon:"🏛️", label:"In-person attendees on the day" },
+      { value:"hybrid_livestream", icon:"📡", label:"Live stream for remote participants joining as it happens" },
+      { value:"hybrid_enduring", icon:"🎬", label:"Recording made publicly available afterward (anyone can access, not just registered attendees)", highlight:true },
+      { value:"hybrid_enduring_bundled", icon:"🔒", label:"Recording available only to people who already registered" },
     ]
   },
   {
-    id: "target_specialty",
-    question: "What is the primary specialty audience?",
-    hint: "Used to match applicable MOC/board certification programs.",
-    type: "single",
-    options: [
-      { value:"internal_med", label:"Internal Medicine / Subspecialties" },
-      { value:"anesthesiology", label:"Anesthesiology / Pain / Critical Care" },
+    id:"target_specialty",
+    question:"Who is the primary physician audience?",
+    hint:"This determines whether your attendees may be eligible for Maintenance of Certification (MOC) / board credit in addition to standard CME.",
+    type:"single",
+    options:[
+      { value:"internal_med", label:"Internal Medicine or subspecialties (cardiology, GI, rheumatology, etc.)" },
+      { value:"anesthesiology", label:"Anesthesiology, Pain Medicine, or Critical Care" },
       { value:"family_med", label:"Family Medicine" },
       { value:"pediatrics", label:"Pediatrics" },
-      { value:"psychiatry_neuro", label:"Psychiatry / Neurology" },
-      { value:"surgery", label:"Surgery (General, Ortho, Thoracic, Vascular)" },
-      { value:"ob_gyn", label:"OB/GYN" },
-      { value:"radiology", label:"Radiology / Radiation Oncology" },
+      { value:"psychiatry_neuro", label:"Psychiatry or Neurology" },
+      { value:"surgery", label:"Surgery — General, Orthopaedic, Thoracic, or Vascular" },
+      { value:"ob_gyn", label:"Obstetrics & Gynecology" },
+      { value:"radiology", label:"Radiology or Radiation Oncology" },
       { value:"emergency_med", label:"Emergency Medicine" },
-      { value:"multi_specialty", label:"Multi-specialty / General Medical" },
-      { value:"other_specialty", label:"Other Specialty" },
+      { value:"multi_specialty", label:"Mixed or multi-specialty audience" },
+      { value:"other_specialty", label:"Another specialty" },
     ]
   },
   {
-    id: "audience_professions",
-    question: "Which professional groups will attend?",
-    hint: "If more than physicians will participate, Joint Accreditation and IPCE credit may be available.",
-    type: "multi",
-    options: [
-      { value:"physicians", label:"Physicians (MD/DO)" },
+    id:"audience_professions",
+    question:"Which professional groups will attend? Select all that apply.",
+    hint:"If nurses, pharmacists, or other healthcare professionals attend, additional credit types may be available for them — beyond standard physician CME.",
+    type:"multi",
+    options:[
+      { value:"physicians", label:"Physicians (MD or DO)" },
       { value:"nurses", label:"Nurses (RN, NP, CRNA)" },
-      { value:"pharmacists", label:"Pharmacists / Pharmacy Residents" },
-      { value:"pas", label:"Physician Assistants / Associates" },
+      { value:"pharmacists", label:"Pharmacists" },
+      { value:"pas", label:"Physician Assistants / Physician Associates" },
       { value:"psychologists", label:"Psychologists" },
       { value:"social_workers", label:"Social Workers" },
-      { value:"residents_fellows", label:"Residents / Fellows" },
-      { value:"students", label:"Health Professions Students" },
-      { value:"other_hcp", label:"Other Healthcare Professionals" },
+      { value:"residents_fellows", label:"Residents or Fellows" },
+      { value:"students", label:"Health professions students" },
+      { value:"other_hcp", label:"Other healthcare professionals" },
     ]
   },
   {
-    id: "content_focus",
-    question: "What best describes the primary content focus?",
-    hint: "Content topics unlock specific credit designations, PI CME frameworks, and commendation opportunities.",
-    type: "multi",
-    options: [
-      { value:"patient_safety", label:"🛡️ Patient Safety / Error Prevention" },
-      { value:"qi_activity", label:"📊 Quality Improvement / Performance Improvement" },
-      { value:"pi_cme_framework", label:"📈 Performance Improvement CME (PI CME) — structured Stages A/B/C framework", icon:"📈" },
-      { value:"clinical_knowledge", label:"🧬 Clinical Knowledge Update" },
-      { value:"procedural", label:"🔧 Technical / Procedural Skills" },
-      { value:"communication", label:"💬 Communication / Interpersonal Skills" },
-      { value:"population_health", label:"🌍 Population Health / Public Health" },
-      { value:"sdoh", label:"⚖️ Social Determinants of Health / Health Equity / Disparities" },
-      { value:"research", label:"🔬 Research / Evidence-Based Medicine" },
-      { value:"ethics", label:"⚕️ Medical Ethics" },
-      { value:"pain_management", label:"💊 Pain & Symptom Management / Opioid Prescribing" },
-      { value:"mental_health", label:"🧠 Mental Health / Behavioral Health" },
-      { value:"technology", label:"💡 Health Technology / AI / Innovation" },
+    id:"content_focus",
+    question:"What will this activity cover? Select all that apply.",
+    hint:"Be generous — select everything that fits. The more you flag now, the more credit opportunities your OCME&LL representative can identify.",
+    type:"multi",
+    options:[
+      { value:"patient_safety", label:"🛡️ Patient safety or preventing medical errors" },
+      { value:"qi_activity", label:"📊 Quality improvement or reducing variation in care" },
+      { value:"pi_cme_framework", label:"📈 A structured performance improvement program (PI CME — Stages A, B, C)" },
+      { value:"clinical_knowledge", label:"🧬 Clinical knowledge update — new evidence, guidelines, or treatments" },
+      { value:"procedural", label:"🔧 A specific procedure, technique, or clinical skill" },
+      { value:"communication", label:"💬 Communication skills — with patients, families, or care teams" },
+      { value:"population_health", label:"🌍 Population health, public health, or community health" },
+      { value:"sdoh", label:"⚖️ Health equity, disparities, or social determinants of health" },
+      { value:"research", label:"🔬 Research methods, evidence-based practice, or scholarly work" },
+      { value:"ethics", label:"⚕️ Medical ethics" },
+      { value:"pain_management", label:"💊 Pain management, symptom management, or opioid prescribing" },
+      { value:"mental_health", label:"🧠 Mental health or behavioral health" },
+      { value:"technology", label:"💡 Health technology, AI, or innovative care delivery" },
     ]
   },
   {
-    id: "evaluation_plan",
-    question: "What evaluation method will you use?",
-    hint: "MOC credit and commendation criteria require specific evaluation types.",
-    type: "single",
-    options: [
-      { value:"survey_only", label:"Post-activity satisfaction survey only" },
-      { value:"pre_post", label:"Pre/post knowledge assessment (test-in, test-out)" },
-      { value:"performance_outcome", label:"Outcomes measurement (practice change, quality metrics)" },
-      { value:"patient_outcome", label:"Patient-level outcome data measured" },
-      { value:"self_assessment_format", label:"Formal self-assessment / reflective practice component" },
+    id:"evaluation_plan",
+    question:"How will you measure whether the activity worked?",
+    hint:"This affects which credit types and commendation criteria are available. Choose the most robust method you plan to use.",
+    type:"single",
+    options:[
+      { value:"survey_only", label:"A satisfaction survey — attendees rate the session", sublabel:"Standard post-activity evaluation asking whether they found it useful" },
+      { value:"pre_post", label:"A knowledge test before and after", sublabel:"Attendees answer questions before the activity and again afterward to measure learning" },
+      { value:"performance_outcome", label:"Measuring whether clinical practice actually changed", sublabel:"Follow-up data collected weeks or months later showing attendees did something differently" },
+      { value:"patient_outcome", label:"Measuring impact on patients or care quality", sublabel:"Data showing the activity led to better patient outcomes or improved quality metrics" },
+      { value:"self_assessment_format", label:"A formal self-assessment or reflective practice component", sublabel:"Participants assess their own competency or create a personal learning plan" },
     ]
   },
   {
-    id: "planning_process",
-    question: "How was the activity planned?",
-    hint: "Planning process affects commendation eligibility and IPCE designation.",
-    type: "multi",
-    options: [
-      { value:"multi_prof", label:"Interprofessional planning committee (multiple professions)" },
-      { value:"patient_engagement", label:"Patient or patient advocate involved in planning" },
-      { value:"students_involved", label:"Health professions students involved in planning/delivery" },
-      { value:"multi_org", label:"Collaboration with external organization(s)" },
-      { value:"data_driven", label:"Used institutional or community data/analytics" },
-      { value:"needs_assessment", label:"Formal needs assessment / gap analysis conducted" },
-      { value:"solo_planner", label:"Single planner / department (standard)" },
+    id:"planning_process",
+    question:"How was this activity planned? Select all that apply.",
+    hint:"Planning details unlock commendation criteria that are often missed — take a moment to check everything that applies.",
+    type:"multi",
+    options:[
+      { value:"multi_prof", label:"The planning committee includes people from more than one health profession" },
+      { value:"patient_engagement", label:"A patient, family member, or community representative was involved in planning" },
+      { value:"students_involved", label:"Health professions students are involved in planning or presenting" },
+      { value:"multi_org", label:"Another organization (outside your department or institution) is involved" },
+      { value:"data_driven", label:"You used real data — quality data, registry data, or institutional data — to identify the educational need" },
+      { value:"needs_assessment", label:"A formal needs assessment or educational gap analysis was conducted" },
+      { value:"solo_planner", label:"One person or one department planned this independently" },
     ]
   },
   {
-    id: "follow_up",
-    question: "Will there be any follow-up or support strategies beyond the activity itself?",
-    type: "multi",
-    options: [
+    id:"follow_up",
+    question:"Will there be anything after the activity itself? Select all that apply.",
+    hint:"Post-activity plans — even simple ones — can unlock important commendation criteria. Don't overlook these.",
+    type:"multi",
+    options:[
       { value:"none", label:"No follow-up planned" },
-      { value:"follow_up", label:"Follow-up survey or post-activity resources" },
-      { value:"performance_improvement", label:"Structured PI component or coaching follow-up" },
-      { value:"individualized", label:"Individualized learning plan or portfolio created" },
-      { value:"community_impact", label:"Community outreach component tied to activity" },
+      { value:"follow_up", label:"A follow-up survey, reminder, or resource sent to attendees afterward" },
+      { value:"performance_improvement", label:"Structured coaching, a PI component, or support to help attendees change their practice" },
+      { value:"individualized", label:"Attendees receive a personalized learning plan or individual feedback" },
+      { value:"community_impact", label:"There is a community outreach component connected to this activity" },
     ]
   },
   {
-    id: "michigan_topics",
-    question: "Does the activity include any Michigan-mandated topics?",
-    hint: "Michigan Board of Medicine requires these topics within each 3-year licensure cycle.",
-    type: "multi",
-    options: [
-      { value:"mi_ethics", label:"⚕️ Medical Ethics (Michigan: min. 1 hr required)" },
-      { value:"mi_pain", label:"💊 Pain & Symptom Management (Michigan: min. 3 hrs required, incl. 1 hr controlled substances)" },
-      { value:"mi_implicit_bias", label:"🤝 Implicit Bias Training (Michigan: 1 hr/year of license cycle)" },
-      { value:"mi_opioid", label:"🚨 Opioid/Controlled Substance Awareness (Michigan: required every renewal for prescribers)" },
-      { value:"mi_human_trafficking", label:"🔴 Human Trafficking Identification (Michigan: one-time requirement)" },
-      { value:"mi_none", label:"None of the above" },
+    id:"michigan_topics",
+    question:"Does this activity cover any of these Michigan-required topics?",
+    hint:"Michigan physicians must complete specific hours in these topics each licensure cycle. If your activity covers any of them, flag this on your application — it provides real value to Michigan-licensed attendees.",
+    type:"multi",
+    options:[
+      { value:"mi_ethics", label:"⚕️ Medical Ethics — Michigan requires at least 1 hour per cycle" },
+      { value:"mi_pain", label:"💊 Pain & Symptom Management — Michigan requires at least 3 hours per cycle (including at least 1 hour on controlled substances)" },
+      { value:"mi_implicit_bias", label:"🤝 Implicit Bias Training — Michigan requires 1 hour per year of the license cycle" },
+      { value:"mi_opioid", label:"🚨 Opioid / Controlled Substance Awareness — required for prescribers and dispensers every renewal period" },
+      { value:"mi_human_trafficking", label:"🔴 Human Trafficking Identification — one-time requirement for Michigan physicians" },
+      { value:"mi_none", label:"None of these" },
     ]
   },
 ];
 
 // ─── LOGIC ────────────────────────────────────────────────────────────────────
-
-function deriveRecommendations(answers) {
+function deriveResults(answers) {
   const a = answers;
-  const recs = { primary:[], additional:[], moc:[], commendation:[], michigan:[], warnings:[] };
+  const res = { application:[], additionalCredits:[], boardCredit:null, commendation:[], michigan:[], flags:[] };
 
   const isRSS = a.activity_structure === "rss";
-  const isSingle = a.activity_structure === "single";
   const isRepeated = a.activity_structure === "repeated";
+  const isSingle = a.activity_structure === "single";
   const fmt = a.delivery_format;
   const isHybrid = fmt === "hybrid";
   const isEnduring = fmt === "enduring";
@@ -244,604 +268,634 @@ function deriveRecommendations(answers) {
   const isLive = fmt === "live";
 
   const hybridComponents = a.hybrid_components || [];
-  const hasEnduringComponent = hybridComponents.includes("hybrid_enduring");
-  const hasLivestreamComponent = hybridComponents.includes("hybrid_livestream");
+  const hasPublicRecording = hybridComponents.includes("hybrid_enduring");
+  const hasLiveStream = hybridComponents.includes("hybrid_livestream");
   const hasBundledRecording = hybridComponents.includes("hybrid_enduring_bundled");
-  const hasInPerson = hybridComponents.includes("hybrid_inperson") || (!isHybrid);
 
-  const contentFocus = a.content_focus || [];
-  const hasPiCME = contentFocus.includes("pi_cme_framework");
-  const hasPatientSafety = contentFocus.includes("patient_safety");
-  const hasQI = contentFocus.includes("qi_activity") || hasPiCME;
-
-  // ── ACCME Activity Type Label (used in primary section) ──
-  // Determine the correct ACCME label from the two independent dimensions
-  let accmeType = "";
-  let accmeNote = "";
-  if (isRSS) {
-    if (isLive) { accmeType = "RSS — Live"; accmeNote = "Each session is individually accredited under the series umbrella. Register the series in PARS as a Regularly Scheduled Series. Individual session dates must be logged."; }
-    else if (isHybrid) { accmeType = "RSS — Hybrid"; accmeNote = "Each RSS session carries the hybrid format. Live + live-stream components share one RSS application. If sessions are recorded and released publicly, a separate Enduring Material application is required per release."; }
-    else if (isEnduring) { accmeType = "RSS — Enduring Material"; accmeNote = "Rare format — a recurring self-paced series (e.g., monthly online modules). Register as Enduring Material; each module or release may need its own application entry."; }
-    else if (isSimulation) { accmeType = "RSS — Simulation"; accmeNote = "Recurring simulation sessions. Register the series in PARS. Each session date must be logged individually."; }
-  } else if (isRepeated) {
-    if (isLive) { accmeType = "Live Course (Repeated)"; accmeNote = "In PARS, each repetition of the course is reported as a separate Live Course activity — even if the content, faculty, and planning are identical. ACCME's PARS form will ask whether the activity occurred more than once with the same content; answer yes and enter each date separately."; }
-    else if (isHybrid) { accmeType = "Live Course (Repeated, Hybrid)"; accmeNote = "Each run of the course is reported as a separate Live Course activity in PARS, even with identical content. See Hybrid Application Strategy below for the live vs. enduring application split within each run."; }
-    else if (isEnduring) { accmeType = "Enduring Material (Repeated/Multi-site)"; accmeNote = "If the same enduring material is made available at multiple sites or platforms simultaneously, it is generally registered as a single Enduring Material activity. Confirm with your accredited provider whether site-specific reporting is required."; }
-    else if (isSimulation) { accmeType = "Live Course — Simulation (Repeated)"; accmeNote = "Each run of the simulation course is reported as a separate Live Course activity in PARS, even with identical content and faculty."; }
-  } else {
-    if (isLive) { accmeType = "Live Activity"; accmeNote = "All in-person attendees receive credit for the same live event. Faculty disclosures must be complete before the event date."; }
-    else if (isHybrid) { accmeType = "Live Activity (Hybrid)"; accmeNote = "See Hybrid Application Strategy below for details on single vs. dual applications."; }
-    else if (isEnduring) { accmeType = "Enduring Material"; accmeNote = "Self-paced activity with no live component. Credit period typically cannot exceed 3 years from release date. Learners must complete evaluation before receiving credit."; }
-    else if (isSimulation) { accmeType = "Live Activity (Simulation)"; accmeNote = "Simulation-based activities are accredited as live activities. Ensure faculty disclosures and COI are resolved before the session date."; }
-  }
-
-  // ── Primary: AMA PRA Category 1 ──
-  recs.primary.push({
-    id:"ama_cat1",
-    label:"AMA PRA Category 1 Credit™",
-    required:true,
-    accmeType,
-    description:"Core physician CME credit. Required for all accredited CME activities.",
-    accmeNote,
-    action: isHybrid
-      ? "Submit via your accredited provider (MiCME/CloudCME). See Hybrid Activity notice below."
-      : isRSS
-        ? "Register the series in PARS as a Regularly Scheduled Series. Log each session date. Submit via MiCME/CloudCME."
-        : isRepeated
-          ? "File a separate CME application for each run of the course (each date/site), even if content is identical. Submit each via MiCME/CloudCME."
-          : "Apply via your accredited provider (MiCME/CloudCME) application.",
-  });
-
-  // ── Repeated Course notice ──
-  if (isRepeated) {
-    recs.primary.push({
-      id:"repeated_notice",
-      label:"🔁 Repeated Course — Application Requirements",
-      required:true,
-      isRepeatedNotice:true,
-      description:"A repeated course uses the same content, same faculty, and same planning across multiple runs for different audiences or at different sites/dates. This is fundamentally different from an RSS — each run is a separate Live Course activity in PARS, not a series.",
-      items:[
-        { icon:"📋", heading:"One Application Per Run in PARS", body:"ACCME requires each course run to be reported as a separate Live Course activity in PARS — even if content, faculty, planning, and credit hours are completely identical. ACCME's PARS form asks whether the activity occurred more than once with the same content; answer yes and register each date/site separately with its own Activity ID.", status:"required" },
-        { icon:"🔢", heading:"Program Size Implications", body:"Each run counts as a separate activity toward your program size calculation for Accreditation with Commendation purposes. A course run 4 times = 4 activities. Plan accordingly when tracking your program size category (small/medium/large/extra-large).", status:"info" },
-        { icon:"⭐", heading:"Commendation Criteria Caution", body:"Different runs of the same course content do NOT count as separate examples of compliance for certain commendation criteria — including Collaborates Effectively, Engages in Research/Scholarship, Demonstrates Creativity/Innovation, Improves Healthcare Quality, and Improves Patient/Community Health. You must demonstrate these criteria through genuinely different activities.", status:"advisory" },
-        { icon:"📝", heading:"Faculty Disclosures", body:"Faculty disclosures must be completed and COI resolved independently for each run, as the date of disclosure must precede the activity date. Retain a separate disclosure record for each course run.", status:"required" },
-        { icon:"🎓", heading:"MOC Reporting", body:"Register each run separately in PARS. Each run receives its own Activity ID and MOC credits are reported independently per run. Learners attending multiple runs may earn credit for each run they attend.", status:"info" },
-      ],
-      action:"File a separate CME application (MiCME/CloudCME) and PARS entry for each run of the course. Maintain independent disclosure records, evaluations, and attendance records per run.",
-    });
-  }
-
-  // ── RSS-specific notice ──
-  if (isRSS) {
-    recs.primary.push({
-      id:"rss_notice",
-      label:"📅 RSS Application Requirements",
-      required:true,
-      isRSSNotice:true,
-      description:"Regularly Scheduled Series have specific ACCME and PARS requirements that differ from single events.",
-      items:[
-        { icon:"📋", heading:"Series Registration in PARS", body:"Register the entire series as a single Regularly Scheduled Series activity in ACCME PARS. The series receives one Activity ID, but individual session dates must all be logged. You do not file a separate application per session.", status:"required" },
-        { icon:"🗓️", heading:"Session Logging", body:"Each session date must be entered in PARS individually (or batch-uploaded). Learners are credited per session attended, not for the series as a whole. Maintain accurate attendance records per session.", status:"required" },
-        { icon:"📊", heading:"Evaluation", body:"Evaluation can be conducted at the session level or periodically across the series (e.g., quarterly or annually). ACCME requires that you evaluate the effectiveness of the series, not necessarily every individual session.", status:"info" },
-        isHybrid ? { icon:"🔀", heading:"Hybrid RSS Sessions", body:"If sessions include a live-stream component, all live and live-streamed attendees for each session are covered under the single RSS application. If session recordings are released publicly beyond the original attendees, a separate Enduring Material application is required for those releases.", status:"advisory" } : null,
-        { icon:"🎓", heading:"MOC Reporting for RSS", body:"For boards that use PARS (ABIM, ABA, ABFM, ABP, etc.), report learner completions per session. Diplomates accumulate MOC points across sessions attended. Some boards require a minimum number of sessions completed before awarding points — confirm with each applicable board.", status:"info" },
-      ].filter(Boolean),
-      action:"Register the series in ACCME PARS before the first session. Log session dates continuously. Maintain per-session attendance records for MOC reporting.",
-    });
-  }
-
-  // ── Hybrid-specific notice ──
-  if (isHybrid) {
-    const componentList = [
-      hasInPerson && "live in-person",
-      hasLivestreamComponent && "live-streamed",
-      hasEnduringComponent && "standalone enduring material (public release)",
-      hasBundledRecording && "recorded access for registered attendees only",
-    ].filter(Boolean);
-    recs.primary.push({
-      id:"hybrid_notice",
-      label:"🔀 Hybrid Activity — Application Strategy",
-      required:true,
-      isHybridNotice:true,
-      components: componentList,
-      description: isRSS
-        ? "Each hybrid RSS session combines in-person and live-stream audiences under the single series registration. A separate Enduring Material application is only needed if session recordings are released publicly to new audiences."
-        : isRepeated
-          ? "Each run of this hybrid repeated course requires its own separate CME application. Within each run, the live and live-streamed components share one application; a publicly released recording requires a second separate Enduring Material application."
-          : "Hybrid activities span multiple ACCME activity types. The live and live-streamed components share a single live application. A separately released enduring recording requires its own distinct application.",
-      items:[
-        { icon:"🏛️📡", heading: isRSS ? "RSS Application — In-person + Live-stream Sessions" : "Application 1 — Live Activity (in-person + live-stream)", body: isRSS ? "All in-person and simultaneously live-streamed attendees for each session are covered under the single RSS series registration. No separate application needed for the live-stream component." : "The in-person and simultaneously live-streamed audiences are considered a single live activity and covered under one CME application. Apply as a Live Activity. All faculty disclosures and COI resolution must be complete before the event date.", status:"required" },
-        hasEnduringComponent ? { icon:"🎬", heading: isRSS ? "Enduring Material Application — Public Recording Releases" : "Application 2 — Enduring Material (public recording release)", body: isRSS ? "If RSS session recordings are released to a broader audience (beyond original registrants), each public release constitutes a separate Enduring Material activity requiring its own CME application, learning objectives review, updated disclosures, and credit designation." : "Once the recording is released to a broader audience beyond original registrants, it becomes a separate Enduring Material activity requiring its own CME application, learning objectives review, updated disclosures, and credit hours. Submit as a new Enduring activity with a distinct PARS Activity ID.", status:"required" } : null,
-        hasBundledRecording ? { icon:"🔒", heading:"Recorded Access — Registered Attendees Only", body:"If the recording is available only to original registered attendees (not broadly released), it is generally treated as part of the original live activity — a separate enduring application is NOT required. However, if access extends beyond 30 days post-event or opens to new registrants, consult your accredited provider.", status:"advisory" } : null,
-        { icon:"📋", heading:"Evaluation & MOC Reporting", body:"Run separate evaluations for live and enduring components, as participant populations differ. Each application has its own PARS Activity ID — report learner completions separately per activity.", status:"info" },
-        { icon:"🏔️", heading:"Michigan (MiCME) Consideration", body:"Each application (live and enduring) must be submitted separately to MiCME. If the activity includes Michigan-mandated topics, designate those topics on both applications independently.", status:"info" },
-      ].filter(Boolean),
-      action: hasEnduringComponent
-        ? isRSS
-          ? "Use one RSS series registration for all live + live-stream sessions. File a separate Enduring Material application each time a session recording is released publicly."
-          : "File two separate CME applications: (1) Live Activity covering in-person + live-stream, (2) Enduring Material for the public recording release. Both require independent faculty disclosures, evaluations, and PARS Activity IDs."
-        : isRSS
-          ? "Use one RSS series registration covering all live and live-streamed sessions."
-          : "File one CME application as a Live Activity covering both in-person and live-streamed audiences. If the recording is later released publicly, file a second Enduring application at that time.",
-    });
-  }
-
-  // ── Additional credits: ANCC, ACPE, AAPA, IPCE ──
+  const content = a.content_focus || [];
+  const hasPiCME = content.includes("pi_cme_framework");
+  const hasPatientSafety = content.includes("patient_safety");
+  const hasQI = content.includes("qi_activity") || hasPiCME;
   const profs = a.audience_professions || [];
-  if (profs.includes("nurses")) recs.additional.push({ id:"ancc", label:"ANCC Contact Hours (Nursing CE)", icon:"🏥", description:"Enables nurses to earn CE credit for their licensure.", action:"Requires Joint Accreditation OR a separately ANCC-accredited provider to co-provide.", priority:"high" });
-  if (profs.includes("pharmacists")) recs.additional.push({ id:"acpe", label:"ACPE Credit (Pharmacy CE)", icon:"💊", description:"Enables pharmacists to earn CPE credit.", action:"Requires Joint Accreditation status. Register activity in CPE Monitor.", priority:"high" });
-  if (profs.includes("pas")) recs.additional.push({ id:"aapa", label:"AAPA Category 1 CME Credit (PA Credit)", icon:"👩‍⚕️", description:"Enables Physician Associates to earn mandatory CME credit.", action:"Designate via your jointly accredited provider or AAPA-recognized provider.", priority:"medium" });
+  const planning = a.planning_process || [];
+  const followUp = a.follow_up || [];
+  const evalMethod = a.evaluation_plan;
 
-  const profCount = profs.filter(p=>!["physicians","residents_fellows","students"].includes(p)).length;
-  const hasIPCEPlanning = (a.planning_process||[]).includes("multi_prof");
-  if (profCount >= 1 && hasIPCEPlanning) recs.additional.push({ id:"ipce", label:"IPCE Credit Mark (Interprofessional CE)", icon:"🤝", description:"Awarded when activity is both planned and delivered interprofessionally.", action:"Requires Joint Accreditation AND interprofessional planning committee. Apply for Joint Accreditation designation via IPCE credit mark.", priority:"high" });
+  // ── APPLICATION TYPE ──
+  let appType = "", appNote = "", appAction = "";
 
-  // ── PI CME / MOC Part IV ──
+  if (isRSS) {
+    appType = "Regularly Scheduled Series (RSS)";
+    appNote = "A Regularly Scheduled Series is registered as a single series — not as individual events. Your OCME&LL representative will register the whole series with one application. Each individual session date needs to be logged, and attendance must be tracked per session.";
+    appAction = "Contact your OCME&LL representative to register the series before the first session. Keep attendance records for every individual session throughout the year.";
+  } else if (isRepeated) {
+    appType = "Live Course — Repeated (separate application per run)";
+    appNote = "Because you are running the same course multiple times, each run requires its own separate CME application — even if the content, faculty, and credit hours are completely identical. This is an ACCME requirement. Plan ahead: if you are running this course 4 times, you will need 4 separate applications.";
+    appAction = "Submit a separate application to OCME&LL for each individual run of the course. Keep separate attendance records and evaluation forms for each run.";
+  } else {
+    if (isLive) { appType = "Live Activity"; appNote = "A standard in-person event. One application covers all in-person attendees."; appAction = "Submit one CME application to OCME&LL for this event."; }
+    else if (isHybrid) { appType = "Live Activity (with online components)"; appNote = "See the application note below about hybrid events."; appAction = "Contact your OCME&LL representative — the number of applications needed depends on whether a recording will be publicly released."; }
+    else if (isEnduring) { appType = "Enduring Material (online/self-paced)"; appNote = "An enduring material is self-paced with no live component. The credit period typically cannot exceed 3 years, and learners must complete the evaluation before receiving credit."; appAction = "Submit an Enduring Material application to OCME&LL."; }
+    else if (isSimulation) { appType = "Live Activity — Simulation-Based"; appNote = "Simulation activities are accredited as live activities. One application covers each session."; appAction = "Submit a Live Activity application to OCME&LL for this session."; }
+  }
+  res.application.push({ appType, appNote, appAction });
+
+  // ── HYBRID APPLICATION NOTE ──
+  if (isHybrid) {
+    const parts = [
+      "In-person and live-streamed attendees on the day are covered under a single Live Activity application.",
+      hasPublicRecording ? "⚠️ Because the recording will be publicly released to anyone (beyond just registered attendees), this creates a SECOND activity — an Enduring Material — which needs its own separate CME application, its own evaluation, and its own credit designation. Alert your OCME&LL representative to this as early as possible." : null,
+      hasBundledRecording ? "A recording available only to people who already registered is generally treated as part of the original live activity and does not require a separate application — but confirm this with your OCME&LL representative if access will extend beyond 30 days after the event." : null,
+      isRepeated ? "Because this is a repeated course, each run will need its own application for both the live and (if applicable) the enduring recording component." : null,
+    ].filter(Boolean);
+    res.application.push({ isHybridNote:true, parts });
+  }
+
+  // ── ADDITIONAL CREDITS ──
+  if (profs.includes("nurses")) {
+    res.additionalCredits.push({ icon:"🏥", label:"Nursing CE (ANCC Contact Hours)", who:"For nurses (RN, NP, CRNA)", why:"Nurses have their own CE credit system — ANCC Contact Hours — separate from physician CME. If nurses are attending, they may be able to earn nursing CE credit, which counts toward their licensure requirements.", flag:"Ask your OCME&LL representative whether your organization can offer ANCC Contact Hours for this activity, or whether a jointly accredited provider is needed.", priority:"high" });
+  }
+  if (profs.includes("pharmacists")) {
+    res.additionalCredits.push({ icon:"💊", label:"Pharmacy CE (ACPE Credit)", who:"For pharmacists", why:"Pharmacists earn continuing pharmacy education (CPE) credit through ACPE — not physician CME. If pharmacists are attending, this is a separate credit type they need for licensure renewal.", flag:"Let your OCME&LL representative know pharmacists will attend. Offering ACPE credit typically requires Joint Accreditation status.", priority:"high" });
+  }
+  if (profs.includes("pas")) {
+    res.additionalCredits.push({ icon:"👩‍⚕️", label:"PA CME (AAPA Category 1 Credit)", who:"For Physician Assistants / Physician Associates", why:"PAs need AAPA Category 1 CME credit — this is different from standard AMA physician CME. Many accredited activities already qualify, but it needs to be officially designated.", flag:"Mention to your OCME&LL representative that PAs will attend and ask about designating AAPA Category 1 credit.", priority:"medium" });
+  }
+
+  // IPCE
+  const nonPhysProfs = profs.filter(p=>!["physicians","residents_fellows","students"].includes(p));
+  const hasInterprofPlanning = planning.includes("multi_prof");
+  if (nonPhysProfs.length >= 1 && hasInterprofPlanning) {
+    res.additionalCredits.push({ icon:"🤝", label:"IPCE Credit Mark (Interprofessional Continuing Education)", who:"For all professions attending together", why:"When an activity is planned AND delivered interprofessionally — meaning multiple professions are involved in both the planning committee and the learning itself — it can receive a special IPCE (Interprofessional Continuing Education) designation. This is a significant distinction that sets the activity apart.", flag:"Flag this to your OCME&LL representative. The IPCE credit mark requires Joint Accreditation and an interprofessional planning committee — both of which you appear to have.", priority:"high" });
+  } else if (nonPhysProfs.length >= 1 && !hasInterprofPlanning) {
+    res.flags.push("Multiple professions are attending, but the planning committee appears to be single-profession. If you can involve a nurse, pharmacist, or other professional in the planning process, you may qualify for the IPCE Credit Mark — a meaningful distinction. Mention this possibility to your OCME&LL representative.");
+  }
+
+  // PI CME
   if (hasPiCME || hasQI) {
-    recs.additional.push({
-      id:"pi_cme",
-      label:"Performance Improvement CME (PI CME) / MOC Part IV",
+    res.additionalCredits.push({
       icon:"📈",
-      description: hasPiCME
-        ? "You have indicated this activity uses the PI CME framework. Three-stage AMA model: Stage A (learning about best practices), Stage B (implementing change in practice), Stage C (measuring and evaluating change). Earns MOC Part IV credit with ABIM, ABA, and ABP."
-        : "Quality Improvement content may qualify for PI CME designation if structured using the AMA three-stage framework. Consider designing the activity accordingly to unlock MOC Part IV credit.",
-      action:"Design the activity using the AMA PI CME three-stage framework. Register for MOC Part IV credit in ACCME PARS for applicable boards. Requires structured data collection to demonstrate practice change.",
+      label:"Performance Improvement CME (PI CME)",
+      who:"For activities structured around improving clinical practice",
+      why: hasPiCME
+        ? "You've indicated this is a structured PI CME activity using the AMA's three-stage framework: Stage A (learning what best practice looks like), Stage B (implementing a change in practice), Stage C (measuring whether the change worked). This is a powerful credit designation that also earns MOC Part IV credit with several boards."
+        : "Your activity has quality improvement content — it may be possible to structure it as a Performance Improvement CME (PI CME) activity, which earns a higher-value credit designation and counts toward MOC Part IV for several boards.",
+      flag:"Discuss this with your OCME&LL representative. PI CME requires a specific three-stage design but is highly valued and can significantly increase the impact of your activity.",
       priority:"high"
     });
   }
 
-  // ── MOC ──
-  const specialtyMocMap = { internal_med:["abim"], anesthesiology:["aba"], family_med:["abfm"], pediatrics:["abp"], psychiatry_neuro:["abpn"], surgery:["abos","abs","abts"], ob_gyn:["abog"], radiology:["abr"], emergency_med:["abem"], multi_specialty:["abim","abfm","abp","abpn"], other_specialty:[] };
-  const applicableBoards = specialtyMocMap[a.target_specialty] || [];
-  const evalMethod = a.evaluation_plan;
-  const hasPrePost = evalMethod === "pre_post";
-  const hasOutcomesEval = ["performance_outcome","patient_outcome"].includes(evalMethod);
-  const hasSelfAssessment = evalMethod === "self_assessment_format";
-  const hasSurveyOnly = evalMethod === "survey_only";
-
-  applicableBoards.forEach(boardId => {
-    const board = MOC_BOARDS.find(b=>b.id===boardId);
-    if (!board) return;
-    const conditions = [];
-    const alerts = [];
-
-    // RSS/Repeated-specific MOC note
-    if (isRSS) {
-      conditions.push({ type:"info", text:`ℹ️ RSS MOC Reporting: Diplomates accumulate ${board.name} MOC credit per session attended. Report completions per session in PARS using the series Activity ID. Confirm minimum session requirements with ${board.name} if applicable.` });
-    } else if (isRepeated) {
-      conditions.push({ type:"info", text:`ℹ️ Repeated Course MOC Reporting: Each run of the course has its own PARS Activity ID. Report learner completions separately per run. Diplomates attending multiple runs may earn MOC credit for each run.` });
-    }
-
-    if (board.id === "abim") {
-      if (hasPrePost || hasOutcomesEval) conditions.push({ type:"ok", text:"✅ Evaluation method meets ABIM MOC requirements (pre/post assessment or outcomes measure present)" });
-      else if (hasSelfAssessment) conditions.push({ type:"ok", text:"✅ Self-assessment component present — qualifies for ABIM MOC" });
-      else alerts.push({ type:"warn", text:"⚠️ ABIM REQUIRES a pre/post knowledge assessment or outcomes measure — a satisfaction survey alone does NOT qualify. You must add a pre/post test or outcomes evaluation." });
-      if (board.peerReview) conditions.push({ type:"info", text:"ℹ️ Peer review by ≥2 reviewers (not the authors) is required for ABIM MOC designation." });
-      conditions.push({ type:"info", text:"ℹ️ A minimum participation threshold must be defined and feedback provided to learners after the activity." });
-    } else if (board.id === "aba") {
-      conditions.push({ type:"ok", text:"✅ ABA MOCA 2.0® Lifelong Learning credit does NOT require a pre/post test — standard ACCME-accredited CME with any evaluation qualifies." });
-      if (hasSurveyOnly) conditions.push({ type:"ok", text:"✅ A satisfaction survey is acceptable for standard MOCA 2.0® Lifelong Learning credit." });
-      if (hasPatientSafety) conditions.push({ type:"highlight", text:"🛡️ Patient Safety CME Credit available — tag in PARS and select ABA MOCA Content Outline topic area. Learners self-report using 8-digit ABA ID (begins with '3')." });
-      else conditions.push({ type:"info", text:"ℹ️ If this activity includes cross-disciplinary patient safety themes, it could qualify for the separate ABA MOCA 2.0® Patient Safety CME Credit designation." });
-      if (hasQI) conditions.push({ type:"highlight", text:"📊 MOCA 2.0® Type 4 Quality Improvement credit also available — register for MOC Part IV in PARS." });
-    } else if (board.id === "abfm") {
-      conditions.push({ type:"ok", text:"✅ ABFM does not require a pre/post test. Standard accredited CME qualifies automatically." });
-      if (!isRSS && !isRepeated) conditions.push({ type:"info", text:"ℹ️ For multi-session activities, ABFM requires diplomates to complete ALL sessions to collect MOC points — partial credit is not awarded." });
-    } else if (board.id === "abp") {
-      conditions.push({ type:"ok", text:"✅ ABP does not require a pre/post test for standard Lifelong Learning MOC credit." });
-      conditions.push({ type:"info", text:"ℹ️ ABP Part II points are automatically transmitted to diplomate portfolios within 30 days of provider reporting completion in PARS." });
-      if (hasPatientSafety) conditions.push({ type:"highlight", text:"🛡️ ABP Patient Safety credit available — tag appropriately in PARS." });
-    } else if (board.id === "abpn") {
-      conditions.push({ type:"ok", text:"✅ ABPN does not require a pre/post test for standard CME credit toward the 90-credit/3-year requirement." });
-      if (hasSelfAssessment) conditions.push({ type:"highlight", text:"⭐ Self-assessment component present — may satisfy part of the 16-credit self-assessment requirement within ABPN's CC cycle." });
-      else conditions.push({ type:"info", text:"ℹ️ 16 of ABPN's 90 required credits per 3-year cycle must include a self-assessment component. Adding one would broaden this activity's value." });
-      if (hasPatientSafety) conditions.push({ type:"highlight", text:"🛡️ ABPN requires one patient safety activity per diplomate career — this activity may qualify if it meets ABPN-approved criteria." });
-    } else {
-      conditions.push({ type:"ok", text:`✅ ${board.name} does not require a pre/post test for standard CME credit. Standard accredited CME qualifies.` });
-    }
-
-    recs.moc.push({ id:`moc_${boardId}`, board:board.name, full:board.full, mocLabel:board.mocLabel, mocaName:board.mocaName, conditions, alerts, action:board.action, pars:board.pars, patientSafetyEligible:hasPatientSafety&&board.patientSafety, qiEligible:hasQI });
-  });
-
-  // ABA Patient Safety as standalone additional credit
+  // ABA Patient Safety
   if (a.target_specialty === "anesthesiology" && hasPatientSafety) {
-    recs.additional.push({ id:"aba_ps", label:"ABA MOCA 2.0® Patient Safety CME Credit", icon:"🛡️", description:"A distinct designation within MOCA 2.0® for activities addressing cross-disciplinary patient safety themes. Separate from — and in addition to — standard MOCA Lifelong Learning credit.", action:"Tag the activity as Patient Safety CME in ACCME PARS. Select ≥1 topic area from the ABA MOCA Content Outline. Learners must self-report using their 8-digit ABA ID (begins with '3') at theaba.org.", priority:"high" });
+    res.additionalCredits.push({ icon:"🛡️", label:"ABA MOCA 2.0® Patient Safety CME Credit", who:"For anesthesiology audiences", why:"For anesthesiology activities that include cross-disciplinary patient safety content, there is a separate ABA Patient Safety CME designation available — in addition to standard MOCA 2.0® credit. Anesthesiologists self-report this credit using their 8-digit ABA ID.", flag:"Flag this to your OCME&LL representative and make sure the patient safety content is clearly described in your application. This is a separate, additional credit on top of standard MOCA credit.", priority:"high" });
   }
 
-  // ── Commendation ──
-  const allTriggers = [...contentFocus, ...(a.planning_process||[]), ...(a.follow_up||[]), a.delivery_format, a.evaluation_plan].filter(Boolean);
-  COMMENDATION_CRITERIA.forEach(cat => {
-    cat.criteria.forEach(c => {
-      if (c.triggers.some(t=>allTriggers.includes(t))) recs.commendation.push({ ...c, category:cat.category, color:cat.color, required:cat.required });
-    });
+  // ── BOARD CREDIT (MOC) ──
+  const mocInfo = SPECIALTY_MOC[a.target_specialty];
+  if (mocInfo && mocInfo.boards) {
+    const needsRobustEval = a.target_specialty === "internal_med";
+    const hasRobustEval = ["pre_post","performance_outcome","patient_outcome","self_assessment_format"].includes(evalMethod);
+    res.boardCredit = {
+      boards: mocInfo.boards,
+      flag: mocInfo.flag,
+      evalWarning: needsRobustEval && !hasRobustEval
+        ? "Important: for ABIM MOC credit specifically, a satisfaction survey alone is not sufficient. A pre/post knowledge assessment or outcomes measurement is required. Ask your OCME&LL representative about adding this to your evaluation plan."
+        : null,
+    };
+  }
+
+  // ── COMMENDATION ──
+  const allTriggers = [...content, ...planning, ...followUp, fmt, evalMethod].filter(Boolean);
+  COMMENDATION.forEach(cat => {
+    const matched = cat.criteria.filter(cr => cr.triggers.some(tr => allTriggers.includes(tr)));
+    if (matched.length > 0) {
+      res.commendation.push({ ...cat, matched });
+    }
   });
 
-  // ── Michigan topics ──
-  const miTopics = a.michigan_topics || [];
-  if (miTopics.includes("mi_ethics")) recs.michigan.push({ label:"Medical Ethics", hours:"≥ 1 hr", note:"Tag/flag in MiCME submission as Ethics credit. Required for Michigan physician licensure renewal.", icon:"⚕️" });
-  if (miTopics.includes("mi_pain")) recs.michigan.push({ label:"Pain & Symptom Management", hours:"≥ 3 hrs (incl. ≥1 hr controlled substances)", note:"Designate in MiCME. At least 1 hour must explicitly cover controlled substance prescribing.", icon:"💊" });
-  if (miTopics.includes("mi_implicit_bias")) recs.michigan.push({ label:"Implicit Bias Training", hours:"1 hr per year of license cycle", note:"Document separately in MiCME. Fulfills requirement for Michigan license renewal cycles starting June 1, 2021.", icon:"🤝" });
-  if (miTopics.includes("mi_opioid")) recs.michigan.push({ label:"Opioid/Controlled Substance Awareness", hours:"Required every renewal period (from May 28, 2024)", note:"Required for prescribers/dispensers. Flag in MiCME application. Confirm with LARA at renewal.", icon:"🚨" });
-  if (miTopics.includes("mi_human_trafficking")) recs.michigan.push({ label:"Human Trafficking Identification", hours:"One-time training", note:"One-time requirement per physician career. Document completion in license renewal records.", icon:"🔴" });
+  // ── MICHIGAN ──
+  const mi = a.michigan_topics || [];
+  if (mi.includes("mi_ethics")) res.michigan.push({ icon:"⚕️", label:"Medical Ethics", req:"At least 1 hour required per 3-year cycle", note:"Designate this on your application and mention it to your OCME&LL representative so it is flagged correctly in the system." });
+  if (mi.includes("mi_pain")) res.michigan.push({ icon:"💊", label:"Pain & Symptom Management", req:"At least 3 hours required per cycle (including at least 1 hour on controlled substances)", note:"Make sure your application clearly describes the controlled substance content. Your OCME&LL representative will flag this appropriately." });
+  if (mi.includes("mi_implicit_bias")) res.michigan.push({ icon:"🤝", label:"Implicit Bias Training", req:"1 hour per year of the license cycle (required since June 2021)", note:"Designate this on your application. Your OCME&LL representative will ensure it is correctly coded." });
+  if (mi.includes("mi_opioid")) res.michigan.push({ icon:"🚨", label:"Opioid / Controlled Substance Awareness", req:"Required every renewal period for prescribers and dispensers (since May 2024)", note:"Flag this explicitly on your application. This is a prescriber requirement and must be clearly designated." });
+  if (mi.includes("mi_human_trafficking")) res.michigan.push({ icon:"🔴", label:"Human Trafficking Identification", req:"One-time requirement for Michigan physicians", note:"Flag this on your application. Physicians who have not yet completed this one-time requirement can use your activity to fulfill it." });
 
-  // ── Warnings ──
-  if (!["pre_post","performance_outcome","patient_outcome","self_assessment_format"].includes(evalMethod) && applicableBoards.includes("abim")) {
-    recs.warnings.push("ABIM MOC requires a pre/post knowledge assessment or outcomes measure — a satisfaction survey alone does not qualify. See the MOC section for details.");
-  }
-  if (profCount >= 1 && !hasIPCEPlanning) recs.warnings.push("Multiple professions will attend, but the planning committee is not interprofessional. Consider adding non-physician planners to qualify for IPCE designation.");
-  if (isRSS && isEnduring) recs.warnings.push("An RSS of enduring materials is an uncommon format. Confirm with your accredited provider whether this should be registered as one Enduring Material series or individual applications per module.");
-  if (isRepeated && isEnduring) recs.warnings.push("A repeated enduring material is typically registered as a single activity in PARS, not as separate entries per site. Confirm the correct approach with your accredited provider.");
-  if (isRepeated) recs.warnings.push("Reminder: each run of a repeated course counts as a separate activity in PARS and toward your program size. Different runs of the same content do NOT count as separate examples for several ACCME commendation criteria.");
-  if (a.target_specialty === "anesthesiology" && !hasPatientSafety) recs.warnings.push("For ABA MOCA 2.0®: if any content addresses cross-disciplinary patient safety topics, consider applying for the separate ABA Patient Safety CME Credit designation in addition to standard MOCA Lifelong Learning credit.");
-  if (isHybrid && hasEnduringComponent) recs.warnings.push(isRSS ? "Your hybrid RSS includes publicly released recordings — each public recording release requires a separate Enduring Material CME application." : isRepeated ? "Each run of your hybrid repeated course that includes a public recording release requires TWO applications per run: one Live Activity and one Enduring Material." : "Your hybrid activity includes a public recording release — this requires TWO separate CME applications: one Live Activity and one Enduring Material.");
-  if (isHybrid && !hybridComponents.length) recs.warnings.push("Please confirm which hybrid components your activity includes — this affects whether one or two CME applications are required.");
+  // ── GENERAL FLAGS ──
+  if (planning.includes("needs_assessment")) res.flags.push("You conducted a formal needs assessment — include this documentation with your application. It strengthens your application and supports several commendation criteria.");
+  if (evalMethod === "survey_only" && (hasQI || hasPatientSafety)) res.flags.push("Your activity covers quality improvement or patient safety content, but your evaluation is a satisfaction survey only. A pre/post knowledge test or outcomes measure would unlock additional credit types and commendation opportunities — worth discussing with your OCME&LL representative.");
+  if (isRepeated) res.flags.push("Remember: each run of this course needs its own separate application, even if the content is identical. Plan your application timeline accordingly — submit each application before that run's date.");
+  if (isRSS && isHybrid && hasPublicRecording) res.flags.push("For your RSS: each time a session recording is publicly released, a separate Enduring Material application is needed for that recording. Discuss the workflow for this with your OCME&LL representative upfront.");
 
-  return recs;
+  return res;
 }
 
-// ─── UI COMPONENTS ────────────────────────────────────────────────────────────
-
-const colors = { bg:"#0b1929", surface:"rgba(255,255,255,0.04)", border:"rgba(255,255,255,0.09)", accent:"#2563eb", accentLight:"rgba(37,99,235,0.15)", text:"#dce8f5", muted:"#6b8aaa", heading:"#ffffff" };
-
-function Badge({ children, color=colors.accent }) {
-  return <span style={{ display:"inline-block", background:color+"22", color, border:`1px solid ${color}44`, borderRadius:"12px", padding:"2px 10px", fontSize:"11px", fontWeight:"700", letterSpacing:"0.4px", textTransform:"uppercase" }}>{children}</span>;
-}
-
-function Card({ children, style={}, accent }) {
-  return <div style={{ background:colors.surface, border:`1px solid ${accent?accent+"33":colors.border}`, borderRadius:"14px", padding:"20px 24px", borderLeft:accent?`4px solid ${accent}`:undefined, ...style }}>{children}</div>;
-}
-
+// ─── UI HELPERS ───────────────────────────────────────────────────────────────
 function getVisibleQuestions(answers) {
   return QUESTIONS.filter(q => !q.showIf || q.showIf(answers));
 }
 
+function Chip({ children, color, bg, border }) {
+  return (
+    <span style={{ display:"inline-flex", alignItems:"center", gap:"4px", background:bg||tk.brandLight, color:color||tk.brand, border:`1px solid ${border||tk.brandBorder}`, borderRadius:"20px", padding:"2px 10px", fontSize:"12px", fontWeight:"600", whiteSpace:"nowrap" }}>
+      {children}
+    </span>
+  );
+}
+
+function SectionHeader({ icon, title, color, count }) {
+  return (
+    <div style={{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"16px" }}>
+      <span style={{ fontSize:"22px" }}>{icon}</span>
+      <h3 style={{ fontSize:"17px", fontWeight:"700", color:tk.text, flex:1 }}>{title}</h3>
+      {count > 0 && <Chip color={color} bg={color+"18"} border={color+"44"}>{count} item{count!==1?"s":""}</Chip>}
+    </div>
+  );
+}
+
+function InfoBox({ children, color, bg, border, icon }) {
+  return (
+    <div style={{ background:bg, border:`1px solid ${border}`, borderRadius:"10px", padding:"14px 16px", display:"flex", gap:"10px", alignItems:"flex-start" }}>
+      {icon && <span style={{ fontSize:"18px", flexShrink:0 }}>{icon}</span>}
+      <div style={{ fontSize:"14px", color:tk.textMid, lineHeight:"1.65" }}>{children}</div>
+    </div>
+  );
+}
+
+function Card({ children, style={}, accent, accentWidth=4 }) {
+  return (
+    <div style={{ background:tk.white, border:`1px solid ${tk.border}`, borderRadius:"12px", padding:"20px", borderLeft: accent?`${accentWidth}px solid ${accent}`:undefined, boxShadow:"0 1px 3px rgba(0,0,0,0.06)", ...style }}>
+      {children}
+    </div>
+  );
+}
+
+// ─── QUESTION STEP ─────────────────────────────────────────────────────────────
 function QuestionStep({ q, value, onChange, onNext, onBack, stepNum, total }) {
   const isMulti = q.type === "multi";
   const selected = isMulti ? (value || []) : value;
   const canProceed = isMulti ? (selected && selected.length > 0) : !!selected;
+
   const toggle = (v) => {
     if (!isMulti) { onChange(v); return; }
-    if (selected.includes(v)) onChange(selected.filter(x=>x!==v));
+    if (selected.includes(v)) onChange(selected.filter(x => x !== v));
     else onChange([...selected, v]);
   };
+
+  const progress = Math.round((stepNum / total) * 100);
+
   return (
-    <div style={{ animation:"fadeIn 0.25s ease" }}>
-      <div style={{ marginBottom:"6px" }}><span style={{ fontSize:"12px", color:colors.muted, letterSpacing:"1px", textTransform:"uppercase" }}>Step {stepNum} of {total}</span></div>
-      <h2 style={{ margin:"0 0 6px", fontSize:"20px", fontWeight:"700", color:colors.heading, lineHeight:1.3 }}>{q.question}</h2>
-      {q.hint && <p style={{ margin:"0 0 20px", fontSize:"13px", color:colors.muted, lineHeight:1.6 }}>{q.hint}</p>}
-      {isMulti && <p style={{ margin:"0 0 12px", fontSize:"12px", color:colors.accent }}>Select all that apply</p>}
-      <div style={{ display:"flex", flexDirection:"column", gap:"8px", marginBottom:"24px" }}>
+    <div style={{ animation:"fadeUp 0.2s ease" }}>
+      {/* Progress */}
+      <div style={{ marginBottom:"24px" }}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"8px" }}>
+          <span style={{ fontSize:"13px", color:tk.textLight, fontWeight:"500" }}>Question {stepNum} of {total}</span>
+          <span style={{ fontSize:"13px", color:tk.brand, fontWeight:"600" }}>{progress}% complete</span>
+        </div>
+        <div style={{ height:"6px", background:tk.border, borderRadius:"3px", overflow:"hidden" }}>
+          <div style={{ height:"100%", width:`${progress}%`, background:`linear-gradient(90deg,${tk.brand},#3b82f6)`, borderRadius:"3px", transition:"width 0.4s ease" }} />
+        </div>
+      </div>
+
+      {/* Question */}
+      <h2 style={{ fontSize:"21px", fontWeight:"700", color:tk.text, marginBottom:"6px", lineHeight:"1.3" }}>{q.question}</h2>
+      {q.hint && <p style={{ fontSize:"14px", color:tk.textLight, marginBottom:"20px", lineHeight:"1.6" }}>{q.hint}</p>}
+      {isMulti && (
+        <div style={{ display:"inline-flex", alignItems:"center", gap:"6px", background:tk.brandLight, color:tk.brand, border:`1px solid ${tk.brandBorder}`, borderRadius:"8px", padding:"5px 12px", fontSize:"13px", fontWeight:"600", marginBottom:"14px" }}>
+          ☑ Select all that apply
+        </div>
+      )}
+
+      {/* Options */}
+      <div style={{ display:"flex", flexDirection:"column", gap:"8px", marginBottom:"28px" }}>
         {q.options.map(opt => {
           const active = isMulti ? selected.includes(opt.value) : selected === opt.value;
-          const isHighlighted = opt.highlight && !active;
           return (
-            <button key={opt.value} onClick={()=>toggle(opt.value)} style={{ display:"flex", alignItems:"center", gap:"12px", padding:"13px 16px", borderRadius:"10px", border:active?`2px solid ${colors.accent}`:isHighlighted?`2px solid rgba(245,158,11,0.4)`:`2px solid ${colors.border}`, background:active?colors.accentLight:isHighlighted?"rgba(245,158,11,0.06)":"rgba(255,255,255,0.02)", color:active?"#a5c4f5":colors.text, cursor:"pointer", fontFamily:"inherit", fontSize:"14px", textAlign:"left", transition:"all 0.15s" }}>
-              <span style={{ width:"18px", height:"18px", borderRadius:isMulti?"4px":"50%", border:`2px solid ${active?colors.accent:colors.muted}`, background:active?colors.accent:"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, fontSize:"10px", color:"#fff" }}>{active?"✓":""}</span>
-              {opt.icon && <span style={{ fontSize:"16px" }}>{opt.icon}</span>}
-              <span style={{ flex:1 }}>{opt.label}</span>
-              {isHighlighted && <span style={{ fontSize:"10px", color:"#f59e0b", border:"1px solid rgba(245,158,11,0.35)", borderRadius:"8px", padding:"1px 7px", flexShrink:0 }}>NEW</span>}
+            <button key={opt.value} onClick={() => toggle(opt.value)} style={{
+              display:"flex", alignItems:"center", gap:"14px", padding:"14px 16px",
+              borderRadius:"10px", textAlign:"left", cursor:"pointer", fontFamily:"inherit",
+              border: active ? `2px solid ${tk.brand}` : opt.highlight && !active ? `2px solid #f59e0b` : `2px solid ${tk.border}`,
+              background: active ? tk.brandLight : opt.highlight && !active ? "#fffbeb" : tk.white,
+              transition:"all 0.15s", boxShadow: active ? `0 0 0 3px ${tk.brand}22` : "none",
+            }}>
+              {/* Checkbox/radio */}
+              <div style={{ width:"20px", height:"20px", borderRadius:isMulti?"5px":"50%", border:`2px solid ${active?tk.brand:tk.textLight}`, background:active?tk.brand:"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.15s" }}>
+                {active && <span style={{ color:"white", fontSize:"12px", fontWeight:"700" }}>✓</span>}
+              </div>
+              {opt.icon && <span style={{ fontSize:"20px", flexShrink:0 }}>{opt.icon}</span>}
+              <div style={{ flex:1 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:"8px", flexWrap:"wrap" }}>
+                  <span style={{ fontSize:"15px", fontWeight:"600", color: active ? tk.brand : tk.text }}>{opt.label}</span>
+                  {opt.tag && <span style={{ fontSize:"11px", fontWeight:"700", color: active ? tk.brand : tk.textLight, background: active ? tk.brandLight : "#f1f5f9", border:`1px solid ${active ? tk.brandBorder : tk.border}`, borderRadius:"5px", padding:"1px 7px", letterSpacing:"0.2px", whiteSpace:"nowrap" }}>{opt.tag}</span>}
+                </div>
+                {opt.sublabel && <div style={{ fontSize:"13px", color:tk.textLight, marginTop:"3px", lineHeight:"1.4" }}>{opt.sublabel}</div>}
+              </div>
+              {opt.highlight && !active && (
+                <span style={{ fontSize:"11px", color:"#b45309", background:"#fef3c7", border:"1px solid #fde68a", borderRadius:"6px", padding:"2px 8px", fontWeight:"700", flexShrink:0 }}>NOTE</span>
+              )}
             </button>
           );
         })}
       </div>
-      <div style={{ display:"flex", gap:"12px" }}>
-        {onBack && <button onClick={onBack} style={{ padding:"10px 20px", borderRadius:"8px", border:`1px solid ${colors.border}`, background:"transparent", color:colors.muted, cursor:"pointer", fontFamily:"inherit", fontSize:"14px" }}>← Back</button>}
-        <button onClick={onNext} disabled={!canProceed} style={{ padding:"10px 28px", borderRadius:"8px", border:"none", background:canProceed?"linear-gradient(135deg,#2563eb,#1d4ed8)":"rgba(37,99,235,0.2)", color:canProceed?"#fff":colors.muted, cursor:canProceed?"pointer":"not-allowed", fontFamily:"inherit", fontSize:"14px", fontWeight:"700", boxShadow:canProceed?"0 4px 16px rgba(37,99,235,0.35)":"none", transition:"all 0.15s" }}>
-          {stepNum === total ? "See My Recommendations →" : "Next →"}
+
+      {/* Nav */}
+      <div style={{ display:"flex", gap:"10px" }}>
+        {onBack && (
+          <button onClick={onBack} style={{ padding:"11px 20px", borderRadius:"8px", border:`2px solid ${tk.border}`, background:tk.white, color:tk.textMid, cursor:"pointer", fontFamily:"inherit", fontSize:"14px", fontWeight:"600" }}>
+            ← Back
+          </button>
+        )}
+        <button onClick={onNext} disabled={!canProceed} style={{
+          padding:"11px 28px", borderRadius:"8px", border:"none",
+          background: canProceed ? `linear-gradient(135deg,${tk.brand},#2563eb)` : tk.border,
+          color: canProceed ? tk.white : tk.textLight,
+          cursor: canProceed ? "pointer" : "not-allowed",
+          fontFamily:"inherit", fontSize:"15px", fontWeight:"700",
+          boxShadow: canProceed ? "0 4px 12px rgba(29,78,216,0.3)" : "none",
+          transition:"all 0.15s",
+        }}>
+          {stepNum === total ? "See My Results →" : "Next →"}
         </button>
       </div>
     </div>
   );
 }
 
-function NoticeCard({ r }) {
-  const statusColors = { required:"#2563eb", advisory:"#f59e0b", info:colors.muted };
-  const statusBg = { required:"rgba(37,99,235,0.1)", advisory:"rgba(245,158,11,0.08)", info:"rgba(255,255,255,0.03)" };
-  const statusBorder = { required:"rgba(37,99,235,0.25)", advisory:"rgba(245,158,11,0.25)", info:colors.border };
+// ─── RESULTS ──────────────────────────────────────────────────────────────────
+function ResultsPanel({ answers, onRestart }) {
+  const res = deriveResults(answers);
+  const [tab, setTab] = useState("application");
 
-  let accentColor, headerBg, headerBorder, titleColor, subtitleColor, actionBg, actionColor, icon, title;
-  if (r.isRSSNotice) {
-    accentColor="#06b6d4"; headerBg="rgba(6,182,212,0.1)"; headerBorder="rgba(6,182,212,0.2)"; titleColor="#22d3ee"; subtitleColor="#0891b2"; actionBg="rgba(6,182,212,0.08)"; actionColor="#67e8f9"; icon="📅"; title="RSS Application Requirements";
-  } else if (r.isRepeatedNotice) {
-    accentColor="#a855f7"; headerBg="rgba(168,85,247,0.1)"; headerBorder="rgba(168,85,247,0.2)"; titleColor="#d8b4fe"; subtitleColor="#9333ea"; actionBg="rgba(168,85,247,0.08)"; actionColor="#e9d5ff"; icon="🔁"; title="Repeated Course — Application Requirements";
-  } else {
-    accentColor="#f59e0b"; headerBg="rgba(245,158,11,0.1)"; headerBorder="rgba(245,158,11,0.2)"; titleColor="#fbbf24"; subtitleColor="#d97706"; actionBg="rgba(245,158,11,0.08)"; actionColor="#fcd34d"; icon="🔀"; title="Hybrid Activity — Application Strategy";
-  }
+  const tabs = [
+    { id:"application", label:"Your Application", icon:"📋" },
+    { id:"credits", label:"Additional Credits", icon:"➕", count:res.additionalCredits.length },
+    { id:"board", label:"Board Credit (MOC)", icon:"🎓", show: !!res.boardCredit },
+    { id:"commendation", label:"Commendation", icon:"⭐", count:res.commendation.reduce((n,c)=>n+c.matched.length,0) },
+    { id:"michigan", label:"Michigan Topics", icon:"🏔️", count:res.michigan.length },
+  ].filter(t => t.show !== false);
+
+  const tabStyle = (id) => ({
+    padding:"9px 16px", borderRadius:"8px", border:"none", cursor:"pointer",
+    fontFamily:"inherit", fontSize:"13px", fontWeight:"600", display:"flex", alignItems:"center", gap:"6px",
+    background: tab === id ? tk.brand : tk.white,
+    color: tab === id ? tk.white : tk.textMid,
+    boxShadow: tab === id ? "0 2px 8px rgba(29,78,216,0.25)" : `0 1px 3px rgba(0,0,0,0.08)`,
+    transition:"all 0.15s",
+  });
 
   return (
-    <Card accent={accentColor} style={{ padding:"0", overflow:"hidden" }}>
-      <div style={{ background:headerBg, borderBottom:`1px solid ${headerBorder}`, padding:"14px 20px", display:"flex", alignItems:"center", gap:"10px" }}>
-        <span style={{ fontSize:"20px" }}>{icon}</span>
-        <div style={{ flex:1 }}>
-          <div style={{ fontWeight:"700", fontSize:"15px", color:titleColor }}>{title}</div>
-          {r.components && <div style={{ fontSize:"12px", color:subtitleColor, marginTop:"2px" }}>Components: {r.components.join(" + ")}</div>}
+    <div style={{ animation:"fadeUp 0.3s ease" }}>
+      {/* Header */}
+      <div style={{ marginBottom:"24px" }}>
+        <div style={{ display:"inline-flex", alignItems:"center", gap:"6px", background:tk.greenLight, color:tk.green, border:`1px solid ${tk.greenBorder}`, borderRadius:"20px", padding:"4px 14px", fontSize:"13px", fontWeight:"700", marginBottom:"12px" }}>
+          ✓ Your results are ready
         </div>
-        <Badge color={accentColor}>Required</Badge>
+        <h2 style={{ fontSize:"24px", fontWeight:"800", color:tk.text, marginBottom:"6px" }}>Your CME Application Guide</h2>
+        <p style={{ fontSize:"14px", color:tk.textLight, lineHeight:"1.6", maxWidth:"560px" }}>
+          Use this as your checklist when completing your application and when speaking with your <strong>Office of CME & Lifelong Learning (OCME&LL)</strong> representative.
+        </p>
       </div>
-      <div style={{ padding:"16px 20px" }}>
-        <p style={{ margin:"0 0 14px", fontSize:"13px", color:colors.text, lineHeight:1.7 }}>{r.description}</p>
-        <div style={{ display:"flex", flexDirection:"column", gap:"10px" }}>
-          {r.items.map((item,i)=>(
-            <div key={i} style={{ background:statusBg[item.status], border:`1px solid ${statusBorder[item.status]}`, borderRadius:"10px", padding:"12px 16px" }}>
-              <div style={{ display:"flex", gap:"8px", alignItems:"flex-start" }}>
-                <span style={{ fontSize:"15px", flexShrink:0, marginTop:"1px" }}>{item.icon}</span>
-                <div>
-                  <div style={{ fontWeight:"700", fontSize:"13px", color:statusColors[item.status], marginBottom:"4px" }}>{item.heading}</div>
-                  <div style={{ fontSize:"12.5px", color:colors.text, lineHeight:1.65 }}>{item.body}</div>
-                </div>
-              </div>
-            </div>
+
+      {/* General flags */}
+      {res.flags.length > 0 && (
+        <div style={{ marginBottom:"20px", display:"flex", flexDirection:"column", gap:"8px" }}>
+          {res.flags.map((f,i) => (
+            <InfoBox key={i} icon="⚠️" bg={tk.amberLight} border={tk.amberBorder} color={tk.amber}>
+              <strong>Heads up:</strong> {f}
+            </InfoBox>
           ))}
         </div>
-        <div style={{ background:actionBg, borderRadius:"8px", padding:"10px 14px", fontSize:"12px", color:actionColor, marginTop:"14px" }}>
-          <strong>Action:</strong> {r.action}
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-function ResultsPanel({ answers, onRestart }) {
-  const recs = deriveRecommendations(answers);
-  const [openSection, setOpenSection] = useState("primary");
-  const sections = [
-    { id:"primary", label:"Required Credits", icon:"📋", count:recs.primary.length },
-    { id:"additional", label:"Additional Credit Types", icon:"➕", count:recs.additional.length },
-    { id:"moc", label:"MOC / Board Certification", icon:"🎓", count:recs.moc.length },
-    { id:"commendation", label:"Commendation Opportunities", icon:"⭐", count:recs.commendation.length },
-    { id:"michigan", label:"Michigan-Specific Topics", icon:"🏔️", count:recs.michigan.length },
-  ].filter(s=>s.count>0);
-
-  return (
-    <div style={{ animation:"fadeIn 0.3s ease" }}>
-      <div style={{ marginBottom:"24px" }}>
-        <Badge color="#22c55e">Application Navigator Results</Badge>
-        <h2 style={{ margin:"10px 0 6px", fontSize:"22px", fontWeight:"700", color:colors.heading }}>Your CME Credit Roadmap</h2>
-        <p style={{ margin:0, fontSize:"13px", color:colors.muted }}>Based on your activity details — apply for all items below when submitting your CME application.</p>
-      </div>
-
-      {recs.warnings.length > 0 && (
-        <Card accent="#f59e0b" style={{ marginBottom:"20px" }}>
-          <div style={{ display:"flex", gap:"10px", alignItems:"flex-start" }}>
-            <span style={{ fontSize:"20px" }}>⚠️</span>
-            <div>
-              <div style={{ fontWeight:"700", color:"#fbbf24", marginBottom:"6px", fontSize:"13px", textTransform:"uppercase", letterSpacing:"0.5px" }}>Action Needed</div>
-              {recs.warnings.map((w,i)=><p key={i} style={{ margin:"0 0 4px", fontSize:"13px", color:"#fcd34d", lineHeight:1.5 }}>• {w}</p>)}
-            </div>
-          </div>
-        </Card>
       )}
 
-      <div style={{ display:"flex", gap:"6px", flexWrap:"wrap", marginBottom:"20px" }}>
-        {sections.map(s=>(
-          <button key={s.id} onClick={()=>setOpenSection(s.id)} style={{ padding:"7px 14px", borderRadius:"20px", border:openSection===s.id?`2px solid ${colors.accent}`:`2px solid ${colors.border}`, background:openSection===s.id?colors.accentLight:"rgba(255,255,255,0.02)", color:openSection===s.id?"#93c5fd":colors.muted, cursor:"pointer", fontFamily:"inherit", fontSize:"12px", fontWeight:openSection===s.id?"700":"400", display:"flex", alignItems:"center", gap:"6px" }}>
-            {s.icon} {s.label}
-            <span style={{ background:openSection===s.id?colors.accent:colors.muted+"44", color:"#fff", borderRadius:"10px", padding:"0 6px", fontSize:"11px" }}>{s.count}</span>
+      {/* Tabs */}
+      <div style={{ display:"flex", gap:"6px", flexWrap:"wrap", marginBottom:"20px" }} className="no-print">
+        {tabs.map(t => (
+          <button key={t.id} onClick={() => setTab(t.id)} style={tabStyle(t.id)}>
+            {t.icon} {t.label}
+            {t.count > 0 && (
+              <span style={{ background: tab===t.id ? "rgba(255,255,255,0.3)" : tk.brandLight, color: tab===t.id ? "white" : tk.brand, borderRadius:"10px", padding:"0 7px", fontSize:"11px", fontWeight:"700" }}>{t.count}</span>
+            )}
           </button>
         ))}
       </div>
 
-      {openSection === "primary" && (
-        <div style={{ display:"flex", flexDirection:"column", gap:"14px" }}>
-          {recs.primary.map(r => {
-            if (r.isHybridNotice || r.isRSSNotice || r.isRepeatedNotice) return <NoticeCard key={r.id} r={r} />;
-            return (
-              <Card key={r.id} accent="#22c55e">
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:"6px" }}>
+      {/* ── APPLICATION TAB ── */}
+      {tab === "application" && (
+        <div style={{ display:"flex", flexDirection:"column", gap:"16px", animation:"fadeUp 0.2s ease" }}>
+          {res.application.map((item, i) => {
+            if (item.isHybridNote) return (
+              <Card key={i} accent={tk.amber}>
+                <div style={{ display:"flex", gap:"10px", alignItems:"flex-start", marginBottom:"12px" }}>
+                  <span style={{ fontSize:"20px" }}>🔀</span>
                   <div>
-                    <div style={{ fontWeight:"700", fontSize:"15px", color:colors.heading }}>✅ {r.label}</div>
-                    {r.accmeType && <div style={{ fontSize:"12px", color:"#86efac", marginTop:"3px" }}>ACCME Type: <strong>{r.accmeType}</strong></div>}
+                    <div style={{ fontWeight:"700", fontSize:"16px", color:tk.text, marginBottom:"4px" }}>Hybrid Activity: Application Note</div>
+                    <div style={{ fontSize:"13px", color:tk.textLight }}>Read this carefully — it may affect how many applications you need to submit.</div>
                   </div>
-                  <Badge color="#22c55e">Required</Badge>
                 </div>
-                <p style={{ margin:"0 0 6px", fontSize:"13px", color:colors.text, lineHeight:1.6 }}>{r.description}</p>
-                {r.accmeNote && <p style={{ margin:"0 0 8px", fontSize:"12.5px", color:colors.muted, lineHeight:1.6, fontStyle:"italic" }}>{r.accmeNote}</p>}
-                <div style={{ background:"rgba(34,197,94,0.07)", borderRadius:"8px", padding:"10px 14px", fontSize:"12px", color:"#86efac" }}><strong>Action:</strong> {r.action}</div>
+                <div style={{ display:"flex", flexDirection:"column", gap:"8px" }}>
+                  {item.parts.map((p,j) => (
+                    <div key={j} style={{ fontSize:"14px", color:tk.textMid, lineHeight:"1.65", padding:"10px 14px", background:tk.amberLight, border:`1px solid ${tk.amberBorder}`, borderRadius:"8px" }}>
+                      {p}
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            );
+            return (
+              <Card key={i} accent={tk.brand}>
+                <div style={{ marginBottom:"10px" }}>
+                  <Chip>Application Type</Chip>
+                  <div style={{ fontSize:"18px", fontWeight:"700", color:tk.text, marginTop:"8px" }}>{item.appType}</div>
+                </div>
+                <p style={{ fontSize:"14px", color:tk.textMid, lineHeight:"1.65", marginBottom:"14px" }}>{item.appNote}</p>
+                <InfoBox icon="✅" bg={tk.greenLight} border={tk.greenBorder}>
+                  <strong>Your action:</strong> {item.appAction}
+                </InfoBox>
               </Card>
             );
           })}
-        </div>
-      )}
 
-      {openSection === "additional" && (
-        <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
-          {recs.additional.length === 0 && <Card><p style={{ color:colors.muted, margin:0 }}>No additional credit types identified based on your activity profile.</p></Card>}
-          {recs.additional.map(r=>(
-            <Card key={r.id} accent={r.priority==="high"?"#f59e0b":colors.accent}>
-              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:"6px" }}>
-                <div style={{ fontWeight:"700", fontSize:"15px", color:colors.heading }}>{r.icon} {r.label}</div>
-                <Badge color={r.priority==="high"?"#f59e0b":colors.accent}>{r.priority==="high"?"Recommended":"Optional"}</Badge>
+          {/* Base credit */}
+          <Card accent={tk.green}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", flexWrap:"wrap", gap:"8px", marginBottom:"10px" }}>
+              <div>
+                <Chip color={tk.green} bg={tk.greenLight} border={tk.greenBorder}>Always Required</Chip>
+                <div style={{ fontSize:"17px", fontWeight:"700", color:tk.text, marginTop:"8px" }}>AMA PRA Category 1 Credit™</div>
               </div>
-              <p style={{ margin:"0 0 8px", fontSize:"13px", color:colors.text, lineHeight:1.6 }}>{r.description}</p>
-              <div style={{ background:"rgba(37,99,235,0.08)", borderRadius:"8px", padding:"10px 14px", fontSize:"12px", color:"#93c5fd" }}><strong>Action:</strong> {r.action}</div>
-            </Card>
-          ))}
-        </div>
-      )}
+            </div>
+            <p style={{ fontSize:"14px", color:tk.textMid, lineHeight:"1.65", marginBottom:"10px" }}>
+              This is the standard physician CME credit — it is required on every accredited CME application. Your OCME&LL representative will designate this automatically. The number of credits equals the number of educational hours (e.g. a 2-hour activity = 2.0 AMA PRA Category 1 Credits™).
+            </p>
+            <InfoBox icon="📝" bg={tk.brandLight} border={tk.brandBorder}>
+              Make sure your application accurately states the total educational contact hours — not including breaks, meals, or administrative time.
+            </InfoBox>
+          </Card>
 
-      {openSection === "moc" && (
-        <div>
-          <p style={{ fontSize:"13px", color:colors.muted, marginBottom:"16px", lineHeight:1.6 }}>Based on your target specialty, the following board MOC programs are applicable. Register activities in <strong style={{ color:colors.text }}>ACCME PARS</strong> — no separate board application required for PARS-participating boards.</p>
-          <div style={{ display:"flex", flexDirection:"column", gap:"16px" }}>
-            {recs.moc.map(r=>(
-              <Card key={r.id} accent="#7c3aed">
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:"4px" }}>
-                  <div style={{ fontWeight:"700", fontSize:"15px", color:colors.heading }}>🎓 {r.board} — {r.mocLabel}{r.mocaName&&<span style={{ marginLeft:"8px", fontSize:"12px", color:"#c4b5fd", fontWeight:"400" }}>({r.mocaName})</span>}</div>
-                  <div style={{ display:"flex", gap:"6px", flexWrap:"wrap", justifyContent:"flex-end" }}>
-                    {r.pars && <Badge color="#7c3aed">PARS</Badge>}
-                    {r.patientSafetyEligible && <Badge color="#ef4444">Patient Safety</Badge>}
-                    {r.qiEligible && <Badge color="#06b6d4">MOC Part IV</Badge>}
-                  </div>
-                </div>
-                <div style={{ fontSize:"12px", color:colors.muted, marginBottom:"14px" }}>{r.full}</div>
-                {r.alerts&&r.alerts.map((alert,i)=><div key={i} style={{ background:"rgba(245,158,11,0.1)", border:"1px solid rgba(245,158,11,0.3)", borderRadius:"8px", padding:"10px 14px", marginBottom:"8px", fontSize:"13px", color:"#fcd34d", lineHeight:1.6 }}>{alert.text}</div>)}
-                <div style={{ display:"flex", flexDirection:"column", gap:"6px", marginBottom:"12px" }}>
-                  {r.conditions&&r.conditions.map((c,i)=>{
-                    const bgMap={ok:"rgba(34,197,94,0.08)",warn:"rgba(245,158,11,0.08)",info:"rgba(255,255,255,0.04)",highlight:"rgba(124,58,237,0.1)"};
-                    const colorMap={ok:"#86efac",warn:"#fcd34d",info:colors.muted,highlight:"#c4b5fd"};
-                    const borderMap={ok:"rgba(34,197,94,0.2)",warn:"rgba(245,158,11,0.2)",info:colors.border,highlight:"rgba(124,58,237,0.3)"};
-                    return <div key={i} style={{ background:bgMap[c.type]||bgMap.info, border:`1px solid ${borderMap[c.type]||borderMap.info}`, borderRadius:"8px", padding:"9px 13px", fontSize:"13px", color:colorMap[c.type]||colorMap.info, lineHeight:1.6 }}>{c.text}</div>;
-                  })}
-                </div>
-                <div style={{ background:"rgba(124,58,237,0.08)", borderRadius:"8px", padding:"10px 14px", fontSize:"12px", color:"#c4b5fd" }}><strong>Action:</strong> {r.action}</div>
-              </Card>
+          {/* Checklist */}
+          <Card>
+            <div style={{ fontWeight:"700", fontSize:"15px", color:tk.text, marginBottom:"14px" }}>📋 Application Checklist</div>
+            {[
+              { done:true, text:"Submit CME application to OCME&LL (AMA PRA Category 1 Credit™ required)" },
+              { done:res.additionalCredits.length>0, text: res.additionalCredits.length>0 ? `Ask about additional credit types: ${res.additionalCredits.map(c=>c.label).join(", ")}` : "No additional credit types identified" },
+              { done:!!res.boardCredit, text: res.boardCredit ? `Flag board credit (MOC) for: ${res.boardCredit.boards}` : "No board credit applicable" },
+              { done:(answers.planning_process||[]).includes("needs_assessment"), text:"Attach your needs assessment or gap analysis if you conducted one" },
+              { done:!["survey_only"].includes(answers.evaluation_plan), text:"Confirm your evaluation plan — a pre/post test or outcomes measure unlocks more credit types" },
+              { done:res.michigan.length>0, text: res.michigan.length>0 ? `Flag Michigan mandatory topics: ${res.michigan.map(m=>m.label).join(", ")}` : "No Michigan mandatory topics identified" },
+              { done:res.commendation.length>0, text:"Share commendation-eligible features with your OCME&LL representative" },
+              { done:true, text:"Collect completed faculty disclosure forms before the activity date" },
+            ].map((item,i,arr) => (
+              <div key={i} style={{ display:"flex", gap:"12px", alignItems:"flex-start", padding:"10px 0", borderBottom:i<arr.length-1?`1px solid ${tk.border}`:"none" }}>
+                <span style={{ fontSize:"16px", flexShrink:0, marginTop:"1px" }}>{item.done?"✅":"⬜"}</span>
+                <span style={{ fontSize:"14px", color:item.done?tk.textMid:tk.textLight, lineHeight:"1.5" }}>{item.text}</span>
+              </div>
             ))}
-          </div>
+          </Card>
         </div>
       )}
 
-      {openSection === "commendation" && (
-        <div>
-          <Card style={{ marginBottom:"16px", background:"rgba(220,38,38,0.06)", borderColor:"rgba(220,38,38,0.2)" }}>
-            <div style={{ fontSize:"13px", color:"#fca5a5", lineHeight:1.7 }}>
-              <strong style={{ color:"#f87171" }}>ℹ About Accreditation with Commendation:</strong> To qualify, your organization must comply with <strong>8 criteria</strong> total — any 7 from the menu plus at least <strong>1 from "Achieves Outcomes" (C36–C38)</strong>. These are organizational criteria, not individual activity requirements — but activities like this one can serve as evidence.
+      {/* ── ADDITIONAL CREDITS TAB ── */}
+      {tab === "credits" && (
+        <div style={{ display:"flex", flexDirection:"column", gap:"14px", animation:"fadeUp 0.2s ease" }}>
+          {res.additionalCredits.length === 0 ? (
+            <Card>
+              <p style={{ color:tk.textLight, fontSize:"14px" }}>No additional credit types were identified based on your activity profile. Standard AMA PRA Category 1 Credit™ covers your activity.</p>
+            </Card>
+          ) : (
+            <>
+              <InfoBox icon="ℹ️" bg={tk.brandLight} border={tk.brandBorder}>
+                The credits below are available in addition to standard AMA PRA Category 1 Credit™. They require your OCME&LL representative to take specific steps — raise each one with them when you submit your application.
+              </InfoBox>
+              {res.additionalCredits.map(cr => (
+                <Card key={cr.id} accent={cr.priority==="high"?tk.amber:tk.brand}>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", flexWrap:"wrap", gap:"8px", marginBottom:"10px" }}>
+                    <div style={{ fontSize:"17px", fontWeight:"700", color:tk.text }}>{cr.icon} {cr.label}</div>
+                    <Chip color={cr.priority==="high"?tk.amber:tk.brand} bg={cr.priority==="high"?tk.amberLight:tk.brandLight} border={cr.priority==="high"?tk.amberBorder:tk.brandBorder}>
+                      {cr.priority==="high"?"Recommended":"Optional"}
+                    </Chip>
+                  </div>
+                  <div style={{ fontSize:"13px", color:tk.brand, fontWeight:"600", marginBottom:"6px" }}>{cr.who}</div>
+                  <p style={{ fontSize:"14px", color:tk.textMid, lineHeight:"1.65", marginBottom:"12px" }}>{cr.why}</p>
+                  <InfoBox icon="💬" bg={tk.greenLight} border={tk.greenBorder}>
+                    <strong>Flag to OCME&LL:</strong> {cr.flag}
+                  </InfoBox>
+                </Card>
+              ))}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* ── BOARD CREDIT TAB ── */}
+      {tab === "board" && res.boardCredit && (
+        <div style={{ display:"flex", flexDirection:"column", gap:"14px", animation:"fadeUp 0.2s ease" }}>
+          <InfoBox icon="🎓" bg={tk.purpleLight} border={tk.purpleBorder}>
+            <strong>What is MOC / Board Credit?</strong> Many physicians are required to maintain their board certification through Maintenance of Certification (MOC) programs. Accredited CME activities can count toward these requirements — but only if the activity is registered with the relevant board. Your OCME&LL representative handles this registration — you just need to flag that it's relevant.
+          </InfoBox>
+          <Card accent={tk.purple}>
+            <div style={{ marginBottom:"10px" }}>
+              <Chip color={tk.purple} bg={tk.purpleLight} border={tk.purpleBorder}>Applicable Board(s)</Chip>
+              <div style={{ fontSize:"18px", fontWeight:"700", color:tk.text, marginTop:"8px" }}>{res.boardCredit.boards}</div>
+            </div>
+            <p style={{ fontSize:"14px", color:tk.textMid, lineHeight:"1.65", marginBottom:"12px" }}>{res.boardCredit.flag}</p>
+            {res.boardCredit.evalWarning && (
+              <InfoBox icon="⚠️" bg={tk.amberLight} border={tk.amberBorder}>
+                {res.boardCredit.evalWarning}
+              </InfoBox>
+            )}
+          </Card>
+          <Card>
+            <div style={{ fontWeight:"700", fontSize:"15px", color:tk.text, marginBottom:"10px" }}>What you need to do</div>
+            <div style={{ display:"flex", flexDirection:"column", gap:"8px" }}>
+              {[
+                "When you submit your application, let your OCME&LL representative know that you want to register for MOC credit.",
+                "You do not need to contact the board directly — your OCME&LL representative manages the registration.",
+                "At the event, collect physicians' board ID numbers if your OCME&LL representative requests them (varies by board).",
+                "After the activity, your OCME&LL representative will report completions to the relevant board(s).",
+              ].map((step,i) => (
+                <div key={i} style={{ display:"flex", gap:"10px", alignItems:"flex-start" }}>
+                  <div style={{ width:"22px", height:"22px", borderRadius:"50%", background:tk.purpleLight, border:`1px solid ${tk.purpleBorder}`, color:tk.purple, fontSize:"12px", fontWeight:"700", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, marginTop:"1px" }}>{i+1}</div>
+                  <span style={{ fontSize:"14px", color:tk.textMid, lineHeight:"1.6" }}>{step}</span>
+                </div>
+              ))}
             </div>
           </Card>
-          {COMMENDATION_CRITERIA.map(cat=>{
-            const matched = recs.commendation.filter(c=>c.category===cat.category);
-            if (matched.length===0) return null;
-            return (
-              <div key={cat.category} style={{ marginBottom:"18px" }}>
+        </div>
+      )}
+
+      {/* ── COMMENDATION TAB ── */}
+      {tab === "commendation" && (
+        <div style={{ display:"flex", flexDirection:"column", gap:"16px", animation:"fadeUp 0.2s ease" }}>
+          <InfoBox icon="⭐" bg={tk.amberLight} border={tk.amberBorder}>
+            <strong>What is Accreditation with Commendation?</strong> Your organization can earn a distinction called "Accreditation with Commendation" by demonstrating excellence across its CME program. Individual activities contribute evidence toward this goal. When your activity qualifies for one of the criteria below, flagging it to your OCME&LL representative helps build that portfolio. You don't need to do anything special — just make sure they know about it.
+            <div style={{ marginTop:"8px" }}>
+              <strong>★ Note:</strong> At least one activity in your organization's portfolio must show measurable real-world impact (the <em>Demonstrating Real-World Impact</em> criteria below). If your activity qualifies, this is especially important to flag.
+            </div>
+          </InfoBox>
+
+          {res.commendation.length === 0 ? (
+            <Card><p style={{ color:tk.textLight, fontSize:"14px" }}>No commendation criteria were matched based on your answers. Consider whether any of the planning or follow-up options you didn't select might apply.</p></Card>
+          ) : (
+            res.commendation.map(cat => (
+              <div key={cat.category}>
                 <div style={{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"10px" }}>
-                  <div style={{ width:"10px", height:"10px", borderRadius:"50%", background:cat.color }} />
-                  <span style={{ fontSize:"12px", fontWeight:"700", color:cat.color, textTransform:"uppercase", letterSpacing:"0.5px" }}>{cat.category}</span>
-                  {cat.required && <Badge color="#dc2626">Must include ≥1 from this category</Badge>}
+                  <span style={{ fontSize:"18px" }}>{cat.icon}</span>
+                  <div style={{ fontSize:"15px", fontWeight:"700", color:cat.color }}>{cat.category}</div>
+                  {cat.required && <Chip color={tk.rose} bg={tk.roseLight} border={tk.roseBorder}>★ High Priority</Chip>}
                 </div>
-                <div style={{ display:"flex", flexDirection:"column", gap:"8px" }}>
-                  {matched.map(c=>(
-                    <Card key={c.id} accent={cat.color} style={{ padding:"14px 18px" }}>
-                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
+                <div style={{ fontSize:"13px", color:tk.textLight, marginBottom:"10px", lineHeight:"1.6", paddingLeft:"26px" }}>{cat.whyItMatters}</div>
+                <div style={{ display:"flex", flexDirection:"column", gap:"8px", paddingLeft:"0" }}>
+                  {cat.matched.map(cr => (
+                    <Card key={cr.code} accent={cat.color} accentWidth={3} style={{ padding:"14px 16px" }}>
+                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:"8px" }}>
                         <div>
-                          <span style={{ fontWeight:"700", color:colors.heading, fontSize:"14px" }}>⭐ {c.code}: {c.label}</span>
-                          <p style={{ margin:"4px 0 0", fontSize:"13px", color:colors.text, lineHeight:1.5 }}>{c.desc}</p>
+                          <div style={{ fontSize:"11px", fontWeight:"700", color:cat.color, textTransform:"uppercase", letterSpacing:"0.5px", marginBottom:"3px" }}>Criterion {cr.code}</div>
+                          <div style={{ fontSize:"15px", fontWeight:"700", color:tk.text, marginBottom:"4px" }}>{cr.label}</div>
+                          <p style={{ fontSize:"13px", color:tk.textMid, lineHeight:"1.55" }}>{cr.desc}</p>
                         </div>
-                        <Badge color={cat.color}>Eligible</Badge>
+                        <Chip color={cat.color} bg={cat.colorLight} border={cat.colorBorder}>Flag this</Chip>
                       </div>
                     </Card>
                   ))}
                 </div>
               </div>
-            );
-          })}
+            ))
+          )}
         </div>
       )}
 
-      {openSection === "michigan" && recs.michigan.length > 0 && (
-        <div>
-          <Card style={{ marginBottom:"16px", background:"rgba(37,99,235,0.06)", borderColor:"rgba(37,99,235,0.2)" }}>
-            <div style={{ fontSize:"13px", color:"#93c5fd", lineHeight:1.7 }}>
-              <strong>Michigan Board of Medicine Requirement:</strong> These topics must be designated in MiCME at submission. Physicians must complete 150 CME credits per 3-year cycle (≥75 AMA Category 1). The items below fulfill specific mandatory topic requirements within that cycle.
-            </div>
-          </Card>
-          <div style={{ display:"flex", flexDirection:"column", gap:"10px" }}>
-            {recs.michigan.map((m,i)=>(
-              <Card key={i} accent="#2563eb">
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:"6px" }}>
-                  <div style={{ fontWeight:"700", fontSize:"15px", color:colors.heading }}>{m.icon} {m.label}</div>
-                  <Badge color="#2563eb">{m.hours}</Badge>
+      {/* ── MICHIGAN TAB ── */}
+      {tab === "michigan" && (
+        <div style={{ display:"flex", flexDirection:"column", gap:"14px", animation:"fadeUp 0.2s ease" }}>
+          <InfoBox icon="🏔️" bg={tk.brandLight} border={tk.brandBorder}>
+            <strong>Michigan Mandatory CME Topics:</strong> Michigan physicians must complete specific hours in each of these areas within their 3-year licensure cycle. If your activity covers any of these topics, flag them on your application — your OCME&LL representative will ensure they are designated correctly, and Michigan physicians will be able to use your activity to meet their mandatory requirements.
+          </InfoBox>
+          {res.michigan.length === 0 ? (
+            <Card><p style={{ color:tk.textLight, fontSize:"14px" }}>No Michigan mandatory topics were identified for this activity.</p></Card>
+          ) : (
+            res.michigan.map((m,i) => (
+              <Card key={i} accent={tk.brand}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", flexWrap:"wrap", gap:"8px", marginBottom:"8px" }}>
+                  <div style={{ fontSize:"17px", fontWeight:"700", color:tk.text }}>{m.icon} {m.label}</div>
+                  <Chip>{m.req}</Chip>
                 </div>
-                <p style={{ margin:0, fontSize:"13px", color:colors.text, lineHeight:1.6 }}>{m.note}</p>
+                <InfoBox icon="💬" bg={tk.greenLight} border={tk.greenBorder}><strong>Flag to OCME&LL:</strong> {m.note}</InfoBox>
               </Card>
-            ))}
-          </div>
+            ))
+          )}
         </div>
       )}
 
-      <div style={{ marginTop:"28px" }}>
-        <div style={{ fontSize:"13px", fontWeight:"700", color:colors.muted, textTransform:"uppercase", letterSpacing:"0.5px", marginBottom:"14px" }}>Application Submission Checklist</div>
-        <Card>
-          {[
-            { done:true, text:"Submit base CME application (AMA PRA Category 1 Credit) via MiCME or CloudCME" },
-            { done:recs.additional.length>0, text:`Apply for additional credits: ${recs.additional.map(r=>r.label).join(", ")||"N/A"}` },
-            { done:recs.moc.length>0, text:`Register for MOC in ACCME PARS: ${recs.moc.map(r=>r.board).join(", ")||"N/A"}` },
-            { done:answers.planning_process?.includes("needs_assessment"), text:"Attach needs assessment / gap analysis documentation" },
-            { done:!["survey_only"].includes(answers.evaluation_plan), text:"Include pre/post assessment or outcomes measure in evaluation plan" },
-            { done:recs.michigan.length>0, text:`Flag Michigan mandatory topics in MiCME: ${recs.michigan.map(m=>m.label).join(", ")||"N/A"}` },
-            { done:recs.commendation.length>0, text:"Preserve documentation of activity as evidence toward Commendation criteria" },
-            { done:true, text:"Collect and submit faculty disclosure forms prior to activity" },
-          ].map((item,i)=>(
-            <div key={i} style={{ display:"flex", gap:"10px", alignItems:"flex-start", padding:"8px 0", borderBottom:i<7?`1px solid ${colors.border}`:"none" }}>
-              <span style={{ fontSize:"14px", flexShrink:0, marginTop:"1px" }}>{item.done?"✅":"⬜"}</span>
-              <span style={{ fontSize:"13px", color:item.done?colors.text:colors.muted, lineHeight:1.5 }}>{item.text}</span>
-            </div>
-          ))}
-        </Card>
-      </div>
-
-      <div style={{ marginTop:"24px", display:"flex", gap:"12px" }}>
-        <button onClick={onRestart} style={{ padding:"10px 22px", borderRadius:"8px", border:`1px solid ${colors.border}`, background:"transparent", color:colors.muted, cursor:"pointer", fontFamily:"inherit", fontSize:"14px" }}>← Start Over</button>
-        <button onClick={()=>window.print()} style={{ padding:"10px 22px", borderRadius:"8px", border:`1px solid ${colors.accent}44`, background:colors.accentLight, color:"#93c5fd", cursor:"pointer", fontFamily:"inherit", fontSize:"14px" }}>🖨 Print / Save Results</button>
+      {/* Footer */}
+      <div style={{ marginTop:"28px", display:"flex", gap:"10px", flexWrap:"wrap" }} className="no-print">
+        <button onClick={onRestart} style={{ padding:"10px 20px", borderRadius:"8px", border:`2px solid ${tk.border}`, background:tk.white, color:tk.textMid, cursor:"pointer", fontFamily:"inherit", fontSize:"14px", fontWeight:"600" }}>← Start Over</button>
+        <button onClick={() => window.print()} style={{ padding:"10px 20px", borderRadius:"8px", border:`2px solid ${tk.brandBorder}`, background:tk.brandLight, color:tk.brand, cursor:"pointer", fontFamily:"inherit", fontSize:"14px", fontWeight:"600" }}>🖨 Print This Page</button>
       </div>
     </div>
   );
 }
 
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
-
 function CMENavigator() {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState({});
   const [done, setDone] = useState(false);
 
   const visibleQs = getVisibleQuestions(answers);
-  const currentQ = visibleQs[step-1];
+  const currentQ = visibleQs[step - 1];
 
-  const handleNext = () => { if (step===visibleQs.length) { setDone(true); return; } setStep(s=>s+1); };
-  const handleBack = () => setStep(s=>s-1);
+  const handleNext = () => {
+    if (step === visibleQs.length) { setDone(true); return; }
+    setStep(s => s + 1);
+  };
+  const handleBack = () => setStep(s => s - 1);
   const handleRestart = () => { setStep(0); setAnswers({}); setDone(false); };
 
   const handleChange = (qId, value) => {
     setAnswers(prev => {
-      const next = {...prev, [qId]:value};
-      // Clear hybrid components if format changes away from hybrid
-      if (qId==="delivery_format" && value!=="hybrid") delete next.hybrid_components;
+      const next = { ...prev, [qId]: value };
+      if (qId === "delivery_format" && value !== "hybrid") delete next.hybrid_components;
       return next;
     });
   };
 
-  const isRSS = answers.activity_structure === "rss";
-  const isRepeated = answers.activity_structure === "repeated";
-  const isHybrid = answers.delivery_format === "hybrid";
-
   return (
-    <div style={{ minHeight:"100vh", background:"linear-gradient(160deg,#070f1f 0%,#0b1929 60%,#0d1f36 100%)", fontFamily:"'Georgia','Times New Roman',serif", color:colors.text }}>
-      <div style={{ borderBottom:`1px solid ${colors.border}`, padding:"16px 32px", display:"flex", alignItems:"center", gap:"14px", background:"rgba(0,0,0,0.2)", backdropFilter:"blur(8px)", position:"sticky", top:0, zIndex:50 }}>
-        <div style={{ width:"34px", height:"34px", background:"linear-gradient(135deg,#2563eb,#1e40af)", borderRadius:"8px", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"18px" }}>⚕</div>
+    <div style={{ minHeight:"100vh", background:tk.bg }}>
+      {/* Header */}
+      <div style={{ background:`linear-gradient(135deg,${tk.brandDark},${tk.brand})`, padding:"16px 24px", display:"flex", alignItems:"center", gap:"14px", boxShadow:"0 2px 8px rgba(0,0,0,0.15)" }}>
+        <div style={{ width:"38px", height:"38px", background:"rgba(255,255,255,0.15)", borderRadius:"10px", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"20px", flexShrink:0 }}>⚕</div>
         <div>
-          <div style={{ fontWeight:"700", fontSize:"16px", color:"#fff", letterSpacing:"-0.2px" }}>CME Credit Application Navigator</div>
-          <div style={{ fontSize:"11px", color:colors.muted, letterSpacing:"0.4px" }}>MiCME · CloudCME · ACCME · MOC · IPCE</div>
+          <div style={{ fontWeight:"800", fontSize:"16px", color:"#fff", letterSpacing:"-0.2px" }}>CME Credit Application Navigator</div>
+          <div style={{ fontSize:"12px", color:"rgba(255,255,255,0.7)", marginTop:"1px" }}>Office of CME & Lifelong Learning (OCME&LL)</div>
         </div>
         {step > 0 && !done && (
-          <div style={{ marginLeft:"auto", display:"flex", alignItems:"center", gap:"8px" }}>
-            {isRSS && <span style={{ fontSize:"11px", color:"#22d3ee", border:"1px solid rgba(6,182,212,0.3)", borderRadius:"10px", padding:"2px 8px", background:"rgba(6,182,212,0.08)" }}>📅 RSS</span>}
-            {isRepeated && <span style={{ fontSize:"11px", color:"#d8b4fe", border:"1px solid rgba(168,85,247,0.3)", borderRadius:"10px", padding:"2px 8px", background:"rgba(168,85,247,0.08)" }}>🔁 Repeated</span>}
-            {isHybrid && <span style={{ fontSize:"11px", color:"#f59e0b", border:"1px solid rgba(245,158,11,0.3)", borderRadius:"10px", padding:"2px 8px", background:"rgba(245,158,11,0.08)" }}>🔀 Hybrid</span>}
-            <div style={{ display:"flex", gap:"4px" }}>
-              {visibleQs.map((_,i)=><div key={i} style={{ width:"22px", height:"4px", borderRadius:"2px", background:i<step?colors.accent:colors.border, transition:"all 0.3s" }} />)}
-            </div>
+          <div style={{ marginLeft:"auto", fontSize:"13px", color:"rgba(255,255,255,0.8)", fontWeight:"600" }} className="no-print">
+            Step {step} of {visibleQs.length}
           </div>
         )}
       </div>
 
-      <div style={{ maxWidth:"680px", margin:"0 auto", padding:"40px 24px" }}>
+      {/* Content */}
+      <div style={{ maxWidth:"680px", margin:"0 auto", padding:"32px 20px 60px" }}>
+
+        {/* Welcome */}
         {step === 0 && (
-          <div style={{ animation:"fadeIn 0.4s ease", textAlign:"center" }}>
-            <div style={{ fontSize:"48px", marginBottom:"20px" }}>🧭</div>
-            <h1 style={{ margin:"0 0 14px", fontSize:"28px", fontWeight:"700", color:"#fff", lineHeight:1.2 }}>CME Credit Application Navigator</h1>
-            <p style={{ margin:"0 auto 16px", fontSize:"15px", color:colors.text, lineHeight:1.8, maxWidth:"520px" }}>Answer a few focused questions about your planned activity. The navigator will tell you exactly which CME credits to apply for — including designations you may not have considered.</p>
-            <div style={{ display:"flex", flexWrap:"wrap", justifyContent:"center", gap:"8px", marginBottom:"32px" }}>
-              {["AMA PRA Category 1","MOC / MOCA 2.0®","IPCE / Joint Accreditation","ANCC · ACPE · AAPA","PI CME / MOC Part IV","ABA Patient Safety","Single · Repeated · RSS","Hybrid Activities","ACCME Commendation","Michigan Mandatory Topics"].map(t=>(
-                <span key={t} style={{ fontSize:"11px", color:colors.muted, border:`1px solid ${colors.border}`, borderRadius:"12px", padding:"3px 10px" }}>{t}</span>
-              ))}
+          <div style={{ animation:"fadeUp 0.35s ease" }}>
+            <div style={{ textAlign:"center", marginBottom:"32px" }}>
+              <div style={{ fontSize:"52px", marginBottom:"16px" }}>🧭</div>
+              <h1 style={{ fontSize:"28px", fontWeight:"800", color:tk.text, marginBottom:"12px", lineHeight:"1.2" }}>
+                CME Credit Application Navigator
+              </h1>
+              <p style={{ fontSize:"15px", color:tk.textMid, lineHeight:"1.8", maxWidth:"500px", margin:"0 auto 20px" }}>
+                Answer a few questions about your planned activity and we'll tell you exactly what to include on your application — and what to flag to your OCME&LL representative.
+              </p>
+              <div style={{ display:"flex", flexWrap:"wrap", justifyContent:"center", gap:"6px", marginBottom:"28px" }}>
+                {["What application type you need","Which credits to apply for","Board certification (MOC) credit","Nursing, pharmacy & PA credit","Commendation criteria to flag","Michigan mandatory topics"].map(t => (
+                  <span key={t} style={{ fontSize:"12px", color:tk.textLight, background:tk.white, border:`1px solid ${tk.border}`, borderRadius:"20px", padding:"4px 12px" }}>{t}</span>
+                ))}
+              </div>
             </div>
-            <button onClick={()=>setStep(1)} style={{ padding:"14px 40px", borderRadius:"10px", border:"none", background:"linear-gradient(135deg,#2563eb,#1d4ed8)", color:"#fff", fontSize:"16px", fontWeight:"700", cursor:"pointer", fontFamily:"inherit", boxShadow:"0 6px 24px rgba(37,99,235,0.45)" }}>
-              Begin Navigation →
-            </button>
+
+            <Card style={{ marginBottom:"16px", background:`linear-gradient(135deg,${tk.brandLight},#e0e7ff)`, border:`1px solid ${tk.brandBorder}` }}>
+              <div style={{ display:"flex", gap:"12px", alignItems:"flex-start" }}>
+                <span style={{ fontSize:"22px" }}>👋</span>
+                <div>
+                  <div style={{ fontWeight:"700", fontSize:"15px", color:tk.brandDark, marginBottom:"4px" }}>Designed for Educational Planners and Administrators</div>
+                  <p style={{ fontSize:"13px", color:tk.textMid, lineHeight:"1.65" }}>
+                    Whether you are completing the application yourself or working with your <strong>OCME&LL representative</strong>, this tool will help you understand what credits to apply for, what information to include, and what to flag to get the most out of your activity.
+                  </p>
+                </div>
+              </div>
+            </Card>
+
+            <div style={{ textAlign:"center" }}>
+              <button onClick={() => setStep(1)} style={{
+                padding:"14px 44px", borderRadius:"10px", border:"none",
+                background:`linear-gradient(135deg,${tk.brandDark},${tk.brand})`,
+                color:"#fff", fontSize:"16px", fontWeight:"700",
+                cursor:"pointer", fontFamily:"inherit",
+                boxShadow:"0 6px 20px rgba(29,78,216,0.35)",
+              }}>
+                Get Started →
+              </button>
+              <div style={{ fontSize:"13px", color:tk.textLight, marginTop:"10px" }}>Takes about 3 minutes · 10 questions</div>
+            </div>
           </div>
         )}
+
+        {/* Questions */}
         {step > 0 && !done && currentQ && (
-          <QuestionStep q={currentQ} value={answers[currentQ.id]} onChange={v=>handleChange(currentQ.id,v)} onNext={handleNext} onBack={step>1?handleBack:null} stepNum={step} total={visibleQs.length} />
+          <QuestionStep
+            q={currentQ}
+            value={answers[currentQ.id]}
+            onChange={v => handleChange(currentQ.id, v)}
+            onNext={handleNext}
+            onBack={step > 1 ? handleBack : null}
+            stepNum={step}
+            total={visibleQs.length}
+          />
         )}
+
+        {/* Results */}
         {done && <ResultsPanel answers={answers} onRestart={handleRestart} />}
       </div>
     </div>
