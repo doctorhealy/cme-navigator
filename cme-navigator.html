@@ -181,18 +181,22 @@ const QUESTIONS = [
     hint:"Be generous — select everything that fits. The more you flag now, the more credit opportunities your OCME&LL representative can identify.",
     type:"multi",
     options:[
-      { value:"patient_safety", label:"🛡️ Patient safety or preventing medical errors" },
-      { value:"qi_activity", label:"📊 Quality improvement or reducing variation in care" },
-      { value:"pi_cme_framework", label:"📈 A structured performance improvement program (PI CME — Stages A, B, C)" },
       { value:"clinical_knowledge", label:"🧬 Clinical knowledge update — new evidence, guidelines, or treatments" },
       { value:"procedural", label:"🔧 A specific procedure, technique, or clinical skill" },
+      { divider:"High-value designations — unlock additional credit types" },
+      { value:"patient_safety", label:"🛡️ Patient safety or preventing medical errors" },
+      { value:"qi_activity", label:"📊 Quality improvement or reducing variation in care" },
+      { divider:"Audience & communication focus" },
       { value:"communication", label:"💬 Communication skills — with patients, families, or care teams" },
+      { value:"mental_health", label:"🧠 Mental health or behavioral health" },
+      { divider:"Population health & equity" },
       { value:"population_health", label:"🌍 Population health, public health, or community health" },
       { value:"sdoh", label:"⚖️ Health equity, disparities, or social determinants of health" },
-      { value:"research", label:"🔬 Research methods, evidence-based practice, or scholarly work" },
-      { value:"ethics", label:"⚕️ Medical ethics" },
+      { divider:"Specialty topics — also satisfy Michigan mandatory requirements" },
       { value:"pain_management", label:"💊 Pain management, symptom management, or opioid prescribing" },
-      { value:"mental_health", label:"🧠 Mental health or behavioral health" },
+      { value:"ethics", label:"⚕️ Medical ethics" },
+      { divider:"Other" },
+      { value:"research", label:"🔬 Research methods, evidence-based practice, or scholarly work" },
       { value:"technology", label:"💡 Health technology, AI, or innovative care delivery" },
     ]
   },
@@ -273,9 +277,8 @@ function deriveResults(answers) {
   const hasBundledRecording = hybridComponents.includes("hybrid_enduring_bundled");
 
   const content = a.content_focus || [];
-  const hasPiCME = content.includes("pi_cme_framework");
   const hasPatientSafety = content.includes("patient_safety");
-  const hasQI = content.includes("qi_activity") || hasPiCME;
+  const hasQI = content.includes("qi_activity");
   const profs = a.audience_professions || [];
   const planning = a.planning_process || [];
   const followUp = a.follow_up || [];
@@ -329,20 +332,6 @@ function deriveResults(answers) {
     res.additionalCredits.push({ icon:"🤝", label:"IPCE Credit Mark (Interprofessional Continuing Education)", who:"For all professions attending together", why:"When an activity is planned AND delivered interprofessionally — meaning multiple professions are involved in both the planning committee and the learning itself — it can receive a special IPCE (Interprofessional Continuing Education) designation. This is a significant distinction that sets the activity apart.", flag:"Flag this to your OCME&LL representative. The IPCE credit mark requires Joint Accreditation and an interprofessional planning committee — both of which you appear to have.", priority:"high" });
   } else if (nonPhysProfs.length >= 1 && !hasInterprofPlanning) {
     res.flags.push("Multiple professions are attending, but the planning committee appears to be single-profession. If you can involve a nurse, pharmacist, or other professional in the planning process, you may qualify for the IPCE Credit Mark — a meaningful distinction. Mention this possibility to your OCME&LL representative.");
-  }
-
-  // PI CME
-  if (hasPiCME || hasQI) {
-    res.additionalCredits.push({
-      icon:"📈",
-      label:"Performance Improvement CME (PI CME)",
-      who:"For activities structured around improving clinical practice",
-      why: hasPiCME
-        ? "You've indicated this is a structured PI CME activity using the AMA's three-stage framework: Stage A (learning what best practice looks like), Stage B (implementing a change in practice), Stage C (measuring whether the change worked). This is a powerful credit designation that also earns MOC Part IV credit with several boards."
-        : "Your activity has quality improvement content — it may be possible to structure it as a Performance Improvement CME (PI CME) activity, which earns a higher-value credit designation and counts toward MOC Part IV for several boards.",
-      flag:"Discuss this with your OCME&LL representative. PI CME requires a specific three-stage design but is highly valued and can significantly increase the impact of your activity.",
-      priority:"high"
-    });
   }
 
   // ABA Patient Safety
@@ -434,6 +423,7 @@ function Card({ children, style={}, accent, accentWidth=4 }) {
 function QuestionStep({ q, value, onChange, onNext, onBack, stepNum, total }) {
   const isMulti = q.type === "multi";
   const selected = isMulti ? (value || []) : value;
+  const selectableOptions = q.options.filter(o => !o.divider);
   const canProceed = isMulti ? (selected && selected.length > 0) : !!selected;
 
   const toggle = (v) => {
@@ -468,7 +458,14 @@ function QuestionStep({ q, value, onChange, onNext, onBack, stepNum, total }) {
 
       {/* Options */}
       <div style={{ display:"flex", flexDirection:"column", gap:"8px", marginBottom:"28px" }}>
-        {q.options.map(opt => {
+        {q.options.map((opt, idx) => {
+          if (opt.divider) return (
+            <div key={idx} style={{ display:"flex", alignItems:"center", gap:"8px", margin:"4px 0 2px" }}>
+              <div style={{ flex:1, height:"1px", background:tk.border }} />
+              <span style={{ fontSize:"11px", fontWeight:"600", color:tk.textLight, whiteSpace:"nowrap", letterSpacing:"0.3px", textTransform:"uppercase" }}>{opt.divider}</span>
+              <div style={{ flex:1, height:"1px", background:tk.border }} />
+            </div>
+          );
           const active = isMulti ? selected.includes(opt.value) : selected === opt.value;
           return (
             <button key={opt.value} onClick={() => toggle(opt.value)} style={{
