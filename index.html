@@ -4,9 +4,11 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>CME Credit Application Navigator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:#0f172a;line-height:1.6;min-height:100vh}
+body{background:#f0f2f5;font-family:'Nunito Sans',Arial,sans-serif;color:#00274C;line-height:1.6;min-height:100vh}
 button{font-family:inherit;cursor:pointer}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .fade-up{animation:fadeUp 0.2s ease both}
@@ -333,12 +335,12 @@ function card(extra,children){
 function renderTooltip(text,id){
   var isOpen=state.openTooltip===id;
   var wrap=el("span",{style:{position:"relative",display:"inline-flex",alignItems:"center",verticalAlign:"middle"}});
-  var btn=el("span",{style:{cursor:"pointer",padding:"0 4px",color:isOpen?"#1d4ed8":"#94a3b8",fontSize:"13px",userSelect:"none",lineHeight:"1",display:"inline-flex",alignItems:"center"},role:"button",tabindex:"0"},["ⓘ"]);
+  var btn=el("span",{style:{cursor:"pointer",padding:"0 4px",color:isOpen?"#2F65A7":"#7a96b0",fontSize:"13px",userSelect:"none",lineHeight:"1",display:"inline-flex",alignItems:"center"},role:"button",tabindex:"0"},["ⓘ"]);
   btn.onclick=function(e){e.stopPropagation();state.openTooltip=isOpen?null:id;render();};
   btn.onkeydown=function(e){if(e.key==="Enter"||e.key===" "){e.stopPropagation();state.openTooltip=isOpen?null:id;render();}};
   wrap.appendChild(btn);
   if(isOpen){
-    var pop=el("div",{style:{position:"absolute",left:"50%",bottom:"calc(100% + 8px)",transform:"translateX(-50%)",background:"#1e293b",color:"#f1f5f9",borderRadius:"10px",padding:"12px 14px",fontSize:"13px",lineHeight:"1.6",width:"280px",zIndex:"999",boxShadow:"0 8px 24px rgba(0,0,0,0.25)",whiteSpace:"pre-wrap"}},[text]);
+    var pop=el("div",{style:{position:"absolute",left:"50%",bottom:"calc(100% + 8px)",transform:"translateX(-50%)",background:"#1e293b",color:"#f0f2f5",borderRadius:"10px",padding:"12px 14px",fontSize:"13px",lineHeight:"1.6",width:"280px",zIndex:"999",boxShadow:"0 8px 24px rgba(0,0,0,0.25)",whiteSpace:"pre-wrap"}},[text]);
     var arrow=el("div",{style:{position:"absolute",bottom:"-6px",left:"50%",transform:"translateX(-50%)",width:"0",height:"0",borderLeft:"6px solid transparent",borderRight:"6px solid transparent",borderTop:"6px solid #1e293b"}});
     pop.appendChild(arrow);
     wrap.appendChild(pop);
@@ -351,12 +353,12 @@ function renderOptionBtn(q,opt){
   var isMulti=q.type==="multi";
   var val=state.answers[q.id];
   var active=isMulti?(val||[]).includes(opt.value):val===opt.value;
-  var brand="#1d4ed8";
+  var brand="#2F65A7";
 
-  var btn=el("button",{style:{display:"flex",alignItems:"center",gap:"14px",padding:"14px 16px",width:"100%",borderRadius:"10px",textAlign:"left",background:active?"#eff6ff":"#fff",border:"2px solid "+(active?brand:"#e2e8f0"),boxShadow:active?"0 0 0 3px rgba(29,78,216,0.12)":"none",transition:"all 0.15s",marginBottom:"8px",cursor:"pointer"},onclick:function(){toggle(q.id,opt.value,q.type);}});
+  var btn=el("button",{style:{display:"flex",alignItems:"center",gap:"14px",padding:"14px 16px",width:"100%",borderRadius:"10px",textAlign:"left",background:active?"#eef2f7":"#fff",border:"2px solid "+(active?brand:"#d0d9e3"),borderLeft:active?"4px solid #FFCB05":"2px solid #d0d9e3",boxShadow:active?"0 0 0 3px rgba(29,78,216,0.12)":"none",transition:"all 0.15s",marginBottom:"8px",cursor:"pointer"},onclick:function(){toggle(q.id,opt.value,q.type);}});
 
   // checkbox/radio indicator
-  var chk=el("div",{style:{width:"20px",height:"20px",flexShrink:"0",borderRadius:isMulti?"5px":"50%",border:"2px solid "+(active?brand:"#94a3b8"),background:active?brand:"transparent",display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.15s"}});
+  var chk=el("div",{style:{width:"20px",height:"20px",flexShrink:"0",borderRadius:isMulti?"5px":"50%",border:"2px solid "+(active?brand:"#7a96b0"),background:active?brand:"transparent",display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.15s"}});
   if(active)chk.appendChild(span({color:"#fff",fontSize:"12px",fontWeight:"700"},"✓"));
   btn.appendChild(chk);
 
@@ -364,12 +366,12 @@ function renderOptionBtn(q,opt){
 
   var content=el("div",{style:{flex:"1"}});
   var labelRow=el("div",{style:{display:"flex",alignItems:"center",gap:"8px",flexWrap:"wrap"}});
-  labelRow.appendChild(span({fontSize:"15px",fontWeight:"600",color:active?brand:"#0f172a"},opt.label));
-  if(opt.tag)labelRow.appendChild(span({fontSize:"11px",fontWeight:"700",letterSpacing:"0.2px",whiteSpace:"nowrap",color:active?brand:"#64748b",background:active?"#eff6ff":"#f1f5f9",border:"1px solid "+(active?"#bfdbfe":"#e2e8f0"),borderRadius:"5px",padding:"1px 7px"},opt.tag));
-  if(opt.badge)labelRow.appendChild(span({fontSize:"11px",fontWeight:"700",whiteSpace:"nowrap",color:active?brand:"#0369a1",background:active?"#eff6ff":"#f0f9ff",border:"1px solid "+(active?"#bfdbfe":"#bae6fd"),borderRadius:"5px",padding:"1px 7px"},opt.badge));
+  labelRow.appendChild(span({fontSize:"15px",fontWeight:"600",color:active?brand:"#00274C"},opt.label));
+  if(opt.tag)labelRow.appendChild(span({fontSize:"11px",fontWeight:"700",letterSpacing:"0.2px",whiteSpace:"nowrap",color:active?brand:"#4a6785",background:active?"#eef2f7":"#f0f2f5",border:"1px solid "+(active?"#a8bdd4":"#d0d9e3"),borderRadius:"5px",padding:"1px 7px"},opt.tag));
+  if(opt.badge)labelRow.appendChild(span({fontSize:"11px",fontWeight:"700",whiteSpace:"nowrap",color:active?brand:"#0369a1",background:active?"#eef2f7":"#f0f9ff",border:"1px solid "+(active?"#a8bdd4":"#bae6fd"),borderRadius:"5px",padding:"1px 7px"},opt.badge));
   if(opt.tooltip)labelRow.appendChild(renderTooltip(opt.tooltip,q.id+"__"+opt.value));
   content.appendChild(labelRow);
-  if(opt.sublabel)content.appendChild(el("div",{style:{fontSize:"13px",color:"#64748b",marginTop:"3px",lineHeight:"1.4"}},[opt.sublabel]));
+  if(opt.sublabel)content.appendChild(el("div",{style:{fontSize:"13px",color:"#4a6785",marginTop:"3px",lineHeight:"1.4"}},[opt.sublabel]));
   btn.appendChild(content);
   return btn;
 }
@@ -382,23 +384,23 @@ function renderQuestion(){
   // Progress bar
   var pct=Math.round((state.step/total)*100);
   var pbWrap=el("div",{style:{marginBottom:"24px"}});
-  var pbBg=el("div",{style:{height:"6px",background:"#e2e8f0",borderRadius:"99px",marginBottom:"8px"}});
-  var pbFill=el("div",{style:{height:"100%",width:pct+"%",background:"linear-gradient(90deg,#1d4ed8,#3b82f6)",borderRadius:"99px",transition:"width 0.3s"}});
+  var pbBg=el("div",{style:{height:"6px",background:"#d0d9e3",borderRadius:"99px",marginBottom:"8px"}});
+  var pbFill=el("div",{style:{height:"100%",width:pct+"%",background:"linear-gradient(90deg,#00274C,#2F65A7)",borderRadius:"99px",transition:"width 0.3s"}});
   pbBg.appendChild(pbFill);
   pbWrap.appendChild(pbBg);
-  pbWrap.appendChild(el("div",{style:{fontSize:"12px",color:"#64748b",textAlign:"right"}},["Question "+(state.step+1)+" of "+total]));
+  pbWrap.appendChild(el("div",{style:{fontSize:"12px",color:"#4a6785",textAlign:"right"}},["Question "+(state.step+1)+" of "+total]));
   wrap.appendChild(pbWrap);
 
   // Card
   var c=el("div",{style:{background:"#fff",borderRadius:"16px",padding:"28px 24px",boxShadow:"0 2px 8px rgba(0,0,0,0.08)"},className:"fade-up"});
-  c.appendChild(el("h2",{style:{fontSize:"20px",fontWeight:"700",color:"#0f172a",marginBottom:"6px",lineHeight:"1.3"}},[q.question]));
-  if(q.hint)c.appendChild(el("p",{style:{fontSize:"14px",color:"#64748b",marginBottom:"20px",lineHeight:"1.5"}},[q.hint]));
-  if(q.type==="multi")c.appendChild(el("p",{style:{fontSize:"12px",color:"#94a3b8",marginBottom:"14px"}},["Select all that apply"]));
+  c.appendChild(el("h2",{style:{fontSize:"20px",fontWeight:"700",color:"#00274C",marginBottom:"6px",lineHeight:"1.3"}},[q.question]));
+  if(q.hint)c.appendChild(el("p",{style:{fontSize:"14px",color:"#4a6785",marginBottom:"20px",lineHeight:"1.5"}},[q.hint]));
+  if(q.type==="multi")c.appendChild(el("p",{style:{fontSize:"12px",color:"#7a96b0",marginBottom:"14px"}},["Select all that apply"]));
 
   var opts=el("div",{style:{display:"flex",flexDirection:"column"}});
   q.options.forEach(function(opt){
     if(opt.divider){
-      opts.appendChild(el("div",{style:{fontSize:"11px",fontWeight:"700",color:"#94a3b8",letterSpacing:"0.5px",textTransform:"uppercase",padding:"10px 4px 4px"}},["— "+opt.divider]));
+      opts.appendChild(el("div",{style:{fontSize:"11px",fontWeight:"700",color:"#7a96b0",letterSpacing:"0.5px",textTransform:"uppercase",padding:"10px 4px 4px"}},["— "+opt.divider]));
       return;
     }
     opts.appendChild(renderOptionBtn(q,opt));
@@ -408,10 +410,10 @@ function renderQuestion(){
   // Nav buttons
   var nav=el("div",{style:{display:"flex",gap:"10px",marginTop:"20px"}});
   if(state.step>0){
-    nav.appendChild(el("button",{style:{padding:"11px 20px",borderRadius:"8px",border:"2px solid #e2e8f0",background:"#fff",color:"#334155",fontSize:"14px",fontWeight:"600",cursor:"pointer"},onclick:goBack},["← Back"]));
+    nav.appendChild(el("button",{style:{padding:"11px 20px",borderRadius:"8px",border:"2px solid #d0d9e3",background:"#fff",color:"#1a3a5c",fontSize:"14px",fontWeight:"600",cursor:"pointer"},onclick:goBack},["← Back"]));
   }
   var ok=canProceed();
-  var nextBtn=el("button",{style:{flex:"1",padding:"11px 28px",borderRadius:"8px",border:"none",fontSize:"15px",fontWeight:"700",background:ok?"linear-gradient(135deg,#1d4ed8,#2563eb)":"#e2e8f0",color:ok?"#fff":"#94a3b8",cursor:ok?"pointer":"not-allowed",boxShadow:ok?"0 4px 12px rgba(29,78,216,0.3)":"none",transition:"all 0.15s"},onclick:function(){if(canProceed())goNext();}},[state.step===total-1?"See My Results →":"Next →"]);
+  var nextBtn=el("button",{style:{flex:"1",padding:"11px 28px",borderRadius:"8px",border:"none",fontSize:"15px",fontWeight:"700",background:ok?"#00274C":"#d0d9e3",color:ok?"#fff":"#7a96b0",cursor:ok?"pointer":"not-allowed",boxShadow:ok?"0 4px 12px rgba(29,78,216,0.3)":"none",transition:"all 0.15s"},onclick:function(){if(canProceed())goNext();}},[state.step===total-1?"See My Results →":"Next →"]);
   nav.appendChild(nextBtn);
   c.appendChild(nav);
   wrap.appendChild(c);
@@ -424,7 +426,7 @@ function renderResults(){
   var wrap=el("div",{style:{maxWidth:"720px",margin:"0 auto",padding:"20px 16px"}});
 
   // Header
-  var hdr=el("div",{style:{background:"linear-gradient(135deg,#1d4ed8,#1e3a8a)",borderRadius:"16px",padding:"24px",marginBottom:"20px",color:"#fff"}});
+  var hdr=el("div",{style:{background:"#00274C",borderRadius:"16px",padding:"24px",marginBottom:"20px",color:"#fff"}});
   hdr.appendChild(el("div",{style:{fontSize:"24px",marginBottom:"6px"}},["✅"]));
   hdr.appendChild(el("h1",{style:{fontSize:"22px",fontWeight:"800",marginBottom:"4px"}},["Your CME Navigator Results"]));
   hdr.appendChild(el("p",{style:{fontSize:"14px",opacity:"0.85"}},["Review each section below and flag anything relevant to your OCME&LL representative when you submit your application."]));
@@ -437,7 +439,7 @@ function renderResults(){
   var tabBar=el("div",{style:{display:"flex",gap:"6px",marginBottom:"16px",flexWrap:"wrap"}});
   tabDefs.forEach(function(t){
     var active=state.activeTab===t.id;
-    var tb=el("button",{style:{padding:"8px 14px",borderRadius:"8px",fontSize:"13px",fontWeight:"600",border:"none",background:active?"#1d4ed8":"#fff",color:active?"#fff":"#334155",boxShadow:active?"0 2px 8px rgba(29,78,216,0.25)":"0 1px 3px rgba(0,0,0,0.08)",cursor:"pointer",transition:"all 0.15s"},onclick:function(){state.activeTab=t.id;render();}},[t.label]);
+    var tb=el("button",{style:{padding:"8px 14px",borderRadius:"8px",fontSize:"13px",fontWeight:"600",border:"none",background:active?"#2F65A7":"#fff",color:active?"#fff":"#1a3a5c",boxShadow:active?"0 2px 8px rgba(0,39,76,0.3)":"0 1px 3px rgba(0,0,0,0.08)",cursor:"pointer",transition:"all 0.15s"},onclick:function(){state.activeTab=t.id;render();}},[t.label]);
     tabBar.appendChild(tb);
   });
   wrap.appendChild(tabBar);
@@ -452,13 +454,13 @@ function renderResults(){
         item.parts.forEach(function(p){c.appendChild(el("p",{style:{fontSize:"14px",color:"#78350f",marginBottom:"8px",lineHeight:"1.5"}},[p]));});
         content.appendChild(c); return;
       }
-      var c=card({border:"2px solid #bfdbfe"});
-      c.appendChild(el("div",{style:{fontSize:"11px",fontWeight:"700",color:"#1d4ed8",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"6px"}},["Application Type"]));
-      c.appendChild(el("div",{style:{fontSize:"18px",fontWeight:"800",color:"#1e3a8a",marginBottom:"10px"}},[item.appType]));
-      c.appendChild(el("p",{style:{fontSize:"14px",color:"#334155",lineHeight:"1.6",marginBottom:"12px"}},[item.appNote]));
-      var ab=el("div",{style:{background:"#eff6ff",borderRadius:"8px",padding:"12px 14px",borderLeft:"3px solid #1d4ed8"}});
-      ab.appendChild(el("div",{style:{fontSize:"12px",fontWeight:"700",color:"#1d4ed8",marginBottom:"4px"}},["ACTION"]));
-      ab.appendChild(el("div",{style:{fontSize:"14px",color:"#1e3a8a"}},[item.appAction]));
+      var c=card({border:"2px solid #a8bdd4"});
+      c.appendChild(el("div",{style:{fontSize:"11px",fontWeight:"700",color:"#2F65A7",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"6px"}},["Application Type"]));
+      c.appendChild(el("div",{style:{fontSize:"18px",fontWeight:"800",color:"#00274C",marginBottom:"10px"}},[item.appType]));
+      c.appendChild(el("p",{style:{fontSize:"14px",color:"#1a3a5c",lineHeight:"1.6",marginBottom:"12px"}},[item.appNote]));
+      var ab=el("div",{style:{background:"#eef2f7",borderRadius:"8px",padding:"12px 14px",borderLeft:"3px solid #00274C"}});
+      ab.appendChild(el("div",{style:{fontSize:"12px",fontWeight:"700",color:"#2F65A7",marginBottom:"4px"}},["ACTION"]));
+      ab.appendChild(el("div",{style:{fontSize:"14px",color:"#00274C"}},[item.appAction]));
       c.appendChild(ab); content.appendChild(c);
     });
     var ama=card({borderLeft:"4px solid #15803d",background:"#f0fdf4"});
@@ -472,11 +474,11 @@ function renderResults(){
       content.appendChild(fc);
     }
     var cl=card();
-    cl.appendChild(el("div",{style:{fontWeight:"700",color:"#0f172a",marginBottom:"12px"}},["📝 Application Checklist"]));
+    cl.appendChild(el("div",{style:{fontWeight:"700",color:"#00274C",marginBottom:"12px"}},["📝 Application Checklist"]));
     ["Faculty disclosure forms completed for all presenters","Educational objectives clearly stated (what will learners be able to do?)","Needs assessment or gap documentation attached","Evaluation plan described","Session agenda and credit hours calculated","Any commercial support or sponsorship disclosed"].forEach(function(item){
       var row=el("div",{style:{display:"flex",gap:"10px",alignItems:"flex-start",marginBottom:"8px"}});
-      row.appendChild(el("div",{style:{width:"18px",height:"18px",border:"2px solid #e2e8f0",borderRadius:"4px",flexShrink:"0",marginTop:"2px"}}));
-      row.appendChild(el("span",{style:{fontSize:"14px",color:"#334155"}},[item]));
+      row.appendChild(el("div",{style:{width:"18px",height:"18px",border:"2px solid #d0d9e3",borderRadius:"4px",flexShrink:"0",marginTop:"2px"}}));
+      row.appendChild(el("span",{style:{fontSize:"14px",color:"#1a3a5c"}},[item]));
       cl.appendChild(row);
     });
     content.appendChild(cl);
@@ -484,21 +486,21 @@ function renderResults(){
 
   if(state.activeTab==="credits"){
     if(res.additionalCredits.length===0){
-      content.appendChild(el("div",{style:{textAlign:"center",padding:"40px",color:"#64748b",fontSize:"15px"}},["No additional credit types identified for this activity based on your selections."]));
+      content.appendChild(el("div",{style:{textAlign:"center",padding:"40px",color:"#4a6785",fontSize:"15px"}},["No additional credit types identified for this activity based on your selections."]));
     } else {
       res.additionalCredits.forEach(function(cr){
         var isHigh=cr.priority==="high";
-        var c=card({border:"2px solid "+(isHigh?"#fecdd3":"#e2e8f0")});
+        var c=card({border:"2px solid "+(isHigh?"#fecdd3":"#d0d9e3")});
         var hd=el("div",{style:{display:"flex",alignItems:"center",gap:"10px",marginBottom:"10px"}});
         hd.appendChild(span({fontSize:"24px"},cr.icon));
         var ht=el("div");
-        ht.appendChild(el("div",{style:{fontWeight:"700",color:"#0f172a",fontSize:"16px"}},[cr.label]));
-        ht.appendChild(el("div",{style:{fontSize:"12px",color:"#64748b"}},[cr.who]));
+        ht.appendChild(el("div",{style:{fontWeight:"700",color:"#00274C",fontSize:"16px"}},[cr.label]));
+        ht.appendChild(el("div",{style:{fontSize:"12px",color:"#4a6785"}},[cr.who]));
         hd.appendChild(ht); c.appendChild(hd);
-        c.appendChild(el("p",{style:{fontSize:"14px",color:"#334155",lineHeight:"1.6",marginBottom:"12px"}},[cr.why]));
-        var fb=el("div",{style:{background:"#eff6ff",borderRadius:"8px",padding:"12px 14px",borderLeft:"3px solid #1d4ed8"}});
-        fb.appendChild(el("div",{style:{fontSize:"12px",fontWeight:"700",color:"#1d4ed8",marginBottom:"4px"}},["FLAG TO OCME&LL"]));
-        fb.appendChild(el("div",{style:{fontSize:"14px",color:"#1e3a8a"}},[cr.flag]));
+        c.appendChild(el("p",{style:{fontSize:"14px",color:"#1a3a5c",lineHeight:"1.6",marginBottom:"12px"}},[cr.why]));
+        var fb=el("div",{style:{background:"#eef2f7",borderRadius:"8px",padding:"12px 14px",borderLeft:"3px solid #00274C"}});
+        fb.appendChild(el("div",{style:{fontSize:"12px",fontWeight:"700",color:"#2F65A7",marginBottom:"4px"}},["FLAG TO OCME&LL"]));
+        fb.appendChild(el("div",{style:{fontSize:"14px",color:"#00274C"}},[cr.flag]));
         c.appendChild(fb); content.appendChild(c);
       });
     }
@@ -506,14 +508,14 @@ function renderResults(){
 
   if(state.activeTab==="board"){
     if(!res.boardCredit){
-      content.appendChild(el("div",{style:{textAlign:"center",padding:"40px",color:"#64748b",fontSize:"15px"}},["No specific board (MOC) credit identified based on your specialty selection."]));
+      content.appendChild(el("div",{style:{textAlign:"center",padding:"40px",color:"#4a6785",fontSize:"15px"}},["No specific board (MOC) credit identified based on your specialty selection."]));
     } else {
       var bc=res.boardCredit;
       var c=card({border:"2px solid #ddd6fe"});
       c.appendChild(el("div",{style:{fontSize:"11px",fontWeight:"700",color:"#6d28d9",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"6px"}},["Board Certification Credit (MOC)"]));
       c.appendChild(el("div",{style:{fontSize:"17px",fontWeight:"800",color:"#4c1d95",marginBottom:"10px"}},[bc.boards]));
       if(bc.evalWarning){var ew=card({background:"#fffbeb",border:"1px solid #fde68a",marginBottom:"12px"});ew.appendChild(el("p",{style:{fontSize:"13px",color:"#78350f",lineHeight:"1.5"}},["⚠️ "+bc.evalWarning]));c.appendChild(ew);}
-      c.appendChild(el("p",{style:{fontSize:"14px",color:"#334155",lineHeight:"1.6",marginBottom:"12px"}},[bc.flag]));
+      c.appendChild(el("p",{style:{fontSize:"14px",color:"#1a3a5c",lineHeight:"1.6",marginBottom:"12px"}},[bc.flag]));
       var steps=el("div",{style:{background:"#f5f3ff",borderRadius:"8px",padding:"14px"}});
       steps.appendChild(el("div",{style:{fontSize:"12px",fontWeight:"700",color:"#6d28d9",marginBottom:"8px"}},["WHAT YOU NEED TO DO"]));
       ["Tell your OCME&LL representative you want MOC credit designated for this activity","OCME&LL registers the activity with the relevant certifying board","After the activity, OCME&LL reports the credit","Physicians self-report or receive automatic credit in their board portfolio"].forEach(function(s,i){
@@ -532,7 +534,7 @@ function renderResults(){
     intro.appendChild(el("p",{style:{fontSize:"14px",color:"#166534",lineHeight:"1.6"}},["Accreditation with Commendation recognizes providers who go beyond standard requirements in educational design and impact. The criteria below matched your activity — flag each one to your OCME&LL representative."]));
     content.appendChild(intro);
     if(res.commendation.length===0){
-      content.appendChild(el("div",{style:{textAlign:"center",padding:"40px",color:"#64748b",fontSize:"15px"}},["No commendation criteria matched based on your selections. Review the planning and follow-up questions if you think some may apply."]));
+      content.appendChild(el("div",{style:{textAlign:"center",padding:"40px",color:"#4a6785",fontSize:"15px"}},["No commendation criteria matched based on your selections. Review the planning and follow-up questions if you think some may apply."]));
     } else {
       res.commendation.forEach(function(cat){
         var c=card({borderLeft:"4px solid "+cat.color});
@@ -540,7 +542,7 @@ function renderResults(){
         hd.appendChild(span({fontSize:"20px"},cat.icon));
         hd.appendChild(span({fontWeight:"700",color:cat.color,fontSize:"15px"},cat.category));
         c.appendChild(hd);
-        c.appendChild(el("p",{style:{fontSize:"13px",color:"#64748b",marginBottom:"12px",lineHeight:"1.5"}},[cat.whyItMatters]));
+        c.appendChild(el("p",{style:{fontSize:"13px",color:"#4a6785",marginBottom:"12px",lineHeight:"1.5"}},[cat.whyItMatters]));
         cat.matched.forEach(function(cr){
           var chip=el("span",{style:{display:"inline-flex",alignItems:"center",gap:"6px",background:cat.colorLight,border:"1px solid "+cat.colorBorder,borderRadius:"20px",padding:"4px 12px",fontSize:"13px",fontWeight:"600",color:cat.color,marginRight:"8px",marginBottom:"8px"}},["🏷 "+cr.label]);
           c.appendChild(chip);
@@ -552,16 +554,16 @@ function renderResults(){
 
   if(state.activeTab==="michigan"){
     if(res.michigan.length===0){
-      content.appendChild(el("div",{style:{textAlign:"center",padding:"40px",color:"#64748b",fontSize:"15px"}},["No Michigan mandatory topics selected for this activity."]));
+      content.appendChild(el("div",{style:{textAlign:"center",padding:"40px",color:"#4a6785",fontSize:"15px"}},["No Michigan mandatory topics selected for this activity."]));
     } else {
       res.michigan.forEach(function(mi){
         var c=card({borderLeft:"4px solid #0284c7"});
         var hd=el("div",{style:{display:"flex",gap:"10px",alignItems:"center",marginBottom:"8px"}});
         hd.appendChild(span({fontSize:"22px"},mi.icon));
-        hd.appendChild(span({fontWeight:"700",color:"#0f172a",fontSize:"15px"},mi.label));
+        hd.appendChild(span({fontWeight:"700",color:"#00274C",fontSize:"15px"},mi.label));
         c.appendChild(hd);
-        c.appendChild(el("div",{style:{fontSize:"13px",color:"#64748b",marginBottom:"8px",fontWeight:"600"}},["Requirement: "+mi.req]));
-        c.appendChild(el("p",{style:{fontSize:"14px",color:"#334155",lineHeight:"1.5"}},[mi.note]));
+        c.appendChild(el("div",{style:{fontSize:"13px",color:"#4a6785",marginBottom:"8px",fontWeight:"600"}},["Requirement: "+mi.req]));
+        c.appendChild(el("p",{style:{fontSize:"14px",color:"#1a3a5c",lineHeight:"1.5"}},[mi.note]));
         content.appendChild(c);
       });
     }
@@ -575,10 +577,14 @@ function renderResults(){
 function render(){
   var app=document.getElementById("app");
   app.innerHTML="";
-  var nav=el("div",{style:{background:"#1d4ed8",padding:"12px 20px",display:"flex",alignItems:"center",gap:"12px"}});
-  nav.appendChild(span({fontSize:"22px"},"⚕️"));
-  nav.appendChild(el("span",{style:{color:"#fff",fontWeight:"700",fontSize:"16px"}},["CME Credit Application Navigator"]));
-  nav.appendChild(el("span",{style:{color:"rgba(255,255,255,0.6)",fontSize:"13px",marginLeft:"auto"}},["OCME&LL · University of Michigan"]));
+  var nav=el("div",{style:{background:"#00274C",padding:"0",display:"flex",flexDirection:"column"}});
+  var navStripe=el("div",{style:{background:"#FFCB05",padding:"3px 20px",textAlign:"right"}});
+  navStripe.appendChild(el("span",{style:{fontSize:"11px",fontWeight:"700",color:"#00274C",letterSpacing:"0.4px"}},["​Michigan Medicine · University of Michigan"]));
+  nav.appendChild(navStripe);
+  var navMain=el("div",{style:{padding:"14px 20px",display:"flex",alignItems:"center",gap:"12px"}});
+  navMain.appendChild(el("span",{style:{fontSize:"15px",fontWeight:"800",color:"#fff",letterSpacing:"0.2px"}},["​CME Credit Application Navigator"]));
+  navMain.appendChild(el("span",{style:{color:"#FFCB05",fontSize:"12px",fontWeight:"700",marginLeft:"auto",letterSpacing:"0.3px"}},["​OCME&LL"]));
+  nav.appendChild(navMain);
   app.appendChild(nav);
   app.appendChild(state.done?renderResults():renderQuestion());
   // close tooltip on outside click
