@@ -52,7 +52,7 @@ const COMMENDATION = [
    criteria:[
      {code:"C29",label:"Communication skills training",triggers:["communication"]},
      {code:"C30",label:"Hands-on procedural or technical skills",triggers:["simulation","procedural"]},
-     {code:"C31",label:"Individualized or self-directed learning",triggers:["individualized","self_assessment_format"]},
+     {code:"C31",label:"Individualized or self-directed learning",triggers:["individualized","self_assessment_format","self_assessment_learning"]},
   ]},
   {category:"Educational Leadership & Innovation",color:"#b45309",colorLight:"#fffbeb",colorBorder:"#fde68a",icon:"💡",
    whyItMatters:"If your activity goes beyond a standard lecture format, or connects to follow-up, research, or innovation — flag it.",
@@ -65,7 +65,7 @@ const COMMENDATION = [
    whyItMatters:"★ This is the most important category for Accreditation with Commendation — at least one qualifying activity must show measurable real-world impact.",
    criteria:[
      {code:"C36",label:"Measuring change in clinical behavior",triggers:["performance_outcome","pre_post"]},
-     {code:"C37",label:"Linked to a quality improvement initiative",triggers:["qi_activity"]},
+     {code:"C37",label:"Linked to a quality improvement initiative",triggers:["qi_activity","performance_improvement"]},
      {code:"C38",label:"Measuring impact on patients or community",triggers:["patient_outcome","community_impact"]},
   ]},
 ];
@@ -79,13 +79,12 @@ const QUESTIONS = [
     {value:"rss",icon:"📅",label:"A recurring series with changing content",tag:"Regularly Scheduled Series (RSS)",sublabel:"Regular sessions where topics and presenters vary — grand rounds, tumor board, M&M, journal club"},
   ]},
   {id:"delivery_format",question:"How will people attend?",
-   hint:"Choose the primary way learners will participate.",
+   hint:"This is about access and attendance — not what they will do when they get there. You'll describe the learning environment next.",
    type:"single",options:[
-    {value:"live",icon:"🏛️",label:"In person only",tag:"Live Activity",sublabel:"All attendees physically present — no online component"},
-    {value:"livestream",icon:"📡",label:"Live streamed only",tag:"Live Activity — Virtual",sublabel:"All attendees join remotely — no in-person component"},
-    {value:"hybrid",icon:"🔀",label:"In person and live streamed",tag:"Live Activity (Hybrid)",sublabel:"Some attend in the room, others join via live stream"},
-    {value:"enduring",icon:"💻",label:"Online / self-paced only",tag:"Enduring Material",sublabel:"An online module, podcast, recorded lecture — completed independently, no live session"},
-    {value:"simulation",icon:"🩺",label:"Simulation or hands-on skills lab",tag:"Live Activity — Simulation",sublabel:"Learners practice on simulators, mannequins, or in a procedural skills setting"},
+    {value:"live",icon:"🏛️",label:"In person",tag:"Live Activity",sublabel:"All attendees physically present in the same location"},
+    {value:"livestream",icon:"📡",label:"Virtual / live streamed",tag:"Live Activity — Virtual",sublabel:"All attendees join remotely via live stream — no in-person component"},
+    {value:"hybrid",icon:"🔀",label:"Hybrid — in person and live streamed simultaneously",tag:"Live Activity — Hybrid",sublabel:"Some attend in the room; others join via live stream at the same time"},
+    {value:"enduring",icon:"💻",label:"Online / on-demand (no live session)",tag:"Enduring Material",sublabel:"Learners complete it independently at their own pace — recorded lecture, online module, podcast, or similar"},
   ]},
   {id:"hybrid_components",question:"Which of these apply to your activity?",
    hint:"Whether a recording is available to everyone (or just registered attendees) affects whether you need one application or two.",
@@ -94,6 +93,17 @@ const QUESTIONS = [
     {value:"hybrid_livestream",icon:"📡",label:"Live stream for remote participants joining as it happens"},
     {value:"hybrid_enduring",icon:"🎬",label:"Recording made publicly available afterward (anyone can access, not just registered attendees)"},
     {value:"hybrid_enduring_bundled",icon:"🔒",label:"Recording available only to people who already registered"},
+  ]},
+  {id:"learning_environment",question:"What kind of learning environment is this?",
+   hint:"Select all that apply. This affects commendation criteria and how OCME&LL will describe the activity — it does not change the application type.",
+   type:"multi",
+   showIf:function(a){return a.delivery_format==="live"||a.delivery_format==="livestream"||a.delivery_format==="hybrid";},
+   options:[
+    {value:"didactic",icon:"🎤",label:"Lecture or didactic presentation",sublabel:"Traditional speaker-led sessions, grand rounds, symposia"},
+    {value:"workshop",icon:"👥",label:"Small group, workshop, or case-based learning",sublabel:"Interactive breakouts, case discussions, problem-based learning, or flipped classroom"},
+    {value:"simulation",icon:"🩺",label:"Simulation or hands-on skills lab",sublabel:"Learners practice on simulators, task trainers, mannequins, standardised patients, or in a procedural skills setting"},
+    {value:"performance_improvement",icon:"📈",label:"Performance improvement or quality improvement activity",sublabel:"Learners engage with real practice data and commit to specific changes — often linked to a PI CME or QI framework"},
+    {value:"self_assessment_learning",icon:"✅",label:"Structured self-assessment or reflective practice",sublabel:"Learners assess their own knowledge gaps, review performance data, or complete a guided self-evaluation before or during the activity"},
   ]},
   {id:"target_specialty",question:"What is the primary physician specialty for this activity?",
    hint:"Choose the specialty that best describes your main audience. If physicians from several specialties will attend, choose 'Mixed or multi-specialty.' MOC credit is always tied to the primary audience.",
@@ -200,13 +210,20 @@ function deriveResults(answers) {
   var a=answers, res={application:[],additionalCredits:[],boardCredit:null,commendation:[],michigan:[],flags:[]};
   var isRSS=a.activity_structure==="rss", isRepeated=a.activity_structure==="repeated";
   var fmt=a.delivery_format, isHybrid=fmt==="hybrid", isEnduring=fmt==="enduring";
-  var isSimulation=fmt==="simulation", isLive=fmt==="live";
+  var isLive=fmt==="live", isVirtual=fmt==="livestream";
+  var learnEnv=a.learning_environment||[];
+  var isSimulation=learnEnv.includes("simulation");
   var hybridComponents=a.hybrid_components||[];
   var hasPublicRecording=hybridComponents.includes("hybrid_enduring");
   var hasBundledRecording=hybridComponents.includes("hybrid_enduring_bundled");
   var content=a.content_focus||[], hasPatientSafety=content.includes("patient_safety"), hasQI=content.includes("qi_activity");
   var profs=a.audience_professions||[], planning=a.planning_process||[];
   var followUp=a.follow_up||[], evalMethod=a.evaluation_plan;
+
+  // Build format suffix for live activities that have a distinctive learning environment
+  var envSuffix="";
+  if (isSimulation && learnEnv.length===1) envSuffix=" — Simulation-Based";
+  else if (isSimulation) envSuffix=" — including Simulation";
 
   var appType="",appNote="",appAction="";
   if (isRSS) {
@@ -218,10 +235,10 @@ function deriveResults(answers) {
     appNote="Because you are running the same course multiple times, each run requires its own separate CME application — even if the content, faculty presenters, and credit hours are completely identical.";
     appAction="Submit a separate application to OCME&LL for each individual run of the course. Keep separate attendance records and evaluation forms for each run.";
   } else {
-    if (isLive)        {appType="Live Activity";appNote="A standard in-person event. One application covers all in-person attendees.";appAction="Submit one CME application to OCME&LL for this event.";}
-    else if (isHybrid) {appType="Live Activity (with online components)";appNote="See the application note below about hybrid events.";appAction="Contact your OCME&LL representative — the number of applications needed depends on whether a recording will be publicly released.";}
+    if (isLive)        {appType="Live Activity"+envSuffix;appNote="A standard in-person event. One application covers all in-person attendees."+(isSimulation?" Simulation activities are accredited as live activities — the application type does not change.":"");appAction="Submit one CME application to OCME&LL for this event.";}
+    else if (isVirtual){appType="Live Activity — Virtual"+envSuffix;appNote="A fully online synchronous event. All attendees join via live stream. One application covers all participants.";appAction="Submit one CME application to OCME&LL for this event.";}
+    else if (isHybrid) {appType="Live Activity — Hybrid"+envSuffix;appNote="See the application note below about hybrid events.";appAction="Contact your OCME&LL representative — the number of applications needed depends on whether a recording will be publicly released.";}
     else if (isEnduring){appType="Enduring Material (online/self-paced)";appNote="An enduring material is self-paced with no live component. The credit period typically cannot exceed 3 years, and learners must complete the evaluation before receiving credit.";appAction="Submit an Enduring Material application to OCME&LL.";}
-    else if (isSimulation){appType="Live Activity — Simulation-Based";appNote="Simulation activities are accredited as live activities. One application covers each session.";appAction="Submit a Live Activity application to OCME&LL for this session.";}
   }
   res.application.push({appType:appType,appNote:appNote,appAction:appAction});
 
@@ -262,7 +279,7 @@ function deriveResults(answers) {
     res.boardCredit={boards:mocInfo.boards,flag:mocInfo.flag,evalWarning:needsRobustEval&&!hasRobustEval?"Important: for ABIM MOC credit specifically, a satisfaction survey alone is not sufficient. A pre/post knowledge assessment or outcomes measurement is required. Ask your OCME&LL representative about adding this to your evaluation plan.":null};
   }
 
-  var allTriggers=content.concat(planning).concat(followUp).concat([fmt,evalMethod]).filter(Boolean);
+  var allTriggers=content.concat(planning).concat(followUp).concat(learnEnv).concat([fmt,evalMethod]).filter(Boolean);
   COMMENDATION.forEach(function(cat){
     var matched=cat.criteria.filter(function(cr){return cr.triggers.some(function(tr){return allTriggers.includes(tr);});});
     if (matched.length>0) res.commendation.push(Object.assign({},cat,{matched:matched}));
@@ -284,7 +301,7 @@ function deriveResults(answers) {
 }
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
-var state={answers:{},step:0,done:false,activeTab:"application",openTooltip:null};
+var state={answers:{},step:0,done:false,activeTab:"application",openTooltip:null,docPlannerOpen:false,docStaffOpen:false};
 
 function getVisibleQuestions(){
   return QUESTIONS.filter(function(q){return !q.showIf||q.showIf(state.answers);});
@@ -429,13 +446,13 @@ function renderResults(){
   var hdr=el("div",{style:{background:"#00274C",borderRadius:"16px",padding:"24px",marginBottom:"20px",color:"#fff"}});
   hdr.appendChild(el("div",{style:{fontSize:"24px",marginBottom:"6px"}},["✅"]));
   hdr.appendChild(el("h1",{style:{fontSize:"22px",fontWeight:"800",marginBottom:"4px"}},["Your CME Navigator Results"]));
-  hdr.appendChild(el("p",{style:{fontSize:"14px",opacity:"0.85"}},["Review each section below and flag anything relevant to your OCME&LL representative when you submit your application."]));
+  hdr.appendChild(el("p",{style:{fontSize:"14px",opacity:"0.85"}},["Review each section below, then use the Generate Docs tab to produce supporting documents for your planner and OCME&LL representative — to help build your MiCME application correctly first time."]));
   var rsBtn=el("button",{style:{marginTop:"14px",padding:"8px 16px",borderRadius:"8px",border:"2px solid rgba(255,255,255,0.4)",background:"transparent",color:"#fff",fontSize:"13px",fontWeight:"600",cursor:"pointer"},onclick:restart},["← Start Over"]);
   hdr.appendChild(rsBtn);
   wrap.appendChild(hdr);
 
   // Tabs
-  var tabDefs=[{id:"application",label:"📋 Application"},{id:"credits",label:"➕ Credits"},{id:"board",label:"🏥 Board Credit"},{id:"commendation",label:"⭐ Commendation"},{id:"michigan",label:"🔵 Michigan"}];
+  var tabDefs=[{id:"application",label:"📋 Application"},{id:"credits",label:"➕ Credits"},{id:"board",label:"🏥 Board Credit"},{id:"commendation",label:"⭐ Commendation"},{id:"michigan",label:"🔵 Michigan"},{id:"export",label:"📄 Generate Docs"}];
   var tabBar=el("div",{style:{display:"flex",gap:"6px",marginBottom:"16px",flexWrap:"wrap"}});
   tabDefs.forEach(function(t){
     var active=state.activeTab===t.id;
@@ -569,11 +586,440 @@ function renderResults(){
     }
   }
 
+  if(state.activeTab==="export"){
+    content.appendChild(renderExportTab(res,state.answers));
+  }
+
   wrap.appendChild(content);
   return wrap;
 }
 
 // ─── RENDER ───────────────────────────────────────────────────────────────────
+
+// --- DOCUMENT GENERATION ---
+
+// ─── SUPPORTING DOCUMENT GENERATION ─────────────────────────────────────────
+// These documents help planners and OCME staff build the activity correctly.
+// They are NOT the application — they support the actual MiCME application.
+
+function docStyles() {
+  return [
+    '*{box-sizing:border-box;margin:0;padding:0}',
+    'body{font-family:\'Nunito Sans\',Arial,sans-serif;color:#00274C;background:#fff;font-size:13px;line-height:1.5}',
+    '.page{max-width:680px;margin:0 auto;padding:28px 32px}',
+    'h2{font-size:10.5px;font-weight:800;color:#00274C;text-transform:uppercase;letter-spacing:0.7px;',
+    '   border-bottom:2.5px solid #FFCB05;padding-bottom:3px;margin:22px 0 10px}',
+    'h2:first-of-type{margin-top:0}',
+    '.row{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px}',
+    '.cb{width:14px;height:14px;border:2px solid #2F65A7;border-radius:3px;flex-shrink:0;margin-top:1px}',
+    '.bullet{color:#2F65A7;font-weight:800;font-size:15px;flex-shrink:0;line-height:1.2}',
+    '.label{font-size:13px;color:#00274C}',
+    '.sub{font-size:11px;color:#4a6785;margin-top:1px}',
+    '.note{font-size:12px;color:#1a3a5c;background:#fffbe6;border-left:3px solid #FFCB05;padding:7px 10px;border-radius:0 4px 4px 0;margin:8px 0}',
+    '.warn{font-size:12px;color:#7c2d12;background:#fff7ed;border-left:3px solid #f97316;padding:7px 10px;border-radius:0 4px 4px 0;margin:8px 0}',
+    '.code-tag{display:inline-block;font-size:10.5px;font-weight:700;background:#eef2f7;border:1px solid #a8bdd4;border-radius:4px;padding:1px 6px;margin-left:4px;color:#2F65A7}',
+    '.footer{margin-top:28px;padding-top:10px;border-top:1px solid #d0d9e3;font-size:10.5px;color:#7a96b0}',
+    '@media print{.no-print{display:none!important}}'
+  ].join('');
+}
+
+function docHeader(title, subtitle, date) {
+  return '<div style="margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid #00274C">'
+    + '<div style="font-size:9px;font-weight:700;color:#4a6785;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Michigan Medicine · Office of CME &amp; Lifelong Learning</div>'
+    + '<div style="font-size:20px;font-weight:800;color:#00274C;margin-bottom:3px">'+title+'</div>'
+    + '<div style="font-size:12px;color:#4a6785">'+subtitle+'</div>'
+    + '<div style="font-size:11px;color:#7a96b0;margin-top:4px">Generated '+date+' · CME Credit Application Navigator</div>'
+    + '</div>';
+}
+
+function row_cb(label, sub) {
+  return '<div class="row"><div class="cb"></div><div><div class="label">'+label+'</div>'+(sub?'<div class="sub">'+sub+'</div>':'')+'</div></div>';
+}
+function row_b(label, sub) {
+  return '<div class="row"><div class="bullet">›</div><div><div class="label">'+label+'</div>'+(sub?'<div class="sub">'+sub+'</div>':'')+'</div></div>';
+}
+function sec(t) {
+  return '<h2>'+t+'</h2>';
+}
+function note(t) { return '<div class="note">'+t+'</div>'; }
+function warn(t) { return '<div class="warn">'+t+'</div>'; }
+
+// ─── DOCUMENT 1: PLANNER PREPARATION GUIDE ───────────────────────────────────
+// For the educational planner / Administrative Coordinator.
+// Plain language. Explains what to gather and discuss before submitting.
+
+function generatePlannerGuide(res, answers) {
+  var a = answers;
+  var date = new Date().toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"});
+  var appType = (res.application[0]||{}).appType || "CME Activity";
+  var L = [];
+
+  L.push(docHeader(
+    "Application Preparation Guide",
+    "Supporting document for the educational planner or Administrative Coordinator — " + appType,
+    date
+  ));
+
+  L.push('<div class="note" style="margin-bottom:18px"><strong>How to use this document:</strong> This is a preparation guide to help you gather everything needed before submitting your MiCME application. It is not the application itself. Share it with your OCME&amp;LL representative at your first meeting so you can build the activity correctly from the start.</div>');
+
+  // --- Activity snapshot ---
+  L.push(sec("Activity Snapshot"));
+  var fmtLabels = {live:"Live — in person",livestream:"Live — virtual (live stream)",hybrid:"Live — hybrid (in person + live stream)",enduring:"Enduring Material (on-demand)",simulation:"Live — simulation/skills lab"};
+  L.push(row_b("Type: <strong>"+appType+"</strong>"));
+  L.push(row_b("Format: <strong>"+(fmtLabels[a.delivery_format]||a.delivery_format||"—")+"</strong>"));
+  var learnEnvLabels = {didactic:"Lecture / didactic presentation",workshop:"Small group, workshop, or case-based learning",simulation:"Simulation or hands-on skills lab",performance_improvement:"Performance improvement / QI activity",self_assessment_learning:"Structured self-assessment"};
+  var envItems = (a.learning_environment||[]).map(function(e){return learnEnvLabels[e]||e;}).filter(Boolean);
+  if (envItems.length>0) L.push(row_b("Learning environment: <strong>"+envItems.join(", ")+"</strong>"));
+  if ((a.learning_environment||[]).includes("simulation")) L.push(note("Simulation activities are accredited as standard Live Activities — the application type does not change. Credit hours are calculated from supervised instructional time in the simulation setting."));
+  if (a.activity_structure === "rss") L.push(note("Regularly Scheduled Series: you will register the series once in MiCME, then log each individual session date and attendance throughout the year. Periodic evaluation (rather than per-session) is acceptable."));
+  if (a.activity_structure === "repeated") L.push(warn("Repeated course: each run of this course requires its own MiCME application, attendance record, and evaluation. Plan accordingly."));
+  if ((a.hybrid_components||[]).includes("hybrid_enduring")) L.push(warn("Public recording planned: a second, separate MiCME application for an Enduring Material activity will be required for any recording made available beyond registered attendees. Discuss this with OCME&amp;LL before recording."));
+  if ((a.hybrid_components||[]).includes("hybrid_enduring_bundled")) L.push(note("Bundled recording (registered attendees only): this can be included under your live activity application. Confirm with OCME&amp;LL if access will extend beyond 30 days."));
+
+  // --- Before your first meeting ---
+  L.push(sec("Before Your First Meeting with OCME&amp;LL"));
+  if ((a.planning_process||[]).includes("multi_org")) {
+    L.push(warn("<strong>Joint Providership:</strong> Your activity involves a non-accredited partner organisation. A Joint Providership Agreement must be signed before any planning materials or announcements are finalised. Contact OCME&amp;LL as early as possible to begin this process."));
+  }
+  L.push(row_cb("Identify your OCME&amp;LL representative and book an initial planning meeting"));
+  L.push(row_cb("Draft your educational objectives","What will learners be able to do, say, or decide differently after attending?"));
+  L.push(row_cb("Document your needs assessment or practice gap","Quality data, patient outcome data, survey results, literature, or informal gap analysis — any documented rationale is acceptable"));
+  L.push(row_cb("Estimate the number of credit hours","1 AMA PRA Category 1 Credit™ = 60 minutes of instruction, rounded to nearest 0.25"));
+  L.push(row_cb("Confirm your target audience","Specialties, professions, and learner level all affect which credit types and designations apply"));
+
+  // --- What to bring to your application meeting ---
+  L.push(sec("What to Bring to Your Application Meeting"));
+  L.push(row_cb("Session agenda with start and end times for instructional content"));
+  L.push(row_cb("Full list of faculty and planners for disclosure","Every presenter and planning committee member must complete a disclosure form in MiCME/CloudCME — paper forms are not accepted"));
+  L.push(row_cb("Evaluation plan confirmed","The MiCME satisfaction survey is automatic. If you are planning a pre/post assessment or outcomes measure, bring a draft."));
+
+  if ((a.planning_process||[]).includes("multi_org_accredited")) {
+    L.push(row_cb("Confirm which institution will be the accreditation lead","If your ACCME-accredited partner is taking the lead, you may not need to submit through Michigan Medicine at all — clarify this early"));
+  }
+
+  // --- Credit types to discuss ---
+  var hasExtras = res.additionalCredits.filter(function(c){return c.label!=="Joint Providership Agreement Required"&&c.label!=="Co-Organization with Another Accredited Institution";}).length > 0;
+  if (hasExtras || res.boardCredit) {
+    L.push(sec("Credit Types to Discuss with OCME&amp;LL"));
+    L.push(row_b("<strong>AMA PRA Category 1 Credit™</strong> — designated for all physician learners (required for every activity)"));
+    res.additionalCredits.forEach(function(cr){
+      if (cr.label==="Joint Providership Agreement Required"||cr.label==="Co-Organization with Another Accredited Institution") return;
+      L.push(row_cb("<strong>"+cr.label+"</strong>", cr.flag));
+    });
+    if (res.boardCredit) {
+      L.push(row_cb("<strong>MOC / Board Credit: "+res.boardCredit.boards+"</strong>", "Your OCME&amp;LL representative will handle registration with the board — flag this at your first meeting"));
+      if (res.boardCredit.evalWarning) L.push(warn(res.boardCredit.evalWarning));
+    }
+  }
+
+  // --- Michigan mandatory topics ---
+  if (res.michigan.length > 0) {
+    L.push(sec("Michigan Mandatory Topics — Flag to OCME&amp;LL"));
+    res.michigan.forEach(function(m){
+      L.push(row_cb("<strong>"+m.label+"</strong> — "+m.req, m.note));
+    });
+  }
+
+  // --- Commendation ---
+  if (res.commendation.length > 0) {
+    L.push(sec("Potential Commendation Criteria — Mention to OCME&amp;LL"));
+    L.push('<div style="font-size:12px;color:#4a6785;margin-bottom:10px">Your activity may qualify for one or more ACCME Accreditation with Commendation criteria. Mention these at your planning meeting — your OCME&amp;LL representative can help confirm eligibility and document the evidence needed.</div>');
+    res.commendation.forEach(function(cat){
+      cat.matched.forEach(function(cr){
+        L.push(row_cb(cr.label+'<span class="code-tag">'+cr.code+'</span>', cat.category));
+      });
+    });
+  }
+
+  // --- After the activity ---
+  L.push(sec("After the Activity"));
+  L.push(row_cb("Submit your attendance list to OCME&amp;LL within 30 days of the activity"));
+  L.push(row_cb("Share evaluation results with OCME&amp;LL"));
+  if (a.activity_structure === "rss") L.push(row_cb("Log each individual session date and attendance record in MiCME throughout the series year"));
+  L.push(row_cb("Note any post-activity follow-up or improvement plans — these support commendation evidence"));
+
+  L.push('<div class="footer">This document was generated by the CME Credit Application Navigator based on your answers. It is a planning aid only — your OCME&amp;LL representative will guide the actual application process in MiCME.</div>');
+  return L.join('\n');
+}
+
+// ─── DOCUMENT 2: OCME STAFF BUILD BRIEF ──────────────────────────────────────
+// For the OCME&LL representative building the activity in MiCME/CloudCME.
+// Pure ACCME/MiCME terminology. Minimal prose. Everything they need in one place.
+
+function generateStaffBrief(res, answers) {
+  var a = answers;
+  var date = new Date().toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"});
+  var appType = (res.application[0]||{}).appType || "";
+  var L = [];
+
+  L.push(docHeader(
+    "Activity Build Brief",
+    "For OCME&amp;LL staff — MiCME/CloudCME setup reference",
+    date
+  ));
+
+  L.push('<div class="note" style="margin-bottom:18px">This brief is generated from planner responses in the CME Credit Application Navigator. Use it as a build checklist when setting up the activity in MiCME/CloudCME. Verify all details with the planner before finalising the application.</div>');
+
+  // --- Activity classification ---
+  L.push(sec("Activity Classification"));
+  var fmtLabels = {live:"Live Educational Activity — in person",livestream:"Live Educational Activity — virtual (synchronous live stream)",hybrid:"Live Educational Activity — hybrid (simultaneous in-person + live stream)",enduring:"Enduring Material"};
+  L.push(row_b("<strong>Application type:</strong> "+appType));
+  L.push(row_b("<strong>Delivery format:</strong> "+(fmtLabels[a.delivery_format]||a.delivery_format||"—")));
+  var learnEnvLabels2 = {didactic:"Lecture / didactic",workshop:"Small group / workshop / case-based",simulation:"Simulation / hands-on skills lab",performance_improvement:"Performance improvement / QI activity",self_assessment_learning:"Structured self-assessment"};
+  var envList = (a.learning_environment||[]).map(function(e){return learnEnvLabels2[e]||e;}).filter(Boolean);
+  if (envList.length>0) L.push(row_b("<strong>Learning environment:</strong> "+envList.join(", ")));
+  if ((a.learning_environment||[]).includes("simulation")) L.push(note("Simulation activities are accredited as Live Activities — application type is unchanged. Credit hours = supervised instructional time in the sim lab."));
+  if (a.activity_structure === "rss") {
+    L.push(row_b("Regularly Scheduled Series (RSS) — single registration; individual session logging required; periodic evaluation compliant per ACCME RSS policy"));
+  }
+  if (a.activity_structure === "repeated") {
+    L.push(row_b("Repeated course — <strong>separate application per run</strong>; independent attendance records and evaluation required for each"));
+  }
+  if ((a.hybrid_components||[]).includes("hybrid_enduring")) {
+    L.push(warn("<strong>Action required:</strong> recording to be made publicly available → second Enduring Material application required; separate credit designation, expiration date (max 3 years per ACCME policy), and independent evaluation required."));
+  }
+  if ((a.hybrid_components||[]).includes("hybrid_enduring_bundled")) {
+    L.push(note("Bundled recording for registered attendees only → included under live activity; confirm access duration does not exceed 30 days without triggering Enduring Material requirements."));
+  }
+
+  // --- Credit designations ---
+  L.push(sec("Credit Designations — Build in CloudCME"));
+  L.push(row_b("AMA PRA Category 1 Credit™ — designate for all physician learners"));
+  var creditExtras = res.additionalCredits.filter(function(c){return c.label!=="Joint Providership Agreement Required"&&c.label!=="Co-Organization with Another Accredited Institution";});
+  creditExtras.forEach(function(cr){
+    L.push(row_b("<strong>"+cr.label+"</strong> — "+cr.who));
+  });
+
+  // --- MOC ---
+  if (res.boardCredit && res.boardCredit.boards) {
+    L.push(sec("MOC / Board Certification Credit"));
+    L.push(row_b("Register with: <strong>"+res.boardCredit.boards+"</strong>"));
+    if (res.boardCredit.evalWarning) L.push(warn("<strong>Evaluation requirement:</strong> "+res.boardCredit.evalWarning));
+    L.push(row_b("Report credits to board following activity completion per standard reporting workflow"));
+  }
+
+  // --- Providership ---
+  var hasJoint = (a.planning_process||[]).includes("multi_org");
+  var hasCo = (a.planning_process||[]).includes("multi_org_accredited");
+  if (hasJoint || hasCo) {
+    L.push(sec("Providership"));
+    if (hasJoint) {
+      L.push(warn("<strong>Jointly Provided Activity</strong> — Joint Providership Agreement must be executed before the activity proceeds."));
+      L.push(row_b("Accreditation statement (required on all materials):<br><em style='color:#4a6785'>\"This activity has been planned and implemented in accordance with the accreditation requirements and policies of the ACCME through the joint providership of the University of Michigan Medical School Office of CME &amp; Lifelong Learning and [Partner Organization Name].\"</em>"));
+      L.push(row_b("<strong>CloudCME:</strong> Activity Type → Jointly Provided | Enter partner name in Joint Provider field"));
+    }
+    if (hasCo) {
+      L.push(row_b("Co-organized with an ACCME-accredited institution — directly provided accreditation statement applies; acknowledge co-organizer in activity description field only. Confirm which institution holds accreditation lead."));
+    }
+  }
+
+  // --- IPCE ---
+  var nonPhys = (a.audience_professions||[]).filter(function(p){return ["nurses","pharmacists","pas","social_workers","psychologists","dietitians","other_health"].includes(p);});
+  if (nonPhys.length >= 1 && (a.planning_process||[]).includes("multi_prof")) {
+    L.push(sec("Interprofessional Continuing Education (IPCE)"));
+    L.push(row_b("Activity meets IPCE definition (ACCME/ACPE/ANCC): planned by and for two or more professions learning with, from, and about each other"));
+    L.push(row_b("Track internally as IPCE activity; file in Joint Accreditation portfolio"));
+    L.push(row_b("Required documentation: interprofessional planning committee members + interprofessional faculty roster"));
+    L.push(row_b("Note: IPCE Credit Mark on certificates requires Joint Accreditation (not yet held); designate as interprofessional activity in MiCME record"));
+    L.push(note("<strong>Professions in scope:</strong> "+(a.audience_professions||[]).join(", ")));
+  }
+
+  // --- Evaluation ---
+  L.push(sec("Evaluation"));
+  var evalMap = {
+    survey_only:"Satisfaction survey — MiCME standard (auto-generated in every activity; no additional setup required)",
+    pre_post:"Pre/post knowledge assessment — results must be documented in activity record; satisfaction survey also auto-generated",
+    performance_outcome:"Performance/practice change outcome measure — follow-up data collection required; document results in activity record; satisfaction survey also auto-generated",
+    patient_outcome:"Patient or quality outcome measure — follow-up data collection required; document results in activity record; satisfaction survey also auto-generated",
+    self_assessment_format:"Formal self-assessment or reflective practice component — satisfaction survey also auto-generated"
+  };
+  L.push(row_b((evalMap[a.evaluation_plan]||a.evaluation_plan||"Not specified")));
+
+  // --- Michigan mandatory topics ---
+  if (res.michigan.length > 0) {
+    L.push(sec("Michigan Mandatory Topic Designations"));
+    res.michigan.forEach(function(m){
+      L.push(row_b("<strong>"+m.label+"</strong> — "+m.req));
+    });
+    L.push(row_b("Designate in CloudCME topic/tag fields; verify correct coding in MiCME compliance report"));
+  }
+
+  // --- Commendation ---
+  if (res.commendation.length > 0) {
+    L.push(sec("ACCME Commendation Criteria — Map in Activity Record"));
+    res.commendation.forEach(function(cat){
+      cat.matched.forEach(function(cr){
+        L.push(row_b('<strong>'+cr.code+'</strong> — '+cr.label+' <span class="code-tag">'+cat.category+'</span>'));
+      });
+    });
+    L.push(note("Supporting evidence for each criterion must be attached to the activity file before submission for commendation review."));
+  }
+
+  // --- Content tags ---
+  var cTags = {clinical_knowledge:"Clinical Knowledge Update",procedural:"Procedural/Technical Skills",patient_safety:"Patient Safety",qi_activity:"Quality Improvement",communication:"Communication Skills",mental_health:"Mental Health / Behavioral Health",population_health:"Population Health",sdoh:"Health Equity / SDOH",pain_management:"Pain Management / Controlled Substances",ethics:"Medical Ethics",research:"Research / Evidence-Based Practice",technology:"Health Technology / Innovation"};
+  var tags = (a.content_focus||[]).filter(function(c){return cTags[c];}).map(function(c){return cTags[c];});
+  if (tags.length > 0) {
+    L.push(sec("Content Tags — MiCME Tagging"));
+    L.push('<div style="font-size:12px;color:#00274C;background:#f0f2f5;border-radius:6px;padding:8px 12px;line-height:1.8">'+tags.map(function(t){return '<span class="code-tag" style="font-size:11px;margin:2px">'+t+'</span>';}).join(' ')+'</div>');
+  }
+
+  L.push('<div class="footer">Generated by CME Credit Application Navigator · Michigan Medicine OCME&amp;LL · Verify all details with the activity planner before finalising the application.</div>');
+  return L.join('\n');
+}
+
+// ─── PRINT VIA HIDDEN IFRAME (no popup needed, works everywhere) ──────────────
+function printDocument(title, bodyHtml) {
+  // Remove any previous print iframe
+  var old = document.getElementById('__cme_print_frame');
+  if (old) old.parentNode.removeChild(old);
+
+  var iframe = document.createElement('iframe');
+  iframe.id = '__cme_print_frame';
+  iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;border:none';
+  document.body.appendChild(iframe);
+
+  var doc = iframe.contentDocument || iframe.contentWindow.document;
+  doc.open();
+  doc.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+title+'</title>'
+    +'<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">'
+    +'<style>'+docStyles()+'body{padding:0}.page{padding:28px 32px}@media print{body{padding:0}}</style>'
+    +'</head><body><div class="page">'+bodyHtml+'</div></body></html>');
+  doc.close();
+
+  // Wait for fonts then print
+  setTimeout(function(){
+    try { iframe.contentWindow.focus(); iframe.contentWindow.print(); }
+    catch(e) { window.print(); }
+  }, 400);
+}
+
+// ─── INLINE DOC PANEL ────────────────────────────────────────────────────────
+function renderDocPanel(config) {
+  var isOpen = state[config.stateKey] === true;
+  var wrap = el("div", {style:{marginBottom:"12px"}});
+
+  // Header / toggle button
+  var hdr = el("div", {style:{
+    border:"2px solid "+(isOpen ? config.accentColor : "#d0d9e3"),
+    borderRadius: isOpen ? "12px 12px 0 0" : "12px",
+    background: isOpen ? config.bgOpen : "#fff",
+    padding:"14px 16px", cursor:"pointer",
+    display:"flex", alignItems:"center", gap:"12px",
+    transition:"all 0.15s"
+  }});
+  hdr.onclick = function(){ state[config.stateKey] = !isOpen; render(); };
+
+  var ico = el("div",{style:{
+    width:"44px",height:"44px",flexShrink:"0",borderRadius:"10px",
+    background:isOpen ? config.accentColor : "#f0f2f5",
+    display:"flex",alignItems:"center",justifyContent:"center",fontSize:"22px",
+    transition:"background 0.15s"
+  }},[config.icon]);
+  hdr.appendChild(ico);
+
+  var txt = el("div",{style:{flex:"1",minWidth:0}});
+  txt.appendChild(el("div",{style:{fontWeight:"800",color:"#00274C",fontSize:"15px",marginBottom:"2px"}},[config.title]));
+  txt.appendChild(el("div",{style:{fontSize:"12px",color:"#4a6785",lineHeight:"1.4"}},[config.subtitle]));
+  hdr.appendChild(txt);
+
+  var chev = el("div",{style:{flexShrink:"0",width:"28px",height:"28px",borderRadius:"50%",
+    background:isOpen?"rgba(0,0,0,0.08)":"#f0f2f5",
+    display:"flex",alignItems:"center",justifyContent:"center",
+    fontSize:"12px",color:"#00274C",fontWeight:"800"
+  }},[isOpen?"▲":"▼"]);
+  hdr.appendChild(chev);
+  wrap.appendChild(hdr);
+
+  if (isOpen) {
+    // Action bar
+    var bar = el("div",{style:{
+      background:config.accentColor, padding:"6px 16px",
+      display:"flex", justifyContent:"space-between", alignItems:"center"
+    }});
+    bar.appendChild(el("span",{style:{fontSize:"11px",fontWeight:"700",color:config.barTextColor,opacity:"0.85"}},
+      ["Michigan Medicine · OCME&LL"]));
+
+    var pBtn = el("button",{style:{
+      background:config.printBg, color:config.printColor,
+      border:"none", padding:"4px 16px", borderRadius:"5px",
+      fontFamily:"inherit", fontSize:"11px", fontWeight:"700", cursor:"pointer"
+    }},["🖨  Print / Save PDF"]);
+    pBtn.onclick = function(e){
+      e.stopPropagation();
+      printDocument(config.title, config.bodyHtml);
+    };
+    bar.appendChild(pBtn);
+    wrap.appendChild(bar);
+
+    // Document body
+    var body = el("div",{style:{
+      border:"2px solid "+config.accentColor, borderTop:"none",
+      borderRadius:"0 0 12px 12px",
+      padding:"20px 18px", background:"#fff",
+      maxHeight:"520px", overflowY:"auto"
+    }});
+    body.innerHTML = config.bodyHtml;
+    wrap.appendChild(body);
+  }
+
+  return wrap;
+}
+
+// ─── EXPORT TAB ──────────────────────────────────────────────────────────────
+function renderExportTab(res, answers) {
+  var wrap = el("div");
+
+  // Intro callout
+  var intro = el("div",{style:{
+    background:"#eef2f7", border:"1px solid #a8bdd4", borderRadius:"12px",
+    padding:"14px 16px", marginBottom:"18px", fontSize:"14px",
+    color:"#00274C", lineHeight:"1.6"
+  }});
+  intro.innerHTML = '<strong>These are supporting documents — not the application itself.</strong> '
+    + 'Share them with your OCME&amp;LL representative when you begin your MiCME application. '
+    + 'They capture everything the Navigator identified from your answers so nothing gets missed.';
+  wrap.appendChild(intro);
+
+  // Generate HTML for both docs now (once, not on every toggle)
+  var plannerHtml = generatePlannerGuide(res, answers);
+  var staffHtml = generateStaffBrief(res, answers);
+
+  // Doc 1 — Planner Preparation Guide
+  wrap.appendChild(renderDocPanel({
+    stateKey: "docPlannerOpen",
+    icon: "📋",
+    title: "Planner Preparation Guide",
+    subtitle: "For the educational planner or Administrative Coordinator — what to gather and discuss before submitting your MiCME application",
+    accentColor: "#2F65A7",
+    bgOpen: "#eef2f7",
+    barTextColor: "#fff",
+    printBg: "#FFCB05",
+    printColor: "#00274C",
+    bodyHtml: plannerHtml
+  }));
+
+  // Doc 2 — OCME Staff Build Brief
+  wrap.appendChild(renderDocPanel({
+    stateKey: "docStaffOpen",
+    icon: "⚙️",
+    title: "OCME Staff Build Brief",
+    subtitle: "For your OCME&LL representative — MiCME/CloudCME setup reference in ACCME terminology",
+    accentColor: "#FFCB05",
+    bgOpen: "#fffbe6",
+    barTextColor: "#00274C",
+    printBg: "#00274C",
+    printColor: "#fff",
+    bodyHtml: staffHtml
+  }));
+
+  wrap.appendChild(el("div",{style:{
+    fontSize:"12px",color:"#7a96b0",textAlign:"center",marginTop:"10px",lineHeight:"1.5"
+  }},["Click either document to expand it. Use Print / Save PDF to produce a clean copy to share or file. Only items relevant to your specific activity are included."]));
+
+  return wrap;
+}
+
+
 function render(){
   var app=document.getElementById("app");
   app.innerHTML="";
