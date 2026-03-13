@@ -293,7 +293,7 @@ function deriveResults(answers) {
   if (mi.includes("mi_human_trafficking")) res.michigan.push({icon:"🔴",label:"Human Trafficking Identification",req:"One-time requirement for Michigan physicians",note:"Flag this on your application. Physicians who have not yet completed this one-time requirement can use your activity to fulfill it."});
 
   if (planning.includes("needs_assessment")) res.flags.push("You conducted a formal needs assessment — include this documentation with your application. It strengthens your application and supports several commendation criteria.");
-  if (evalMethod==="survey_only"&&(hasQI||hasPatientSafety)) res.flags.push("Your activity covers quality improvement or patient safety content, but your evaluation is a satisfaction survey only. A pre/post knowledge test or outcomes measure would unlock additional credit types and commendation opportunities.");
+  if (evalMethod==="survey_only"&&(hasQI||hasPatientSafety)) res.flags.push("Your activity includes quality improvement or patient safety content. If an outcomes measure or pre/post assessment is feasible, mention this to OCME&amp;LL — it may support additional commendation criteria. A satisfaction survey alone is perfectly valid.");
   if (isRepeated) res.flags.push("Remember: each run of this course needs its own separate application, even if the content is identical. Plan your application timeline accordingly.");
   if (isRSS&&isHybrid&&hasPublicRecording) res.flags.push("For your RSS: each time a session recording is publicly released, a separate Enduring Material application is needed for that recording. Discuss the workflow for this with your OCME&LL representative upfront.");
 
@@ -301,7 +301,7 @@ function deriveResults(answers) {
 }
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
-var state={answers:{},step:0,done:false,activeTab:"application",openTooltip:null,docPlannerOpen:false,docStaffOpen:false};
+var state={answers:{},step:0,done:false,activeTab:"application",openTooltip:null,docPlannerOpen:false,docStaffOpen:false,docPlannerHtml:null,docStaffHtml:null};
 
 function getVisibleQuestions(){
   return QUESTIONS.filter(function(q){return !q.showIf||q.showIf(state.answers);});
@@ -321,7 +321,7 @@ function toggle(qid,value,type){
 }
 function goNext(){var qs=getVisibleQuestions();if(state.step<qs.length-1){state.step++;render();scrollToTop();}else{state.done=true;render();scrollToTop();}}
 function goBack(){if(state.step>0){state.step--;render();scrollToTop();}}
-function restart(){state.answers={};state.step=0;state.done=false;state.activeTab="application";state.openTooltip=null;render();scrollToTop();}
+function restart(){state.answers={};state.step=0;state.done=false;state.activeTab="application";state.openTooltip=null;state.docPlannerHtml=null;state.docStaffHtml=null;render();scrollToTop();}
 function scrollToTop(){window.scrollTo({top:0,behavior:"smooth"});}
 
 // ─── DOM HELPERS ──────────────────────────────────────────────────────────────
@@ -353,8 +353,8 @@ function renderTooltip(text,id){
   var isOpen=state.openTooltip===id;
   var wrap=el("span",{style:{position:"relative",display:"inline-flex",alignItems:"center",verticalAlign:"middle"}});
   var btn=el("span",{style:{cursor:"pointer",padding:"0 4px",color:isOpen?"#2F65A7":"#7a96b0",fontSize:"13px",userSelect:"none",lineHeight:"1",display:"inline-flex",alignItems:"center"},role:"button",tabindex:"0"},["ⓘ"]);
-  btn.onclick=function(e){e.stopPropagation();state.openTooltip=isOpen?null:id;render();};
-  btn.onkeydown=function(e){if(e.key==="Enter"||e.key===" "){e.stopPropagation();state.openTooltip=isOpen?null:id;render();}};
+  btn.onclick=function(e){e.stopPropagation();var next=isOpen?null:id;if(state.openTooltip===next)return;state.openTooltip=next;render();};
+  btn.onkeydown=function(e){if(e.key==="Enter"||e.key===" "){e.stopPropagation();var next=isOpen?null:id;if(state.openTooltip===next)return;state.openTooltip=next;render();}};
   wrap.appendChild(btn);
   if(isOpen){
     var pop=el("div",{style:{position:"absolute",left:"50%",bottom:"calc(100% + 8px)",transform:"translateX(-50%)",background:"#1e293b",color:"#f0f2f5",borderRadius:"10px",padding:"12px 14px",fontSize:"13px",lineHeight:"1.6",width:"280px",zIndex:"999",boxShadow:"0 8px 24px rgba(0,0,0,0.25)",whiteSpace:"pre-wrap"}},[text]);
@@ -617,7 +617,7 @@ function docStyles() {
 
     /* ── Summary card ── */
     +'.summary{background:#00274C;color:#fff;border-radius:8px;padding:16px 20px;margin-bottom:24px}'
-    +'.summary-label{font-size:9px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;opacity:0.55;margin-bottom:4px}'
+    +'.summary-label{font-size:9px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,0.55);margin-bottom:4px}'
     +'.summary-type{font-size:18px;font-weight:800;margin-bottom:12px;line-height:1.2}'
     +'.summary-pills{display:flex;flex-wrap:wrap;gap:6px}'
     +'.pill{font-size:10.5px;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(255,255,255,0.15);color:#fff;letter-spacing:0.2px}'
@@ -704,15 +704,20 @@ function docStyles() {
     +'.doc-footer{margin-top:30px;padding:10px 14px;border-radius:6px;background:#f8f9fb;'
     +'            border:1px solid #e4eaf2;font-size:10.5px;color:#8a9bb0;line-height:1.5;font-style:italic}'
 
+    +'html{-webkit-print-color-adjust:exact;print-color-adjust:exact}'
     +'@media print{'
     +'  .no-print{display:none!important}'
     +'  .plist li{break-inside:avoid}'
-    +'  .s-group{break-inside:avoid}'
+    +'  .s-group{break-inside:avoid;break-before:avoid}'
     +'  .bld{break-inside:avoid}'
     +'  h2{break-after:avoid}'
+    +'  .sec-note{break-after:avoid}'
+    +'  .intro-box{break-after:avoid}'
+    +'  .tag-container{break-inside:avoid}'
     +'  .doc-footer{background:#fff;border:none}'
     +'}';
 }
+var DOC_STYLES = docStyles();
 // ─── SHARED HELPERS ───────────────────────────────────────────────────────────
 function summaryCard(appType, pills, yellowPills) {
   var pillsHtml = (pills||[]).map(function(p){return '<span class="pill">'+p+'</span>';}).join('');
@@ -1033,7 +1038,12 @@ function generateStaffBrief(res, answers) {
     var commRows = [];
     res.commendation.forEach(function(cat){
       cat.matched.forEach(function(cr){
-        commRows.push(srow('<span class="item-tag">'+cr.code+'</span>&nbsp; '+cr.label, cat.category));
+        commRows.push(srow(cr.code,
+          '<div style="display:flex;flex-direction:column;gap:2px">'
+          +'<span>'+cr.label+'</span>'
+          +'<span style="font-size:11px;font-weight:400;color:#5a7a9a">'+cat.category+'</span>'
+          +'</div>'
+        ));
       });
     });
     L.push(sgroup(commRows));
@@ -1067,7 +1077,7 @@ function printDocument(title, bodyHtml) {
   doc.open();
   doc.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+title+'</title>'
     +'<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">'
-    +'<style>'+docStyles()+'body{padding:0}.page{padding:28px 32px}@media print{body{padding:0}}</style>'
+    +'<style>'+DOC_STYLES+'body{padding:0}.page{padding:28px 32px}@media print{body{padding:0}}</style>'
     +'</head><body><div class="page">'+bodyHtml+'</div></body></html>');
   doc.close();
 
@@ -1131,10 +1141,14 @@ function renderDocPanel(config) {
     }},["🖨  Print / Save PDF"]);
     pBtn.onclick = function(e){
       e.stopPropagation();
-      printDocument(config.title, config.bodyHtml);
+      printDocument(config.title, bodyHtml);
     };
     bar.appendChild(pBtn);
     wrap.appendChild(bar);
+
+    // Lazily generate document HTML on first open, cache it
+    if (!state[config.cacheKey]) state[config.cacheKey] = config.generateFn();
+    var bodyHtml = state[config.cacheKey];
 
     // Document body — inject docStyles so screen rendering matches print
     var body = el("div",{style:{
@@ -1144,8 +1158,8 @@ function renderDocPanel(config) {
       maxHeight:"620px", overflowY:"auto"
     }});
     body.innerHTML = '<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">'
-      +'<style>'+docStyles()+'</style>'
-      +'<div class="page" style="padding:24px 28px">'+config.bodyHtml+'</div>';
+      +'<style>'+DOC_STYLES+'</style>'
+      +'<div class="page" style="padding:24px 28px">'+bodyHtml+'</div>';
     wrap.appendChild(body);
   }
 
@@ -1168,10 +1182,6 @@ function renderExportTab(res, answers) {
     + 'The <strong>MiCME Activity Build Brief</strong> is for your OCME&amp;LL representative — everything needed to build the activity correctly in CloudCME.';
   wrap.appendChild(intro);
 
-  // Generate HTML for both docs now (once, not on every toggle)
-  var plannerHtml = generatePlannerGuide(res, answers);
-  var staffHtml = generateStaffBrief(res, answers);
-
   // Doc 1 — Planner Preparation Guide
   wrap.appendChild(renderDocPanel({
     stateKey: "docPlannerOpen",
@@ -1183,7 +1193,8 @@ function renderExportTab(res, answers) {
     barTextColor: "#fff",
     printBg: "#FFCB05",
     printColor: "#00274C",
-    bodyHtml: plannerHtml
+    cacheKey: "docPlannerHtml",
+    generateFn: function(){ return generatePlannerGuide(res, answers); }
   }));
 
   // Doc 2 — OCME Staff Build Brief
@@ -1197,7 +1208,8 @@ function renderExportTab(res, answers) {
     barTextColor: "#00274C",
     printBg: "#00274C",
     printColor: "#fff",
-    bodyHtml: staffHtml
+    cacheKey: "docStaffHtml",
+    generateFn: function(){ return generateStaffBrief(res, answers); }
   }));
 
   wrap.appendChild(el("div",{style:{
