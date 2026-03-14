@@ -601,7 +601,43 @@ async function handleGenerate() {
   renderOutput();
 }
 
-async function handleRegenerate() { state.results = null; await handleGenerate(); }
+async function handleRegenerate() {
+  // Preserve all user form inputs — only refresh AI-generated output fields.
+  state.status = "loading"; renderOutput();
+  var btn = document.getElementById("generateBtn");
+  if (btn) { btn.disabled = true; document.getElementById("btnText").textContent = "Regenerating\u2026"; }
+  try {
+    var resp = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 3500, system: SYSTEM_PROMPT, messages: [{ role: "user", content: buildUserPrompt() }] })
+    });
+    var data = await resp.json();
+    if (!resp.ok) throw new Error(data.error ? data.error.message : "API request failed");
+    var text = data.content[0].text.trim().replace(/^```json?\s*/i, "").replace(/\s*```$/i, "").trim();
+    var p = JSON.parse(text);
+    var en = p.educationalNeeds || {};
+    state.results = p;
+    state.selected = {
+      practiceGapOption: 0, practiceGapText: (p.practiceGap || [""])[0],
+      needsPrimaryType: en.primaryType || "Knowledge",
+      needsReasoning: en.reasoning || "",
+      needsPrimaryText: en.primaryText || "",
+      needsSecondaryType: en.secondaryType || null,
+      needsSecondaryText: en.secondaryText || "",
+      expectedResults: p.expectedResults || "",
+      formatJustification: p.formatJustification || "",
+      objectives: (p.learningObjectives || []).map(function(t) { return { text: t, checked: true }; }),
+      competencies: p.competencies || null,
+      summaryText: p.needsAssessmentSummary || "",
+      eligibility: p.eligibility || null
+    };
+    state.status = "done";
+  } catch(e) {
+    state.status = "error"; state.errorMessage = e.message || "Unexpected error.";
+  }
+  if (btn) { btn.disabled = false; document.getElementById("btnText").textContent = "Generate Application Content \u2192"; }
+  renderOutput();
+}
 
 function selectGapOption(idx) {
   state.selected.practiceGapOption = idx;
@@ -665,6 +701,108 @@ function copyAllObjectives(btnEl) {
     btnEl.innerHTML = CHECK_ICON + " Copied!";
     setTimeout(function() { btnEl.classList.remove("copied"); btnEl.innerHTML = COPY_ICON + " Copy all"; }, 2000);
   }).catch(function() {});
+}
+
+function copyAllSections(btnEl) {
+  var s = state.selected;
+  if (!s || !s.practiceGapText) return;
+
+  // Always read live DOM values so user edits are captured
+  function ta(id) { var el = document.getElementById(id); return el ? el.value.trim() : ""; }
+
+  var topic = document.getElementById("topic").value.trim();
+  var profs = getProfs(), specs = getSpecs(), other = document.getElementById("audienceOther").value.trim();
+  var audience = profs.concat(specs.map(specLabel));
+  if (other) audience.push(other);
+
+  var typeMap = { "Knowledge": "Knowledge", "Competence": "Skill / Strategy", "Performance": "Performance" };
+  var checkedObjs = s.objectives.filter(function(o) { return o.checked; });
+
+  var lines = [];
+  lines.push("CME APPLICATION CONTENT");
+  lines.push("Michigan Medicine \u00b7 Office of CME & Lifelong Learning");
+  lines.push("Generated " + new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }));
+  lines.push("");
+  if (topic)              { lines.push("TOPIC: " + topic); }
+  if (audience.length)    { lines.push("AUDIENCE: " + audience.join(", ")); }
+  lines.push("");
+
+  lines.push("=== WHY THIS ACTIVITY IS NEEDED (practice gap)");
+  lines.push("CloudCME \u2192 Gap and Needs \u2192 Practice Gap");
+  lines.push(ta("gapTextarea") || s.practiceGapText);
+  lines.push("");
+
+  lines.push("=== WHAT LEARNERS ARE MISSING (educational need)");
+  lines.push("CloudCME \u2192 Gap and Needs \u2192 Educational Needs");
+  var primaryLabel = (s.needsPrimaryType || "Knowledge") + " need (primary) \u2014 CloudCME field: " + (typeMap[s.needsPrimaryType] || s.needsPrimaryType);
+  lines.push("[" + primaryLabel + "]");
+  lines.push(ta("needPrimaryTA") || s.needsPrimaryText);
+  if (s.needsSecondaryType && (ta("needSecondaryTA") || s.needsSecondaryText)) {
+    lines.push("");
+    lines.push("[" + s.needsSecondaryType + " need (secondary) \u2014 CloudCME field: " + (typeMap[s.needsSecondaryType] || s.needsSecondaryType) + "]");
+    lines.push(ta("needSecondaryTA") || s.needsSecondaryText);
+  }
+  lines.push("");
+
+  lines.push("=== WHAT WILL CHANGE AFTER THIS ACTIVITY (expected results)");
+  lines.push("CloudCME \u2192 Gap and Needs \u2192 Expected Results");
+  lines.push(ta("expectedResultsTA") || s.expectedResults);
+  lines.push("");
+
+  lines.push("=== WHY THIS FORMAT WORKS (educational format justification)");
+  lines.push("CloudCME \u2192 Gap and Needs \u2192 Educational Format");
+  lines.push(ta("formatJustTA") || s.formatJustification);
+  lines.push("");
+
+  lines.push("=== WHAT LEARNERS WILL BE ABLE TO DO (learning objectives)");
+  lines.push("CloudCME \u2192 Learning Outcomes & Competencies \u2192 Learning Objectives");
+  lines.push("At the conclusion of this activity, participants will be able to:");
+  checkedObjs.forEach(function(o, i) { lines.push((i + 1) + ". " + o.text); });
+  lines.push("");
+
+  if (s.competencies) {
+    var compDefs = [{ key: "acgme", label: "ACGME / ABMS" }, { key: "iom", label: "IOM" }, { key: "ipec", label: "IPEC" }];
+    var hasComps = compDefs.some(function(cd) { return (s.competencies[cd.key] || []).length; });
+    if (hasComps) {
+      lines.push("=== COMPETENCY FRAMEWORKS ADDRESSED");
+      lines.push("CloudCME \u2192 Learning Outcomes \u2192 Competencies");
+      compDefs.forEach(function(cd) {
+        var items = s.competencies[cd.key] || [];
+        if (items.length) lines.push(cd.label + ": " + items.join(", "));
+      });
+      lines.push("");
+    }
+  }
+
+  lines.push("=== ONE-PARAGRAPH SUMMARY (needs assessment summary)");
+  lines.push("CloudCME \u2192 Gap and Needs \u2192 Needs Assessment \u2192 Summary of findings");
+  lines.push(ta("summaryTA") || s.summaryText);
+  lines.push("");
+  lines.push("---");
+  lines.push("Generated by CME Content Helper \u00b7 Michigan Medicine OCME&LL \u00b7 Review and edit before submitting to MiCME.");
+
+  var fullText = lines.join("\n");
+
+  function doFeedback() {
+    var orig = btnEl.innerHTML;
+    btnEl.classList.add("copied");
+    btnEl.innerHTML = CHECK_ICON + " Copied!";
+    setTimeout(function() { btnEl.classList.remove("copied"); btnEl.innerHTML = orig; }, 2500);
+  }
+
+  navigator.clipboard.writeText(fullText).then(doFeedback).catch(function() {
+    // Fallback: create a temporary textarea and use execCommand
+    try {
+      var tmp = document.createElement("textarea");
+      tmp.value = fullText;
+      tmp.style.cssText = "position:fixed;top:-9999px;left:-9999px";
+      document.body.appendChild(tmp);
+      tmp.select();
+      document.execCommand("copy");
+      document.body.removeChild(tmp);
+      doFeedback();
+    } catch(e) {}
+  });
 }
 
 // ── SECTION HEADER ──
@@ -763,7 +901,7 @@ function renderOutput() {
     return;
   }
   if (state.status === "loading") {
-    panel.innerHTML = "<div class=\"card\"><div class=\"loading-state\"><div class=\"spinner\"></div><div class=\"loading-text\">Writing your application content\u2026</div><div class=\"loading-sub\">Generating practice gap, educational need, expected results, format justification, objectives, competencies, barriers, needs assessment summary, and full eligibility review.</div></div></div>";
+    panel.innerHTML = "<div class=\"card\"><div class=\"loading-state\"><div class=\"spinner\"></div><div class=\"loading-text\">Writing your application content\u2026</div><div class=\"loading-sub\">Generating practice gap, educational need, expected results, format justification, objectives, competencies, needs assessment summary, and full eligibility review.</div></div></div>";
     return;
   }
   if (state.status === "error") {
@@ -780,7 +918,7 @@ function renderOutput() {
   };
   // Top action bar
   var tb = document.createElement("div"); tb.className = "action-bar no-print";
-  tb.innerHTML = "<button class=\"btn-regen\" onclick=\"handleRegenerate()\">&#8635; Regenerate</button><button class=\"btn-print\" onclick=\"handlePrint()\">&#128424; Print / Save PDF</button>";
+  tb.innerHTML = "<button class=\"btn-regen\" title=\"Re-runs the AI with the same inputs to produce fresh alternative content. Your form fields are not affected.\" onclick=\"handleRegenerate()\">&#8635; New AI Draft</button><button class=\"copy-btn\" style=\"position:static;opacity:1;width:auto;padding:7px 14px;font-size:13px;font-weight:700;gap:6px;border-radius:8px\" onclick=\"copyAllSections(this)\" title=\"Copy all sections as plain text — paste directly into CloudCME or a document\">" + COPY_ICON + " Copy all sections</button><button class=\"btn-print\" onclick=\"handlePrint()\">&#128424; Print / Save PDF</button>";
   panel.appendChild(tb);
 
   // ── 1. PRACTICE GAP ──
@@ -862,7 +1000,7 @@ function renderOutput() {
 
   // Bottom bar
   var bb = document.createElement("div"); bb.className = "action-bar no-print"; bb.style.paddingBottom = "20px";
-  bb.innerHTML = "<button class=\"btn-regen\" onclick=\"handleRegenerate()\">&#8635; Regenerate</button><button class=\"btn-print\" onclick=\"handlePrint()\">&#128424; Print / Save PDF</button>";
+  bb.innerHTML = "<button class=\"btn-regen\" title=\"Re-runs the AI with the same inputs to produce fresh alternative content. Your form fields are not affected.\" onclick=\"handleRegenerate()\">&#8635; New AI Draft</button><button class=\"copy-btn\" style=\"position:static;opacity:1;width:auto;padding:7px 14px;font-size:13px;font-weight:700;gap:6px;border-radius:8px\" onclick=\"copyAllSections(this)\" title=\"Copy all sections as plain text — paste directly into CloudCME or a document\">" + COPY_ICON + " Copy all sections</button><button class=\"btn-print\" onclick=\"handlePrint()\">&#128424; Print / Save PDF</button>";
   panel.appendChild(bb);
 }
 
