@@ -1,1314 +1,230 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>CME Credit Application Navigator</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{background:#f0f2f5;font-family:'Nunito Sans',Arial,sans-serif;color:#00274C;line-height:1.6;min-height:100vh}
-button{font-family:inherit;cursor:pointer}
-@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.fade-up{animation:fadeUp 0.2s ease both}
-@media print{.no-print{display:none!important}body{background:#fff}}
-</style>
-</head>
-<body>
-<div id="app"></div>
-<script>
-const SPECIALTY_MOC = {
-  internal_med:    {boards:"ABIM (MOC Part II)",flag:"Your physician attendees who hold ABIM certification may be able to claim Maintenance of Certification (MOC) credit. This requires a specific type of evaluation — flag this to OCME&LL and ask whether a pre/post knowledge assessment should be added."},
-  anesthesiology:  {boards:"ABA (MOCA 2.0®)",flag:"Anesthesiologists may claim ABA MOCA 2.0® Lifelong Learning credit. If your activity covers patient safety topics, there may also be a separate ABA Patient Safety CME designation available. Mention both to your OCME&LL representative."},
-  family_med:      {boards:"ABFM Continuing Certification",flag:"Family physicians may claim ABFM Continuing Certification credit. Your OCME&LL representative will handle registration."},
-  pediatrics:      {boards:"ABP MOC Part II",flag:"Pediatricians may claim ABP MOC credit. Credits are automatically sent to physician portfolios once reported."},
-  psychiatry_neuro:{boards:"ABPN Continuing Certification",flag:"Psychiatrists and neurologists may claim ABPN credit. If you are including a self-assessment component, mention this — it has additional value for ABPN requirements."},
-  surgery:         {boards:"ABOS / ABS / ABTS",flag:"Surgeons may claim board credit through their respective certifying boards. Mention the surgical subspecialties in your audience so the right boards are registered."},
-  ob_gyn:          {boards:"ABOG Continuing Certification",flag:"OB/GYN physicians may claim ABOG board credit. Your OCME&LL representative will handle registration."},
-  radiology:       {boards:"ABR Continuing Certification",flag:"Radiologists and radiation oncologists may claim ABR credit. Your OCME&LL representative will advise on the correct reporting pathway."},
-  emergency_med:   {boards:"ABEM Continuing Certification",flag:"Emergency medicine physicians may be eligible for credit toward ABEM continuing certification. Your OCME&LL representative will confirm current requirements."},
-  multi_specialty: {boards:"Multiple boards (ABIM, ABFM, ABP, ABPN and others)",flag:"With a multi-specialty audience, several board certification programs may apply. Let your OCME&LL representative know all specialties represented."},
-  other_specialty: {boards:null,flag:null},
-};
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CME Helper Apps · Michigan Medicine</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-const COMMENDATION = [
-  {category:"Team-Based & Interprofessional Education",color:"#6d28d9",colorLight:"#f5f3ff",colorBorder:"#ddd6fe",icon:"🤝",
-   whyItMatters:"Activities that bring different professions together in planning and delivery are a foundation of Accreditation with Commendation. Flag any of these to your OCME&LL representative.",
-   criteria:[
-     {code:"C23",label:"Interprofessional planning committee",triggers:["multi_prof"]},
-     {code:"C24",label:"Patient or community voice in planning",triggers:["patient_engagement"]},
-     {code:"C25",label:"Health professions students involved",triggers:["students_involved"]},
-  ]},
-  {category:"Public Health & Community Impact",color:"#0e7490",colorLight:"#ecfeff",colorBorder:"#a5f3fc",icon:"🌍",
-   whyItMatters:"Activities addressing population health, health equity, or cross-organizational collaboration are highly valued.",
-   criteria:[
-     {code:"C26",label:"Addresses population health or health equity",triggers:["population_health","sdoh"]},
-     {code:"C27",label:"Collaboration with another organization",triggers:["multi_org"]},
-     {code:"C28",label:"Activity was designed using real data",triggers:["data_driven","qi_activity"]},
-  ]},
-  {category:"Skills Development",color:"#15803d",colorLight:"#f0fdf4",colorBorder:"#bbf7d0",icon:"🎯",
-   whyItMatters:"Skill-building activities — especially simulation and communication training — are recognized under commendation.",
-   criteria:[
-     {code:"C29",label:"Communication skills training",triggers:["communication"]},
-     {code:"C30",label:"Hands-on procedural or technical skills",triggers:["simulation","procedural"]},
-     {code:"C31",label:"Individualized or self-directed learning",triggers:["individualized","self_assessment_format","self_assessment_learning"]},
-  ]},
-  {category:"Educational Leadership & Innovation",color:"#b45309",colorLight:"#fffbeb",colorBorder:"#fde68a",icon:"💡",
-   whyItMatters:"If your activity goes beyond a standard lecture format, or connects to follow-up, research, or innovation — flag it.",
-   criteria:[
-     {code:"C32",label:"Follow-up support after the activity",triggers:["follow_up","performance_improvement"]},
-     {code:"C33",label:"Connected to research or scholarship",triggers:["research"]},
-     {code:"C35",label:"Innovative or creative format",triggers:["simulation","technology"]},
-  ]},
-  {category:"Demonstrating Real-World Impact ★",color:"#be123c",colorLight:"#fff1f2",colorBorder:"#fecdd3",icon:"⭐",required:true,
-   whyItMatters:"★ This is the most important category for Accreditation with Commendation — at least one qualifying activity must show measurable real-world impact.",
-   criteria:[
-     {code:"C36",label:"Measuring change in clinical behavior",triggers:["performance_outcome","pre_post"]},
-     {code:"C37",label:"Linked to a quality improvement initiative",triggers:["qi_activity","performance_improvement"]},
-     {code:"C38",label:"Measuring impact on patients or community",triggers:["patient_outcome","community_impact"]},
-  ]},
-];
-
-const QUESTIONS = [
-  {id:"activity_structure",question:"What kind of activity is this?",
-   hint:"This is the most important first question — it determines which application type you need.",
-   type:"single",options:[
-    {value:"single",icon:"📌",label:"A one-time event",tag:"Live Course",sublabel:"A conference, course, symposium, or workshop offered once to one group"},
-    {value:"repeated",icon:"🔁",label:"The same course, running multiple times",tag:"Live Course (Repeated)",sublabel:"Identical content, offered again for a new group — e.g. a skills course run 4×/year. Each run needs its own separate application."},
-    {value:"rss",icon:"📅",label:"A recurring series with changing content",tag:"Regularly Scheduled Series (RSS)",sublabel:"Regular sessions where topics and presenters vary — grand rounds, tumor board, M&M, journal club"},
-  ]},
-  {id:"delivery_format",question:"How will people attend?",
-   hint:"This is about access and attendance — not what they will do when they get there. You'll describe the learning environment next.",
-   type:"single",options:[
-    {value:"live",icon:"🏛️",label:"In person",tag:"Live Activity",sublabel:"All attendees physically present in the same location"},
-    {value:"livestream",icon:"📡",label:"Virtual / live streamed",tag:"Live Activity — Virtual",sublabel:"All attendees join remotely via live stream — no in-person component"},
-    {value:"hybrid",icon:"🔀",label:"Hybrid — in person and live streamed simultaneously",tag:"Live Activity — Hybrid",sublabel:"Some attend in the room; others join via live stream at the same time"},
-    {value:"enduring",icon:"💻",label:"Online / on-demand (no live session)",tag:"Enduring Material",sublabel:"Learners complete it independently at their own pace — recorded lecture, online module, podcast, or similar"},
-  ]},
-  {id:"hybrid_components",question:"Which of these apply to your activity?",
-   hint:"Whether a recording is available to everyone (or just registered attendees) affects whether you need one application or two.",
-   type:"multi",showIf:function(a){return a.delivery_format==="hybrid";},options:[
-    {value:"hybrid_inperson",icon:"🏛️",label:"In-person attendees on the day"},
-    {value:"hybrid_livestream",icon:"📡",label:"Live stream for remote participants joining as it happens"},
-    {value:"hybrid_enduring",icon:"🎬",label:"Recording made publicly available afterward (anyone can access, not just registered attendees)"},
-    {value:"hybrid_enduring_bundled",icon:"🔒",label:"Recording available only to people who already registered"},
-  ]},
-  {id:"learning_environment",question:"What kind of learning environment is this?",
-   hint:"Select all that apply. This affects commendation criteria and how OCME&LL will describe the activity — it does not change the application type.",
-   type:"multi",
-   showIf:function(a){return a.delivery_format==="live"||a.delivery_format==="livestream"||a.delivery_format==="hybrid";},
-   options:[
-    {value:"didactic",icon:"🎤",label:"Lecture or didactic presentation",sublabel:"Traditional speaker-led sessions, grand rounds, symposia"},
-    {value:"workshop",icon:"👥",label:"Small group, workshop, or case-based learning",sublabel:"Interactive breakouts, case discussions, problem-based learning, or flipped classroom"},
-    {value:"simulation",icon:"🩺",label:"Simulation or hands-on skills lab",sublabel:"Learners practice on simulators, task trainers, mannequins, standardised patients, or in a procedural skills setting"},
-    {value:"performance_improvement",icon:"📈",label:"Performance improvement or quality improvement activity",sublabel:"Learners engage with real practice data and commit to specific changes — often linked to a PI CME or QI framework"},
-    {value:"self_assessment_learning",icon:"✅",label:"Structured self-assessment or reflective practice",sublabel:"Learners assess their own knowledge gaps, review performance data, or complete a guided self-evaluation before or during the activity"},
-  ]},
-  {id:"target_specialty",question:"Which physician specialties will attend?",
-   hint:"Select all that apply. Each specialty you select may qualify for its own board certification (MOC) credit — a single activity can offer multiple board credits simultaneously.",
-   type:"multi",options:[
-    {value:"internal_med",label:"Internal Medicine or subspecialties (cardiology, GI, rheumatology, etc.)"},
-    {value:"anesthesiology",label:"Anesthesiology, Pain Medicine, or Critical Care"},
-    {value:"family_med",label:"Family Medicine"},
-    {value:"pediatrics",label:"Pediatrics"},
-    {value:"psychiatry_neuro",label:"Psychiatry or Neurology"},
-    {value:"surgery",label:"Surgery — General, Orthopaedic, Thoracic, or Vascular"},
-    {value:"ob_gyn",label:"Obstetrics & Gynecology"},
-    {value:"radiology",label:"Radiology or Radiation Oncology"},
-    {value:"emergency_med",label:"Emergency Medicine"},
-    {value:"other_specialty",label:"Another specialty"},
-  ]},
-  {id:"audience_professions",question:"Which professional groups will attend? Select all that apply.",
-   hint:"If nurses, pharmacists, or other healthcare professionals attend, additional credit types may be available beyond standard physician CME.",
-   type:"multi",options:[
-    {value:"physicians",label:"Physicians (MD or DO)"},
-    {value:"nurses",label:"Nurses (RN, NP, CRNA)"},
-    {value:"pharmacists",label:"Pharmacists"},
-    {value:"pas",label:"Physician Assistants / Physician Associates"},
-    {value:"psychologists",label:"Psychologists"},
-    {value:"social_workers",label:"Social Workers"},
-    {value:"residents_fellows",label:"Residents or Fellows"},
-    {value:"students",label:"Health professions students"},
-    {value:"other_hcp",label:"Other healthcare professionals"},
-  ]},
-  {id:"content_focus",question:"What will this activity cover? Select all that apply.",
-   hint:"Be generous — select everything that fits. The more you flag now, the more credit opportunities your OCME&LL representative can identify.",
-   type:"multi",options:[
-    {value:"clinical_knowledge",label:"🧬 Clinical knowledge update — new evidence, guidelines, or treatments"},
-    {value:"procedural",label:"🔧 A specific procedure, technique, or clinical skill"},
-    {divider:"High-value designations — unlock additional credit types"},
-    {value:"patient_safety",label:"🛡️ Patient safety or preventing medical errors"},
-    {value:"qi_activity",label:"📊 Quality improvement or reducing variation in care"},
-    {divider:"Audience & communication focus"},
-    {value:"communication",label:"💬 Communication skills — with patients, families, or care teams"},
-    {value:"mental_health",label:"🧠 Mental health or behavioral health"},
-    {divider:"Population health & equity"},
-    {value:"population_health",label:"🌍 Population health, public health, or community health"},
-    {value:"sdoh",label:"⚖️ Health equity, disparities, or social determinants of health"},
-    {divider:"Specialty topics — also satisfy Michigan mandatory requirements"},
-    {value:"pain_management",label:"💊 Pain management, symptom management, or opioid prescribing"},
-    {value:"ethics",label:"⚕️ Medical ethics"},
-    {divider:"Other"},
-    {value:"research",label:"🔬 Research methods, evidence-based practice, or scholarly work"},
-    {value:"technology",label:"💡 Health technology, AI, or innovative care delivery"},
-  ]},
-  {id:"evaluation_plan",question:"How will you measure whether the activity worked?",
-   hint:"This affects which credit types and commendation criteria are available. Choose the most robust method you plan to use.",
-   type:"single",options:[
-    {value:"survey_only",label:"A satisfaction survey — attendees rate the session",sublabel:"Standard post-activity evaluation asking whether they found it useful. Note: a satisfaction survey is automatically built into every MiCME activity — you don't need to create one separately."},
-    {value:"pre_post",label:"A knowledge test before and after",sublabel:"Attendees answer questions before the activity and again afterward to measure learning"},
-    {value:"performance_outcome",label:"Measuring whether clinical practice actually changed",sublabel:"Follow-up data collected weeks or months later showing attendees did something differently"},
-    {value:"patient_outcome",label:"Measuring impact on patients or care quality",sublabel:"Data showing the activity led to better patient outcomes or improved quality metrics"},
-    {value:"self_assessment_format",label:"A formal self-assessment or reflective practice component",sublabel:"Participants assess their own competency or create a personal learning plan"},
-  ]},
-  {id:"planning_process",question:"How was this activity planned? Select all that apply.",
-   hint:"Planning details unlock commendation criteria that are often missed — take a moment to check everything that applies.",
-   type:"multi",options:[
-    {value:"multi_prof",label:"The planning committee includes people from more than one health profession",
-     badge:"🏅 Interprofessional",
-     tooltip:"When both the planning committee and faculty presenters represent two or more professions, this activity qualifies as Interprofessional Continuing Education (IPCE) — one of the most valued designations in CME.\n\nNote: the formal IPCE Credit Mark on certificates requires Joint Accreditation, which our office is working toward. Until then, these activities are tracked internally and count toward our Joint Accreditation portfolio. Flag this to your OCME&LL representative."},
-    {value:"patient_engagement",label:"A patient, family member, or community representative was involved in planning",
-     tooltip:"Patient and community involvement in planning is an ACCME commendation criterion. Document who was involved and how their input shaped the activity."},
-    {value:"students_involved",label:"Health professions students are involved in planning or presenting",
-     tooltip:"Student involvement — medical, nursing, pharmacy, PA, or other health professions students — is a commendation criterion. Note their role on your application."},
-    {value:"multi_org",label:"A non-accredited outside organization is co-organizing this activity",
-     badge:"📋 Joint Providership",
-     tooltip:"Applies to partners who do not hold their own ACCME accreditation — such as a U-M department, a national medical society, a community hospital, or an external education group.\n\nThis is formal Joint Providership under ACCME rules. A written Joint Providership Agreement must be executed by OCME&LL before the activity. Contact your representative early — this requires additional lead time."},
-    {value:"multi_org_accredited",label:"The co-organizing institution is itself an ACCME-accredited CME provider",
-     tooltip:"If your partner already holds their own ACCME accreditation — e.g. another major academic medical center or a national society with its own CME program — this is NOT Joint Providership. One institution takes the accreditation lead; the other is acknowledged. Let your OCME&LL representative know so the application is set up correctly."},
-    {value:"data_driven",label:"Real institutional or quality data was used to identify the educational need",
-     tooltip:"Using registry data, quality metrics, or institutional performance data to identify the gap is a strong commendation signal. Include this documentation with your application."},
-    {value:"needs_assessment",label:"A formal needs assessment or gap analysis was conducted",
-     tooltip:"A documented needs assessment — survey, chart review, focus group, or structured gap analysis — strengthens your application and supports multiple commendation criteria. Attach the documentation."},
-    {value:"solo_planner",label:"One person or department planned this independently"},
-  ]},
-  {id:"follow_up",question:"Will there be anything after the activity itself? Select all that apply.",
-   hint:"Post-activity plans — even simple ones — can unlock important commendation criteria. Don't overlook these.",
-   type:"multi",options:[
-    {value:"none",label:"No additional follow-up planned beyond the standard MiCME satisfaction survey"},
-    {value:"follow_up",label:"A follow-up survey, reminder, or resource sent to attendees afterward"},
-    {value:"performance_improvement",label:"Structured coaching, a PI component, or support to help attendees change their practice"},
-    {value:"individualized",label:"Attendees receive a personalized learning plan or individual feedback"},
-    {value:"community_impact",label:"There is a community outreach component connected to this activity"},
-  ]},
-  {id:"michigan_topics",question:"Does this activity cover any of these Michigan-required topics?",
-   hint:"Michigan physicians must complete specific hours in these topics each licensure cycle. Flag any that apply.",
-   type:"multi",options:[
-    {value:"mi_ethics",label:"⚕️ Medical Ethics — Michigan requires at least 1 hour per cycle"},
-    {value:"mi_pain",label:"💊 Pain & Symptom Management — at least 3 hours per cycle (including 1 hour on controlled substances)"},
-    {value:"mi_implicit_bias",label:"🤝 Implicit Bias Training — 1 hour per year of the license cycle"},
-    {value:"mi_opioid",label:"🚨 Opioid / Controlled Substance Awareness — required for prescribers every renewal period"},
-    {value:"mi_human_trafficking",label:"🔴 Human Trafficking Identification — one-time requirement for Michigan physicians"},
-    {value:"mi_none",label:"None of these"},
-  ]},
-];
-
-// ─── LOGIC ────────────────────────────────────────────────────────────────────
-function deriveResults(answers) {
-  var a=answers, res={application:[],additionalCredits:[],boardCredit:null,commendation:[],michigan:[],flags:[]};
-  var isRSS=a.activity_structure==="rss", isRepeated=a.activity_structure==="repeated";
-  var fmt=a.delivery_format, isHybrid=fmt==="hybrid", isEnduring=fmt==="enduring";
-  var isLive=fmt==="live", isVirtual=fmt==="livestream";
-  var learnEnv=a.learning_environment||[];
-  var isSimulation=learnEnv.includes("simulation");
-  var hybridComponents=a.hybrid_components||[];
-  var hasPublicRecording=hybridComponents.includes("hybrid_enduring");
-  var hasBundledRecording=hybridComponents.includes("hybrid_enduring_bundled");
-  var content=a.content_focus||[], hasPatientSafety=content.includes("patient_safety"), hasQI=content.includes("qi_activity");
-  var profs=a.audience_professions||[], planning=a.planning_process||[];
-  var followUp=a.follow_up||[], evalMethod=a.evaluation_plan;
-
-  // Build format suffix for live activities that have a distinctive learning environment
-  var envSuffix="";
-  if (isSimulation && learnEnv.length===1) envSuffix=" — Simulation-Based";
-  else if (isSimulation) envSuffix=" — including Simulation";
-
-  var appType="",appNote="",appAction="";
-  if (isRSS) {
-    appType="Regularly Scheduled Series (RSS)";
-    appNote="A Regularly Scheduled Series is registered as a single series — not as individual events. Each individual session date needs to be logged, and attendance must be tracked per session.";
-    appAction="Contact your OCME&LL representative to register the series before the first session. Keep attendance records for every individual session throughout the year.";
-  } else if (isRepeated) {
-    appType="Live Course — Repeated (separate application per run)";
-    appNote="Because you are running the same course multiple times, each run requires its own separate CME application — even if the content, faculty presenters, and credit hours are completely identical.";
-    appAction="Submit a separate application to OCME&LL for each individual run of the course. Keep separate attendance records and evaluation forms for each run.";
-  } else {
-    if (isLive)        {appType="Live Activity"+envSuffix;appNote="A standard in-person event. One application covers all in-person attendees."+(isSimulation?" Simulation activities are accredited as live activities — the application type does not change.":"");appAction="Submit one CME application to OCME&LL for this event.";}
-    else if (isVirtual){appType="Live Activity — Virtual"+envSuffix;appNote="A fully online synchronous event. All attendees join via live stream. One application covers all participants.";appAction="Submit one CME application to OCME&LL for this event.";}
-    else if (isHybrid) {appType="Live Activity — Hybrid"+envSuffix;appNote="See the application note below about hybrid events.";appAction="Contact your OCME&LL representative — the number of applications needed depends on whether a recording will be publicly released.";}
-    else if (isEnduring){appType="Enduring Material (online/self-paced)";appNote="An enduring material is self-paced with no live component. The credit period typically cannot exceed 3 years, and learners must complete the evaluation before receiving credit.";appAction="Submit an Enduring Material application to OCME&LL.";}
-  }
-  res.application.push({appType:appType,appNote:appNote,appAction:appAction});
-
-  if (isHybrid) {
-    var parts=["In-person and live-streamed attendees on the day are covered under a single Live Activity application."];
-    if (hasPublicRecording) parts.push("⚠️ Because the recording will be publicly released to anyone (beyond just registered attendees), this creates a SECOND activity — an Enduring Material — which needs its own separate CME application, its own evaluation, and its own credit designation. Alert your OCME&LL representative to this as early as possible.");
-    if (hasBundledRecording) parts.push("A recording available only to people who already registered is generally treated as part of the original live activity — but confirm this with your OCME&LL representative if access will extend beyond 30 days after the event.");
-    if (isRepeated) parts.push("Because this is a repeated course, each run will need its own application for both the live and (if applicable) the enduring recording component.");
-    res.application.push({isHybridNote:true,parts:parts});
-  }
-
-  if (profs.includes("nurses"))     res.additionalCredits.push({icon:"🏥",label:"Nursing CE (ANCC Contact Hours)",who:"For nurses (RN, NP, CRNA)",why:"Nurses have their own CE credit system — ANCC Contact Hours — separate from physician CME. If nurses are attending, they may be able to earn nursing CE credit, which counts toward their licensure requirements.",flag:"Ask your OCME&LL representative whether your organization can offer ANCC Contact Hours for this activity, or whether a jointly accredited provider is needed.",priority:"high"});
-  if (profs.includes("pharmacists")) res.additionalCredits.push({icon:"💊",label:"Pharmacy CE (ACPE Credit)",who:"For pharmacists",why:"Pharmacists earn continuing pharmacy education (CPE) credit through ACPE — not physician CME. If pharmacists are attending, this is a separate credit type they need for licensure renewal.",flag:"Let your OCME&LL representative know pharmacists will attend. Offering ACPE credit typically requires Joint Accreditation status.",priority:"high"});
-  if (profs.includes("pas"))         res.additionalCredits.push({icon:"👩‍⚕️",label:"PA CME (AAPA Category 1 Credit)",who:"For Physician Assistants / Physician Associates",why:"PAs need AAPA Category 1 CME credit — different from standard AMA physician CME. Many accredited activities already qualify, but it needs to be officially designated.",flag:"Mention to your OCME&LL representative that PAs will attend and ask about designating AAPA Category 1 credit.",priority:"medium"});
-
-  var nonPhysProfs=profs.filter(function(p){return !["physicians","residents_fellows","students"].includes(p);});
-  var hasInterprofPlanning=planning.includes("multi_prof");
-  if (nonPhysProfs.length>=1 && hasInterprofPlanning) {
-    res.additionalCredits.push({icon:"🏅",label:"Interprofessional Continuing Education (IPCE)",who:"For all professions attending and planning together",why:"This activity meets the definition of IPCE. To qualify, all three of the following must be true:\n\n1. Planning committee: two or more professions involved in designing the activity\n2. Faculty presenters: two or more professions involved in delivering the content on the day\n3. Team-focused design: the activity is designed to improve how the healthcare team works together\n\nNote: the formal IPCE Credit Mark on certificates requires Joint Accreditation, which our office does not yet hold. This activity will be tracked as interprofessional and builds the evidence portfolio for Joint Accreditation.",flag:"Flag this to your OCME&LL representative so it can be recorded as an interprofessional activity. Document both the interprofessional planning committee and faculty presenters — this documentation is essential for our Joint Accreditation application.",priority:"high"});
-  } else if (nonPhysProfs.length>=1 && !hasInterprofPlanning) {
-    res.flags.push("Multiple professions are attending, but the planning committee appears to be single-profession. For an activity to qualify as IPCE, you need: (1) planners from two or more professions, and (2) faculty presenters from two or more professions, and (3) content designed to improve team-based practice. If you can meet all three, this activity would contribute to our Joint Accreditation portfolio. Mention this to your OCME\u0026LL representative.");
-  }
-
-  if ((Array.isArray(a.target_specialty) ? a.target_specialty : [a.target_specialty]).includes("anesthesiology") && hasPatientSafety) {
-    res.additionalCredits.push({icon:"🛡️",label:"ABA MOCA 2.0® Patient Safety CME Credit",who:"For anesthesiology audiences",why:"For anesthesiology activities that include cross-disciplinary patient safety content, there is a separate ABA Patient Safety CME designation available in addition to standard MOCA 2.0® credit. Anesthesiologists self-report this credit using their 8-digit ABA ID.",flag:"Flag this to your OCME&LL representative and make sure the patient safety content is clearly described in your application.",priority:"high"});
-  }
-  if (planning.includes("multi_org")) {
-    res.additionalCredits.push({icon:"📋",label:"Joint Providership Agreement Required",who:"Any activity co-organized with a non-accredited partner",why:"Your partner organization is not itself ACCME-accredited. Under ACCME rules, this makes your activity a formal Joint Providership. A written Joint Providership Agreement must be executed before the activity. The accreditation statement on all materials must name both organizations.",flag:"Contact your OCME&LL representative as early as possible — ideally before submitting your application. Do not proceed with planning materials or announcements until this agreement is in place.",priority:"high"});
-  }
-  if (planning.includes("multi_org_accredited")) {
-    res.additionalCredits.push({icon:"🤝",label:"Co-Organization with Another Accredited Institution",who:"Activities co-organized with a partner that holds its own ACCME accreditation",why:"When two ACCME-accredited organizations collaborate, this is not Joint Providership — no special agreement is required. One institution takes the accreditation lead and issues the credit; the other's involvement is simply acknowledged.",flag:"Confirm with your OCME&LL representative which institution will be the accreditation lead. If your partner is issuing the credit, you may not need to submit an application through our office at all.",priority:"medium"});
-  }
-
-  var selectedSpecs = Array.isArray(a.target_specialty) ? a.target_specialty : (a.target_specialty ? [a.target_specialty] : []);
-  var mocBoards = [];
-  var mocFlags = [];
-  var needsRobustEval = false;
-  var hasRobustEval = ["pre_post","performance_outcome","patient_outcome","self_assessment_format"].includes(evalMethod);
-  selectedSpecs.forEach(function(spec) {
-    var mocInfo = SPECIALTY_MOC[spec];
-    if (mocInfo && mocInfo.boards) {
-      mocBoards.push(mocInfo.boards);
-      mocFlags.push(mocInfo.flag);
-      if (spec === "internal_med") needsRobustEval = true;
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #f5f6f8;
+      color: #1a1a2e;
+      min-height: 100vh;
     }
-  });
-  if (mocBoards.length > 0) {
-    res.boardCredit = {
-      boards: mocBoards.join(" · "),
-      flag: mocFlags.join(" "),
-      evalWarning: needsRobustEval && !hasRobustEval ? "Important: for ABIM MOC credit specifically, a satisfaction survey alone is not sufficient. A pre/post knowledge assessment or outcomes measurement is required. Ask your OCME&LL representative about adding this to your evaluation plan." : null
-    };
-  }
 
-  var allTriggers=content.concat(planning).concat(followUp).concat(learnEnv).concat([fmt,evalMethod]).filter(Boolean);
-  COMMENDATION.forEach(function(cat){
-    var matched=cat.criteria.filter(function(cr){return cr.triggers.some(function(tr){return allTriggers.includes(tr);});});
-    if (matched.length>0) res.commendation.push(Object.assign({},cat,{matched:matched}));
-  });
-
-  var mi=a.michigan_topics||[];
-  if (mi.includes("mi_ethics"))           res.michigan.push({icon:"⚕️",label:"Medical Ethics",req:"At least 1 hour required per 3-year cycle",note:"Designate this on your application and mention it to your OCME&LL representative so it is flagged correctly in the system."});
-  if (mi.includes("mi_pain"))             res.michigan.push({icon:"💊",label:"Pain & Symptom Management",req:"At least 3 hours required per cycle (including at least 1 hour on controlled substances)",note:"Make sure your application clearly describes the controlled substance content."});
-  if (mi.includes("mi_implicit_bias"))    res.michigan.push({icon:"🤝",label:"Implicit Bias Training",req:"1 hour per year of the license cycle (required since June 2021)",note:"Designate this on your application. Your OCME&LL representative will ensure it is correctly coded."});
-  if (mi.includes("mi_opioid"))           res.michigan.push({icon:"🚨",label:"Opioid / Controlled Substance Awareness",req:"Required every renewal period for prescribers and dispensers (since May 2024)",note:"Flag this explicitly on your application. This is a prescriber requirement and must be clearly designated."});
-  if (mi.includes("mi_human_trafficking")) res.michigan.push({icon:"🔴",label:"Human Trafficking Identification",req:"One-time requirement for Michigan physicians",note:"Flag this on your application. Physicians who have not yet completed this one-time requirement can use your activity to fulfill it."});
-
-  if (planning.includes("needs_assessment")) res.flags.push("You conducted a formal needs assessment — include this documentation with your application. It strengthens your application and supports several commendation criteria.");
-  if (evalMethod==="survey_only"&&(hasQI||hasPatientSafety)) res.flags.push("Your activity includes quality improvement or patient safety content. If an outcomes measure or pre/post assessment is feasible, mention this to OCME&amp;LL — it may support additional commendation criteria. A satisfaction survey alone is perfectly valid.");
-  if (isRepeated) res.flags.push("Remember: each run of this course needs its own separate application, even if the content is identical. Plan your application timeline accordingly.");
-  if (isRSS&&isHybrid&&hasPublicRecording) res.flags.push("For your RSS: each time a session recording is publicly released, a separate Enduring Material application is needed for that recording. Discuss the workflow for this with your OCME&LL representative upfront.");
-
-  return res;
-}
-
-// ─── STATE ────────────────────────────────────────────────────────────────────
-var state={answers:{},step:0,done:false,activeTab:"application",openTooltip:null,docPlannerOpen:false,docStaffOpen:false,docPlannerHtml:null,docStaffHtml:null};
-
-function getVisibleQuestions(){
-  return QUESTIONS.filter(function(q){return !q.showIf||q.showIf(state.answers);});
-}
-function canProceed(){
-  var qs=getVisibleQuestions();
-  if(state.step>=qs.length)return true;
-  var q=qs[state.step], val=state.answers[q.id];
-  if(q.type==="single")return !!val;
-  if(q.type==="multi")return val&&val.length>0;
-  return false;
-}
-function toggle(qid,value,type){
-  if(type==="single"){state.answers[qid]=value;}
-  else{var cur=state.answers[qid]||[];if(cur.includes(value))state.answers[qid]=cur.filter(function(v){return v!==value;});else state.answers[qid]=cur.concat([value]);}
-  render();
-}
-function goNext(){var qs=getVisibleQuestions();if(state.step<qs.length-1){state.step++;render();scrollToTop();}else{state.done=true;render();scrollToTop();}}
-function goBack(){if(state.step>0){state.step--;render();scrollToTop();}}
-function restart(){state.answers={};state.step=0;state.done=false;state.activeTab="application";state.openTooltip=null;state.docPlannerHtml=null;state.docStaffHtml=null;render();scrollToTop();}
-function scrollToTop(){window.scrollTo({top:0,behavior:"smooth"});}
-
-// ─── DOM HELPERS ──────────────────────────────────────────────────────────────
-function el(tag,props,children){
-  var e=document.createElement(tag);
-  if(props)Object.keys(props).forEach(function(k){
-    var v=props[k];
-    if(k==="style"&&typeof v==="object")Object.keys(v).forEach(function(sk){e.style[sk]=v[sk];});
-    else if(k==="className")e.className=v;
-    else if(k==="onclick")e.onclick=v;
-    else e.setAttribute(k,v);
-  });
-  if(children)(Array.isArray(children)?children:[children]).forEach(function(c){
-    if(c==null||c===false||c===undefined)return;
-    e.appendChild(typeof c==="string"||typeof c==="number"?document.createTextNode(String(c)):c);
-  });
-  return e;
-}
-function div(style,children){return el("div",{style:style},children);}
-function span(style,text){return el("span",{style:style},[text]);}
-function txt(t){return document.createTextNode(t);}
-
-function card(extra,children){
-  return el("div",{style:Object.assign({background:"#fff",borderRadius:"14px",padding:"20px",boxShadow:"0 1px 4px rgba(0,0,0,0.07)",marginBottom:"14px"},extra||{})},children);
-}
-
-// ─── COPY TO CLIPBOARD ───────────────────────────────────────────────────────
-function copyTextToClipboard(text, btn) {
-  navigator.clipboard.writeText(text).then(function() {
-    var orig = btn.textContent;
-    btn.textContent = "✓ Copied";
-    btn.style.background = "#dcfce7";
-    btn.style.color = "#15803d";
-    btn.style.borderColor = "#86efac";
-    setTimeout(function() {
-      btn.textContent = orig;
-      btn.style.background = "";
-      btn.style.color = "";
-      btn.style.borderColor = "";
-    }, 2000);
-  }).catch(function() {
-    // Fallback
-    var ta = document.createElement("textarea");
-    ta.value = text;
-    ta.style.position = "fixed";
-    ta.style.top = "-9999px";
-    document.body.appendChild(ta);
-    ta.select();
-    try { document.execCommand("copy"); } catch(e) {}
-    document.body.removeChild(ta);
-    btn.textContent = "✓ Copied";
-    setTimeout(function() { btn.textContent = "Copy"; }, 2000);
-  });
-}
-
-function copyBtn(text) {
-  var btn = el("button", {style:{
-    fontSize:"11px", fontWeight:"700", padding:"3px 10px",
-    borderRadius:"5px", border:"1px solid #d0d9e3",
-    background:"#f8f9fb", color:"#7a96b0",
-    cursor:"pointer", marginLeft:"auto", flexShrink:"0",
-    transition:"all 0.15s", fontFamily:"inherit"
-  }}, ["Copy"]);
-  btn.onclick = function(e) { e.stopPropagation(); copyTextToClipboard(text, btn); };
-  return btn;
-}
-
-// ─── TOOLTIP ──────────────────────────────────────────────────────────────────
-function renderTooltip(text,id){
-  var isOpen=state.openTooltip===id;
-  var wrap=el("span",{style:{position:"relative",display:"inline-flex",alignItems:"center",verticalAlign:"middle"}});
-  var btn=el("span",{style:{cursor:"pointer",padding:"0 4px",color:isOpen?"#2F65A7":"#7a96b0",fontSize:"13px",userSelect:"none",lineHeight:"1",display:"inline-flex",alignItems:"center"},role:"button",tabindex:"0"},["ⓘ"]);
-  btn.onclick=function(e){e.stopPropagation();var next=isOpen?null:id;if(state.openTooltip===next)return;state.openTooltip=next;render();};
-  btn.onkeydown=function(e){if(e.key==="Enter"||e.key===" "){e.stopPropagation();var next=isOpen?null:id;if(state.openTooltip===next)return;state.openTooltip=next;render();}};
-  wrap.appendChild(btn);
-  if(isOpen){
-    var pop=el("div",{style:{position:"absolute",left:"50%",bottom:"calc(100% + 8px)",transform:"translateX(-50%)",background:"#1e293b",color:"#f0f2f5",borderRadius:"10px",padding:"12px 14px",fontSize:"13px",lineHeight:"1.6",width:"280px",zIndex:"99999",boxShadow:"0 8px 24px rgba(0,0,0,0.35)",whiteSpace:"pre-wrap"}},[text]);
-    var arrow=el("div",{style:{position:"absolute",bottom:"-6px",left:"50%",transform:"translateX(-50%)",width:"0",height:"0",borderLeft:"6px solid transparent",borderRight:"6px solid transparent",borderTop:"6px solid #1e293b"}});
-    pop.appendChild(arrow);
-    wrap.appendChild(pop);
-  }
-  return wrap;
-}
-
-// ─── OPTION BUTTON ────────────────────────────────────────────────────────────
-function renderOptionBtn(q,opt){
-  var isMulti=q.type==="multi";
-  var val=state.answers[q.id];
-  var active=isMulti?(val||[]).includes(opt.value):val===opt.value;
-  var brand="#2F65A7";
-
-  var btn=el("button",{style:{display:"flex",alignItems:"center",gap:"14px",padding:"14px 16px",width:"100%",borderRadius:"10px",textAlign:"left",background:active?"#eef2f7":"#fff",border:"2px solid "+(active?brand:"#d0d9e3"),borderLeft:active?"4px solid #FFCB05":"2px solid #d0d9e3",boxShadow:active?"0 0 0 3px rgba(29,78,216,0.12)":"none",transition:"all 0.15s",marginBottom:"8px",cursor:"pointer"},onclick:function(){toggle(q.id,opt.value,q.type);}});
-
-  // checkbox/radio indicator
-  var chk=el("div",{style:{width:"20px",height:"20px",flexShrink:"0",borderRadius:isMulti?"5px":"50%",border:"2px solid "+(active?brand:"#7a96b0"),background:active?brand:"transparent",display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.15s"}});
-  if(active)chk.appendChild(span({color:"#fff",fontSize:"12px",fontWeight:"700"},"✓"));
-  btn.appendChild(chk);
-
-  if(opt.icon)btn.appendChild(span({fontSize:"20px",flexShrink:"0"},opt.icon));
-
-  var content=el("div",{style:{flex:"1"}});
-  var labelRow=el("div",{style:{display:"flex",alignItems:"center",gap:"8px",flexWrap:"wrap"}});
-  labelRow.appendChild(span({fontSize:"15px",fontWeight:"600",color:active?brand:"#00274C"},opt.label));
-  if(opt.tag)labelRow.appendChild(span({fontSize:"11px",fontWeight:"700",letterSpacing:"0.2px",whiteSpace:"nowrap",color:active?brand:"#4a6785",background:active?"#eef2f7":"#f0f2f5",border:"1px solid "+(active?"#a8bdd4":"#d0d9e3"),borderRadius:"5px",padding:"1px 7px"},opt.tag));
-  if(opt.badge)labelRow.appendChild(span({fontSize:"11px",fontWeight:"700",whiteSpace:"nowrap",color:active?brand:"#0369a1",background:active?"#eef2f7":"#f0f9ff",border:"1px solid "+(active?"#a8bdd4":"#bae6fd"),borderRadius:"5px",padding:"1px 7px"},opt.badge));
-  if(opt.tooltip)labelRow.appendChild(renderTooltip(opt.tooltip,q.id+"__"+opt.value));
-  content.appendChild(labelRow);
-  if(opt.sublabel)content.appendChild(el("div",{style:{fontSize:"13px",color:"#4a6785",marginTop:"3px",lineHeight:"1.4"}},[opt.sublabel]));
-  btn.appendChild(content);
-  return btn;
-}
-
-// ─── QUESTION SCREEN ──────────────────────────────────────────────────────────
-function renderQuestion(){
-  var qs=getVisibleQuestions(), q=qs[state.step], total=qs.length;
-  var wrap=el("div",{style:{maxWidth:"680px",margin:"0 auto",padding:"20px 16px"}});
-
-  // Progress bar
-  var pct=Math.round((state.step/total)*100);
-  var pbWrap=el("div",{style:{marginBottom:"24px"}});
-  var pbBg=el("div",{style:{height:"6px",background:"#d0d9e3",borderRadius:"99px",marginBottom:"8px"}});
-  var pbFill=el("div",{style:{height:"100%",width:pct+"%",background:"linear-gradient(90deg,#00274C,#2F65A7)",borderRadius:"99px",transition:"width 0.3s"}});
-  pbBg.appendChild(pbFill);
-  pbWrap.appendChild(pbBg);
-  pbWrap.appendChild(el("div",{style:{fontSize:"12px",color:"#4a6785",textAlign:"right"}},["Question "+(state.step+1)+" of "+total]));
-  wrap.appendChild(pbWrap);
-
-  // Card
-  var c=el("div",{style:{background:"#fff",borderRadius:"16px",padding:"28px 24px",boxShadow:"0 2px 8px rgba(0,0,0,0.08)"},className:"fade-up"});
-  c.appendChild(el("h2",{style:{fontSize:"20px",fontWeight:"700",color:"#00274C",marginBottom:"6px",lineHeight:"1.3"}},[q.question]));
-  if(q.hint)c.appendChild(el("p",{style:{fontSize:"14px",color:"#4a6785",marginBottom:"20px",lineHeight:"1.5"}},[q.hint]));
-  if(q.type==="multi")c.appendChild(el("p",{style:{fontSize:"12px",color:"#7a96b0",marginBottom:"14px"}},["Select all that apply"]));
-
-  var opts=el("div",{style:{display:"flex",flexDirection:"column"}});
-  q.options.forEach(function(opt){
-    if(opt.divider){
-      opts.appendChild(el("div",{style:{fontSize:"11px",fontWeight:"700",color:"#7a96b0",letterSpacing:"0.5px",textTransform:"uppercase",padding:"10px 4px 4px"}},["— "+opt.divider]));
-      return;
+    /* ── Header ── */
+    header {
+      background: #00274C;
+      color: #fff;
+      padding: 0 2rem;
     }
-    opts.appendChild(renderOptionBtn(q,opt));
-  });
-  c.appendChild(opts);
-
-  // Nav buttons
-  var nav=el("div",{style:{display:"flex",gap:"10px",marginTop:"20px"}});
-  if(state.step>0){
-    nav.appendChild(el("button",{style:{padding:"11px 20px",borderRadius:"8px",border:"2px solid #d0d9e3",background:"#fff",color:"#1a3a5c",fontSize:"14px",fontWeight:"600",cursor:"pointer"},onclick:goBack},["← Back"]));
-  }
-  var ok=canProceed();
-  var nextBtn=el("button",{style:{flex:"1",padding:"11px 28px",borderRadius:"8px",border:"none",fontSize:"15px",fontWeight:"700",background:ok?"#00274C":"#d0d9e3",color:ok?"#fff":"#7a96b0",cursor:ok?"pointer":"not-allowed",boxShadow:ok?"0 4px 12px rgba(29,78,216,0.3)":"none",transition:"all 0.15s"},onclick:function(){if(canProceed())goNext();}},[state.step===total-1?"See My Results →":"Next →"]);
-  nav.appendChild(nextBtn);
-  c.appendChild(nav);
-  wrap.appendChild(c);
-  return wrap;
-}
-
-// ─── RESULTS ──────────────────────────────────────────────────────────────────
-function renderResults(){
-  var res=deriveResults(state.answers);
-  var wrap=el("div",{style:{maxWidth:"720px",margin:"0 auto",padding:"20px 16px"}});
-
-  // Header
-  var hdr=el("div",{style:{background:"#00274C",borderRadius:"16px",padding:"24px",marginBottom:"20px",color:"#fff"}});
-  hdr.appendChild(el("div",{style:{fontSize:"24px",marginBottom:"6px"}},["✅"]));
-  hdr.appendChild(el("h1",{style:{fontSize:"22px",fontWeight:"800",marginBottom:"4px"}},["Your CME Navigator Results"]));
-  hdr.appendChild(el("p",{style:{fontSize:"14px",opacity:"0.85"}},["Review each section below, then use the Generate Docs tab to produce supporting documents for your planner and OCME&LL representative — to help build your MiCME application correctly first time."]));
-  var rsBtn=el("button",{style:{marginTop:"14px",padding:"8px 16px",borderRadius:"8px",border:"2px solid rgba(255,255,255,0.4)",background:"transparent",color:"#fff",fontSize:"13px",fontWeight:"600",cursor:"pointer"},onclick:restart},["← Start Over"]);
-  hdr.appendChild(rsBtn);
-  wrap.appendChild(hdr);
-
-  // Tabs
-  var tabDefs=[{id:"application",label:"📋 Application"},{id:"credits",label:"➕ Credits"},{id:"board",label:"🏥 Board Credit"},{id:"commendation",label:"⭐ Commendation"},{id:"michigan",label:"🔵 Michigan"},{id:"export",label:"📄 Generate Docs"}];
-  var tabBar=el("div",{style:{display:"flex",gap:"6px",marginBottom:"16px",flexWrap:"wrap"}});
-  tabDefs.forEach(function(t){
-    var active=state.activeTab===t.id;
-    var tb=el("button",{style:{padding:"8px 14px",borderRadius:"8px",fontSize:"13px",fontWeight:"600",border:"none",background:active?"#2F65A7":"#fff",color:active?"#fff":"#1a3a5c",boxShadow:active?"0 2px 8px rgba(0,39,76,0.3)":"0 1px 3px rgba(0,0,0,0.08)",cursor:"pointer",transition:"all 0.15s"},onclick:function(){state.activeTab=t.id;render();}},[t.label]);
-    tabBar.appendChild(tb);
-  });
-  wrap.appendChild(tabBar);
-
-  var content=el("div",{className:"fade-up"});
-
-  if(state.activeTab==="application"){
-    res.application.forEach(function(item){
-      if(item.isHybridNote){
-        var c=card({borderLeft:"4px solid #f59e0b",background:"#fffbeb"});
-        c.appendChild(el("div",{style:{fontWeight:"700",color:"#b45309",marginBottom:"10px"}},["⚠️ Hybrid Application Notes"]));
-        item.parts.forEach(function(p){c.appendChild(el("p",{style:{fontSize:"14px",color:"#78350f",marginBottom:"8px",lineHeight:"1.5"}},[p]));});
-        content.appendChild(c); return;
-      }
-      var c=card({border:"2px solid #a8bdd4"});
-      c.appendChild(el("div",{style:{fontSize:"11px",fontWeight:"700",color:"#2F65A7",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"6px"}},["Application Type"]));
-      c.appendChild(el("div",{style:{fontSize:"18px",fontWeight:"800",color:"#00274C",marginBottom:"10px"}},[item.appType]));
-      c.appendChild(el("p",{style:{fontSize:"14px",color:"#1a3a5c",lineHeight:"1.6",marginBottom:"12px"}},[item.appNote]));
-      var ab=el("div",{style:{background:"#eef2f7",borderRadius:"8px",padding:"12px 14px",borderLeft:"3px solid #00274C"}});
-      ab.appendChild(el("div",{style:{fontSize:"12px",fontWeight:"700",color:"#2F65A7",marginBottom:"4px"}},["ACTION"]));
-      ab.appendChild(el("div",{style:{fontSize:"14px",color:"#00274C"}},[item.appAction]));
-      c.appendChild(ab); content.appendChild(c);
-    });
-    var ama=card({borderLeft:"4px solid #15803d",background:"#f0fdf4"});
-    ama.appendChild(el("div",{style:{fontWeight:"700",color:"#15803d",marginBottom:"4px"}},["✅ AMA PRA Category 1 Credit™ — Always Included"]));
-    ama.appendChild(el("p",{style:{fontSize:"14px",color:"#166534",lineHeight:"1.5"}},["All OCME&LL-accredited activities include AMA PRA Category 1 Credit™ for physician learners. This is the standard credit type and requires no additional designation."]));
-    content.appendChild(ama);
-    if(res.flags.length>0){
-      var fc=card({background:"#fffbeb",border:"1px solid #fde68a"});
-      fc.appendChild(el("div",{style:{fontWeight:"700",color:"#b45309",marginBottom:"10px"}},["⚑ Things to Flag on Your Application"]));
-      res.flags.forEach(function(f){fc.appendChild(el("p",{style:{fontSize:"14px",color:"#78350f",marginBottom:"8px",lineHeight:"1.5",paddingLeft:"12px",borderLeft:"3px solid #f59e0b"}},[f]));});
-      content.appendChild(fc);
+    .header-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 0 1.75rem;
     }
-    var cl=card();
-    cl.appendChild(el("div",{style:{fontWeight:"700",color:"#00274C",marginBottom:"12px"}},["📝 Application Checklist"]));
-    ["Disclosure forms completed for all educational planners and faculty presenters","Educational objectives clearly stated (what will learners be able to do?)","Needs assessment or gap documentation attached","Evaluation plan described","Session agenda and credit hours calculated","Any commercial support or sponsorship disclosed"].forEach(function(item){
-      var row=el("div",{style:{display:"flex",gap:"10px",alignItems:"flex-start",marginBottom:"8px"}});
-      row.appendChild(el("div",{style:{width:"18px",height:"18px",border:"2px solid #d0d9e3",borderRadius:"4px",flexShrink:"0",marginTop:"2px"}}));
-      row.appendChild(el("span",{style:{fontSize:"14px",color:"#1a3a5c"}},[item]));
-      cl.appendChild(row);
-    });
-    content.appendChild(cl);
-  }
-
-  if(state.activeTab==="credits"){
-    if(res.additionalCredits.length===0){
-      content.appendChild(el("div",{style:{textAlign:"center",padding:"40px",color:"#4a6785",fontSize:"15px"}},["No additional credit types identified for this activity based on your selections."]));
-    } else {
-      res.additionalCredits.forEach(function(cr){
-        var isHigh=cr.priority==="high";
-        var c=card({border:"2px solid "+(isHigh?"#fecdd3":"#d0d9e3")});
-        var hd=el("div",{style:{display:"flex",alignItems:"center",gap:"10px",marginBottom:"10px"}});
-        hd.appendChild(span({fontSize:"24px"},cr.icon));
-        var ht=el("div");
-        ht.appendChild(el("div",{style:{fontWeight:"700",color:"#00274C",fontSize:"16px"}},[cr.label]));
-        ht.appendChild(el("div",{style:{fontSize:"12px",color:"#4a6785"}},[cr.who]));
-        hd.appendChild(ht); c.appendChild(hd);
-        c.appendChild(el("p",{style:{fontSize:"14px",color:"#1a3a5c",lineHeight:"1.6",marginBottom:"12px"}},[cr.why]));
-        var fb=el("div",{style:{background:"#eef2f7",borderRadius:"8px",padding:"12px 14px",borderLeft:"3px solid #00274C"}});
-        var fbTop=el("div",{style:{display:"flex",alignItems:"center",marginBottom:"4px"}});
-        fbTop.appendChild(el("div",{style:{fontSize:"12px",fontWeight:"700",color:"#2F65A7"}},["FLAG TO OCME&LL"]));
-        fbTop.appendChild(copyBtn(cr.flag));
-        fb.appendChild(fbTop);
-        fb.appendChild(el("div",{style:{fontSize:"14px",color:"#00274C"}},[cr.flag]));
-        c.appendChild(fb); content.appendChild(c);
-      });
+    .wordmark {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #FFCB05;
+      margin-bottom: 0.5rem;
     }
-  }
-
-  if(state.activeTab==="board"){
-    if(!res.boardCredit){
-      content.appendChild(el("div",{style:{textAlign:"center",padding:"40px",color:"#4a6785",fontSize:"15px"}},["No specific board (MOC) credit identified based on your specialty selection."]));
-    } else {
-      var bc=res.boardCredit;
-      var c=card({border:"2px solid #ddd6fe"});
-      c.appendChild(el("div",{style:{fontSize:"11px",fontWeight:"700",color:"#6d28d9",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"6px"}},["Board Certification Credit (MOC)"]));
-      c.appendChild(el("div",{style:{fontSize:"17px",fontWeight:"800",color:"#4c1d95",marginBottom:"10px"}},[bc.boards]));
-      if(bc.evalWarning){var ew=card({background:"#fffbeb",border:"1px solid #fde68a",marginBottom:"12px"});ew.appendChild(el("p",{style:{fontSize:"13px",color:"#78350f",lineHeight:"1.5"}},["⚠️ "+bc.evalWarning]));c.appendChild(ew);}
-      var mocFlagRow = el("div",{style:{display:"flex",alignItems:"flex-start",gap:"8px",marginBottom:"12px"}});
-      mocFlagRow.appendChild(el("p",{style:{fontSize:"14px",color:"#1a3a5c",lineHeight:"1.6",flex:"1"}}, [bc.flag]));
-      mocFlagRow.appendChild(copyBtn(bc.flag));
-      c.appendChild(mocFlagRow);
-      var steps=el("div",{style:{background:"#f5f3ff",borderRadius:"8px",padding:"14px"}});
-      steps.appendChild(el("div",{style:{fontSize:"12px",fontWeight:"700",color:"#6d28d9",marginBottom:"8px"}},["WHAT YOU NEED TO DO"]));
-      ["Tell your OCME&LL representative you want MOC credit designated for this activity","OCME&LL registers the activity with the relevant certifying board","After the activity, OCME&LL reports the credit","Physicians self-report or receive automatic credit in their board portfolio"].forEach(function(s,i){
-        var row=el("div",{style:{display:"flex",gap:"10px",alignItems:"flex-start",marginBottom:"8px"}});
-        var num=el("span",{style:{background:"#6d28d9",color:"#fff",borderRadius:"50%",width:"20px",height:"20px",fontSize:"11px",fontWeight:"700",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:"0",marginTop:"1px"}},[(i+1)+""]);
-        row.appendChild(num);
-        row.appendChild(el("span",{style:{fontSize:"14px",color:"#4c1d95"}},[s]));
-        steps.appendChild(row);
-      });
-      c.appendChild(steps); content.appendChild(c);
+    header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
     }
-  }
-
-  if(state.activeTab==="commendation"){
-    var intro=card({background:"#f0fdf4",border:"1px solid #bbf7d0"});
-    intro.appendChild(el("p",{style:{fontSize:"14px",color:"#166534",lineHeight:"1.6"}},["These criteria contribute to Michigan Medicine’s ACCME Accreditation with Commendation — a recognition awarded to the institution at reaccreditation, not to individual activities. Every well-documented qualifying activity builds the evidence portfolio. Flag each matched criterion to your OCME&LL representative and keep documentation as you go."]));
-    content.appendChild(intro);
-    if(res.commendation.length===0){
-      content.appendChild(el("div",{style:{textAlign:"center",padding:"40px",color:"#4a6785",fontSize:"15px"}},["No commendation criteria matched based on your selections. Review the planning and follow-up questions if you think some may apply."]));
-    } else {
-      res.commendation.forEach(function(cat){
-        var c=card({borderLeft:"4px solid "+cat.color});
-        var hd=el("div",{style:{display:"flex",alignItems:"center",gap:"8px",marginBottom:"8px"}});
-        hd.appendChild(span({fontSize:"20px"},cat.icon));
-        hd.appendChild(span({fontWeight:"700",color:cat.color,fontSize:"15px"},cat.category));
-        c.appendChild(hd);
-        c.appendChild(el("p",{style:{fontSize:"13px",color:"#4a6785",marginBottom:"12px",lineHeight:"1.5"}},[cat.whyItMatters]));
-        cat.matched.forEach(function(cr){
-          var chip=el("span",{style:{display:"inline-flex",alignItems:"center",gap:"6px",background:cat.colorLight,border:"1px solid "+cat.colorBorder,borderRadius:"20px",padding:"4px 12px",fontSize:"13px",fontWeight:"600",color:cat.color,marginRight:"8px",marginBottom:"8px"}},["🏷 "+cr.label]);
-          c.appendChild(chip);
-        });
-        content.appendChild(c);
-      });
+    header p.tagline {
+      margin-top: 0.6rem;
+      font-size: 0.95rem;
+      color: #c8d8e8;
+      max-width: 600px;
+      line-height: 1.6;
     }
-  }
 
-  if(state.activeTab==="michigan"){
-    if(res.michigan.length===0){
-      content.appendChild(el("div",{style:{textAlign:"center",padding:"40px",color:"#4a6785",fontSize:"15px"}},["No Michigan mandatory topics selected for this activity."]));
-    } else {
-      res.michigan.forEach(function(mi){
-        var c=card({borderLeft:"4px solid #0284c7"});
-        var hd=el("div",{style:{display:"flex",gap:"10px",alignItems:"center",marginBottom:"8px"}});
-        hd.appendChild(span({fontSize:"22px"},mi.icon));
-        hd.appendChild(span({fontWeight:"700",color:"#00274C",fontSize:"15px"},mi.label));
-        c.appendChild(hd);
-        c.appendChild(el("div",{style:{fontSize:"13px",color:"#4a6785",marginBottom:"8px",fontWeight:"600"}},["Requirement: "+mi.req]));
-        c.appendChild(el("p",{style:{fontSize:"14px",color:"#1a3a5c",lineHeight:"1.5"}},[mi.note]));
-        content.appendChild(c);
-      });
+    /* ── Main ── */
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2.5rem 2rem 4rem;
     }
-  }
 
-  if(state.activeTab==="export"){
-    content.appendChild(renderExportTab(res,state.answers));
-  }
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #7a8499;
+      margin-bottom: 1.25rem;
+    }
 
-  wrap.appendChild(content);
-  return wrap;
-}
+    /* ── App Cards ── */
+    .cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    @media (max-width: 620px) {
+      .cards { grid-template-columns: 1fr; }
+    }
 
-// ─── RENDER ───────────────────────────────────────────────────────────────────
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #e2e6ed;
+      padding: 1.75rem 1.75rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      transition: box-shadow 0.2s ease, transform 0.2s ease;
+    }
+    .card:hover {
+      box-shadow: 0 8px 28px rgba(0,39,76,0.10);
+      transform: translateY(-2px);
+    }
 
-// --- DOCUMENT GENERATION ---
+    .card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      margin-bottom: 1rem;
+    }
+    .icon-blue  { background: #e8f0fb; }
+    .icon-teal  { background: #e6f4f1; }
 
-// ─── SUPPORTING DOCUMENT GENERATION ─────────────────────────────────────────
-// These documents help planners and OCME staff build the activity correctly.
-// They are NOT the application — they support the actual MiCME application.
+    .card h2 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 0.5rem;
+      line-height: 1.3;
+    }
+    .card p {
+      font-size: 0.875rem;
+      color: #556070;
+      line-height: 1.65;
+      flex-grow: 1;
+      margin-bottom: 1.4rem;
+    }
 
-// ─── DOCUMENT STYLES ─────────────────────────────────────────────────────────
-function docStyles() {
-  return ''
-    +'*{box-sizing:border-box;margin:0;padding:0}'
-    +'body{font-family:\'Nunito Sans\',Arial,sans-serif;color:#1a2a3a;background:#fff;font-size:13.5px;line-height:1.6}'
-    +'.page{max-width:620px;margin:0 auto;padding:32px 40px}'
+    .feature-list {
+      list-style: none;
+      margin-bottom: 1.4rem;
+    }
+    .feature-list li {
+      font-size: 0.8rem;
+      color: #6b7a90;
+      padding: 0.25rem 0;
+      padding-left: 1.1rem;
+      position: relative;
+      line-height: 1.5;
+    }
+    .feature-list li::before {
+      content: "›";
+      position: absolute;
+      left: 0;
+      color: #00274C;
+      font-weight: 700;
+    }
 
-    /* ── Document header ── */
-    +'.doc-kicker{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1.4px;color:#7a96b0;margin-bottom:6px}'
-    +'.doc-title{font-size:22px;font-weight:800;color:#00274C;line-height:1.15;margin-bottom:5px}'
-    +'.doc-sub{font-size:12px;color:#5a7a9a;margin-bottom:0}'
-    +'.doc-rule{border:none;border-top:2.5px solid #FFCB05;margin:12px 0 20px}'
-
-    /* ── Summary card ── */
-    +'.summary{background:#00274C;color:#fff;border-radius:8px;padding:16px 20px;margin-bottom:24px}'
-    +'.summary-label{font-size:9px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,0.55);margin-bottom:4px}'
-    +'.summary-type{font-size:18px;font-weight:800;margin-bottom:12px;line-height:1.2}'
-    +'.summary-pills{display:flex;flex-wrap:wrap;gap:6px}'
-    +'.pill{font-size:10.5px;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(255,255,255,0.15);color:#fff;letter-spacing:0.2px}'
-    +'.pill-yellow{background:#FFCB05;color:#00274C;font-weight:800}'
-
-    /* ── Section headers ── */
-    +'h2{font-size:9.5px;font-weight:800;color:#00274C;text-transform:uppercase;letter-spacing:1px;'
-    +'   margin:26px 0 4px;padding-bottom:5px;border-bottom:2px solid #FFCB05;display:flex;align-items:center;gap:6px}'
-    +'h2 .hico{font-size:13px;line-height:1}'
-
-    /* ── Section intro (italicised, clearly advisory) ── */
-    +'.sec-note{font-size:12px;font-style:italic;color:#5a7a9a;margin:5px 0 10px;line-height:1.5}'
-
-    /* ── Intro callout box ── */
-    +'.intro-box{font-size:12px;color:#4a6785;background:#eef2f7;border-left:3px solid #2F65A7;'
-    +'           border-radius:0 6px 6px 0;padding:10px 14px;margin-bottom:20px;line-height:1.6}'
-
-    /* ── Planner checklist list ── */
-    +'.plist{margin:0 0 6px;padding:0;list-style:none;border:1px solid #dde4ed;border-radius:7px;overflow:hidden}'
-    +'.plist li{display:flex;gap:11px;align-items:flex-start;padding:10px 14px;'
-    +'          border-bottom:1px solid #eef1f6;background:#fff}'
-    +'.plist li:last-child{border-bottom:none}'
-    +'.plist li:nth-child(even){background:#fafbfc}'
-    +'.plist li.urgent-li{background:#fff7ed;border-bottom-color:#fde8d0}'
-
-    /* ── Indicators ── */
-    +'.item-dot{width:7px;height:7px;border-radius:50%;background:#2F65A7;flex-shrink:0;margin-top:6px}'
-    +'.item-cb{width:14px;height:14px;border:2px solid #2F65A7;border-radius:3px;flex-shrink:0;'
-    +'         background:#fff;margin-top:3px}'
-    +'.item-cb.urgent-cb{border-color:#f97316}'
-
-    /* ── Item text block ── */
-    +'.item-body{flex:1;min-width:0}'
-    +'.item-label{font-size:13px;font-weight:700;color:#00274C;line-height:1.35;display:block}'
-    +'.item-label.urgent-text{color:#9a3412}'
-    +'.item-note{font-size:11.5px;font-weight:400;font-style:italic;color:#5a7a9a;'
-    +'           margin-top:3px;line-height:1.4;display:block}'
-    +'.item-tag{display:inline-block;font-size:10px;font-weight:700;background:#fffbe6;'
-    +'          border:1px solid #c8a900;border-radius:3px;padding:1px 6px;margin-left:6px;'
-    +'          color:#7a5c00;vertical-align:middle;font-style:normal}'
-
-    /* ── Staff brief: section group container ── */
-    +'.s-group{border:1px solid #dde4ed;border-radius:8px;overflow:hidden;margin-bottom:6px}'
-    +'.s-row{display:grid;grid-template-columns:160px 1fr;border-bottom:1px solid #eef1f6;min-height:36px}'
-    +'.s-row:last-child{border-bottom:none}'
-    +'.s-key{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.7px;'
-    +'        color:#2F65A7;padding:10px 12px;background:#f0f4f9;display:flex;align-items:center;line-height:1.3}'
-    +'.s-val{font-size:13px;font-weight:600;color:#00274C;padding:10px 14px;background:#fff;'
-    +'        display:flex;align-items:flex-start;line-height:1.4;min-width:0;padding-top:11px}'
-    +'.s-val.mono{font-family:\'Courier New\',monospace;font-size:11.5px;font-weight:400;'
-    +'            white-space:pre-wrap;align-items:flex-start;padding-top:10px}'
-    /* ── Staff brief: note rows (actions, warnings, info) ── */
-    +'.bld{display:flex;gap:10px;align-items:flex-start;margin-bottom:5px;padding:9px 12px;'
-    +'     border-radius:6px;border:1px solid #e4eaf2;background:#f8f9fb}'
-    +'.bld-ico{font-size:14px;flex-shrink:0;width:20px;text-align:center;line-height:1.6}'
-    +'.bld-text{flex:1;min-width:0}'
-    +'.bld-main{font-size:13px;font-weight:700;color:#00274C;line-height:1.35}'
-    +'.bld-sub{font-size:11.5px;font-style:italic;color:#5a7a9a;margin-top:3px;line-height:1.4}'
-    +'.bld.action{background:#edf2f9;border-color:#b8cfe8}'
-    +'.bld.warn{background:#fff7ed;border-color:#f97316;border-left:3px solid #f97316}'
-    +'.bld.warn .bld-main{color:#9a3412}'
-    +'.bld.warn .bld-sub{color:#b45309}'
-    +'.bld.highlight{background:#fffce6;border-color:#e0c800;border-left:3px solid #FFCB05}'
-
-    /* ── Field rows (staff brief: CloudCME field reference) ── */
-    +'.field-row{display:flex;align-items:center;gap:0;margin-bottom:5px;padding:8px 12px;'
-    +'           background:#f0f4f9;border:1px solid #dde4ed;border-radius:6px}'
-    +'.field-key{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.7px;'
-    +'           color:#2F65A7;white-space:nowrap;min-width:155px;flex-shrink:0;padding-right:12px}'
-    +'.field-sep{color:#b0c4d8;margin:0 8px;flex-shrink:0;font-size:15px;line-height:1}'
-    +'.field-val{font-size:13px;font-weight:700;color:#00274C;line-height:1.4;flex:1;min-width:0}'
-    +'.field-block{margin-bottom:8px;padding:10px 13px;background:#f0f4f9;border:1px solid #dde4ed;border-radius:6px}'
-    +'.field-block-key{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:0.7px;color:#2F65A7;margin-bottom:5px}'
-    +'.field-block-val{font-size:12px;font-weight:500;color:#00274C;line-height:1.65;white-space:pre-wrap;font-family:\'Courier New\',monospace}'
-
-    /* ── Tag chips ── */
-    +'.tag-container{background:#f8f9fb;border:1.5px solid #dde4ed;border-radius:7px;padding:11px 14px;margin-top:4px}'
-    +'.tag-container-label{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.7px;color:#5a7a9a;margin-bottom:8px}'
-    +'.tag{display:inline-block;font-size:11px;font-weight:700;background:#fff;border:1.5px solid #a8bdd4;'
-    +'     border-radius:4px;padding:3px 9px;margin:2px 4px 2px 0;color:#2F65A7}'
-    +'.tag-gold{background:#fffbe6;border-color:#c8a900;color:#7a5c00}'
+    .btn {
+      display: inline-block;
+      text-decoration: none;
+      padding: 0.65rem 1.25rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-align: center;
+      transition: background 0.15s ease;
+    }
+    .btn-primary {
+      background: #00274C;
+      color: #fff;
+    }
+    .btn-primary:hover { background: #003d73; }
 
     /* ── Footer ── */
-    +'.doc-footer{margin-top:30px;padding:10px 14px;border-radius:6px;background:#f8f9fb;'
-    +'            border:1px solid #e4eaf2;font-size:10.5px;color:#8a9bb0;line-height:1.5;font-style:italic}'
-
-    +'html{-webkit-print-color-adjust:exact;print-color-adjust:exact}'
-    +'@media print{'
-    +'  .no-print{display:none!important}'
-    +'  .plist li{break-inside:avoid}'
-    +'  .s-group{break-inside:avoid;break-before:avoid}'
-    +'  .bld{break-inside:avoid}'
-    +'  h2{break-after:avoid}'
-    +'  .sec-note{break-after:avoid}'
-    +'  .intro-box{break-after:avoid}'
-    +'  .tag-container{break-inside:avoid}'
-    +'  .doc-footer{background:#fff;border:none}'
-    +'}';
-}
-var DOC_STYLES = docStyles();
-// ─── SHARED HELPERS ───────────────────────────────────────────────────────────
-function summaryCard(appType, pills, yellowPills) {
-  var pillsHtml = (pills||[]).map(function(p){return '<span class="pill">'+p+'</span>';}).join('');
-  var yHtml = (yellowPills||[]).map(function(p){return '<span class="pill pill-yellow">'+p+'</span>';}).join('');
-  return '<div class="summary">'
-    +'<div class="summary-label">Activity Type</div>'
-    +'<div class="summary-type">'+appType+'</div>'
-    +'<div class="summary-pills">'+pillsHtml+yHtml+'</div>'
-    +'</div>';
-}
-
-function sec(icon, title) {
-  return '<h2><span class="hico">'+icon+'</span>'+title+'</h2>';
-}
-
-function docHeader(title, subtitle, date) {
-  return '<div class="doc-kicker">Michigan Medicine &nbsp;&middot;&nbsp; Office of CME &amp; Lifelong Learning</div>'
-    +'<div class="doc-title">'+title+'</div>'
-    +'<div class="doc-sub">'+subtitle+' &nbsp;&middot;&nbsp; Generated '+date+'</div>'
-    +'<hr class="doc-rule">';
-}
-
-function introBox(text) {
-  return '<div class="intro-box">'+text+'</div>';
-}
-
-// Bullet list item — flag/inform (OCME&LL handles this)
-function bul(main, note, tag) {
-  return '<li>'
-    +'<span class="item-dot"></span>'
-    +'<span class="item-body">'
-    +'<span class="item-label">'+main+(tag?' <span class="item-tag">'+tag+'</span>':'')+'</span>'
-    +(note?'<span class="item-note">'+note+'</span>':'')
-    +'</span></li>';
-}
-
-// Checkbox list item — planner must do this
-function chk(main, note, urgent) {
-  return '<li'+(urgent?' class="urgent-li"':'')+'>'
-    +'<span class="item-cb'+(urgent?' urgent-cb':'')+'"></span>'
-    +'<span class="item-body">'
-    +'<span class="item-label'+(urgent?' urgent-text':'')+'">'+main+'</span>'
-    +(note?'<span class="item-note">'+note+'</span>':'')
-    +'</span></li>';
-}
-
-// Wrap items in a styled list
-function pul(items) {
-  return '<ul class="plist">'+items.join('')+'</ul>';
-}
-
-// Staff build row
-function bld(icon, main, sub, cls) {
-  return '<div class="bld'+(cls?' '+cls:'')+'"><div class="bld-ico">'+icon+'</div><div class="bld-text"><div class="bld-main">'+main+'</div>'+(sub?'<div class="bld-sub">'+sub+'</div>':'')+'</div></div>';
-}
-
-function tagList(items, cls) {
-  var chips = items.map(function(t){return '<span class="tag'+(cls?' '+cls:'')+'">'+t+'</span>';}).join('');
-  return '<div class="tag-container"><div class="tag-container-label">Enter these tags in MiCME</div>'+chips+'</div>';
-}
-
-// Staff brief: a key/value row inside a section group
-function srow(key, value, mono) {
-  return '<div class="s-row">'
-    +'<div class="s-key">'+key+'</div>'
-    +'<div class="s-val'+(mono?' mono':'')+'">'+value+'</div>'
-    +'</div>';
-}
-
-// Staff brief: wrap rows in a section group box
-function sgroup(rows) {
-  return '<div class="s-group">'+rows.join('')+'</div>';
-}
-
-// ─── SHARED: build summary pills from answers ─────────────────────────────────
-function buildPills(res, answers) {
-  var a = answers;
-  var pills = [], yellowPills = [];
-  var fmtMap = {live:"In person",livestream:"Virtual / live stream",hybrid:"Hybrid",enduring:"On-demand / self-paced"};
-  if (a.delivery_format) pills.push(fmtMap[a.delivery_format]||a.delivery_format);
-  var envMap = {didactic:"Lecture/didactic",workshop:"Workshop/small group",simulation:"Simulation lab",performance_improvement:"Performance improvement",self_assessment_learning:"Self-assessment"};
-  (a.learning_environment||[]).forEach(function(e){ if(envMap[e]) pills.push(envMap[e]); });
-  if (a.activity_structure==="rss") pills.push("RSS");
-  if (a.activity_structure==="repeated") pills.push("Repeated course");
-  res.additionalCredits.forEach(function(cr){
-    if (cr.label==="Joint Providership Agreement Required") yellowPills.push("⚠ Joint Providership");
-    else if (cr.label==="Interprofessional Continuing Education (IPCE)") yellowPills.push("IPCE");
-    else if (cr.label==="ABA MOCA 2.0® Patient Safety CME Credit") yellowPills.push("Patient Safety CME");
-    else if (cr.label==="Nursing CE (ANCC Contact Hours)") yellowPills.push("ANCC");
-    else if (cr.label==="Pharmacy CE (ACPE Credit)") yellowPills.push("ACPE");
-    else if (cr.label==="PA CME (AAPA Category 1 Credit)") yellowPills.push("AAPA");
-  });
-  if (res.boardCredit && res.boardCredit.boards) {
-    var mocShort = res.boardCredit.boards.length > 40 ? "Multiple MOC boards" : "MOC: "+res.boardCredit.boards;
-    yellowPills.push(mocShort);
-  }
-  if (res.commendation.length > 0) yellowPills.push("Commendation eligible");
-  return {pills:pills, yellowPills:yellowPills};
-}
-
-// ─── DOCUMENT 1: PLANNER PREPARATION CHECKLIST ───────────────────────────────
-function generatePlannerGuide(res, answers) {
-  var a = answers;
-  var date = new Date().toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"});
-  var appType = (res.application[0]||{}).appType || "CME Activity";
-  var p = buildPills(res, answers);
-  var L = [];
-
-  L.push(docHeader("Application Preparation Checklist","For the educational planner or Administrative Coordinator",date));
-  L.push(summaryCard(appType, p.pills, p.yellowPills));
-  L.push(introBox('Use this checklist to prepare your MiCME application. <strong style="color:#00274C">Tick items as you gather them.</strong> Bullet points are things OCME&amp;LL will handle — just flag them when you submit.'));
-
-  // ── URGENT flags first ──
-  var urgentItems = [];
-  if ((a.planning_process||[]).includes("multi_org")) {
-    urgentItems.push(chk("Contact OCME&amp;LL to initiate a Joint Providership Agreement",
-      "Must be signed before planning materials, announcements, or save-the-dates are issued", true));
-  }
-  if ((a.hybrid_components||[]).includes("hybrid_enduring")) {
-    urgentItems.push(chk("Discuss the public recording with OCME&amp;LL before recording begins",
-      "A publicly available recording requires a separate Enduring Material application", true));
-  }
-  if (urgentItems.length) {
-    L.push(sec("⚠️","Action Required Before Proceeding"));
-    L.push(pul(urgentItems));
-  }
-
-  // ── What to gather for the application ──
-  L.push(sec("📋","What to Gather for Your Application"));
-  L.push('<p class="sec-note">Have these ready before you contact OCME&amp;LL. Simple applications can be submitted without a planning meeting — the more complete your submission, the faster it moves.</p>');
-  var prepItems = [];
-  prepItems.push(chk("Educational objectives", "2–3 action-verb statements: what will learners be able to do after attending?"));
-  prepItems.push(chk("Needs assessment or practice gap", "Any written rationale: quality data, literature, survey results, or a prior evaluation gap"));
-  prepItems.push(chk("Session agenda with start and end times", "Credit hours = instructional minutes ÷ 60, rounded to nearest 0.25"));
-  prepItems.push(chk("Faculty disclosure forms for all educational planners and presenters", "All planning committee members and presenters must complete COI disclosure in MiCME before the activity — paper forms not accepted"));
-  prepItems.push(chk("Evaluation method", "Satisfaction survey is automatic — note on application if also using pre/post test or outcomes measure"));
-  if (a.activity_structure==="rss") {
-    prepItems.push(chk("Full series schedule", "RSS is registered once — include all planned session dates"));
-  }
-  if (a.activity_structure==="repeated") {
-    prepItems.push(chk("All course run dates", "Each run needs its own application — attendance and evaluation tracked separately per run"));
-  }
-  if ((a.planning_process||[]).includes("multi_org_accredited")) {
-    prepItems.push(chk("Confirm accreditation lead institution", "If your accredited partner is taking the lead you may not need a Michigan Medicine application"));
-  }
-  L.push(pul(prepItems));
-
-  // ── Credits to flag ──
-  var creditRows = res.additionalCredits.filter(function(c){
-    return c.label!=="Joint Providership Agreement Required" && c.label!=="Co-Organization with Another Accredited Institution";
-  });
-  if (creditRows.length > 0 || res.boardCredit) {
-    L.push(sec("💳","Credits — Flag to OCME&amp;LL on Submission"));
-    L.push('<p class="sec-note">OCME&amp;LL will set these up in CloudCME — just mention each one when you submit.</p>');
-    var creditItems = [];
-    creditItems.push(bul("AMA PRA Category 1 Credit™", "included automatically for all physician learner activities"));
-    creditRows.forEach(function(cr){ creditItems.push(bul(cr.label, cr.flag)); });
-    if (res.boardCredit) {
-      creditItems.push(bul("MOC / Board Certification Credit",
-        res.boardCredit.boards + (res.boardCredit.evalWarning ? " · ⚠ "+res.boardCredit.evalWarning : "")));
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.78rem;
+      color: #9aa5b4;
+      border-top: 1px solid #e2e6ed;
     }
-    L.push(pul(creditItems));
-  }
+    footer a { color: #9aa5b4; text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
 
-  // ── Michigan mandatory topics ──
-  if (res.michigan.length > 0) {
-    L.push(sec("🔵","Michigan Mandatory Topics — Flag to OCME&amp;LL"));
-    L.push('<p class="sec-note">OCME&amp;LL will designate these in CloudCME — confirm them on submission.</p>');
-    var michItems = res.michigan.map(function(m){
-      return bul(m.label, m.req + (m.note ? " · "+m.note : ""));
-    });
-    L.push(pul(michItems));
-  }
+  <header>
+    <div class="header-inner">
+      <div class="wordmark">Michigan Medicine &middot; OCME&amp;LL</div>
+      <h1>CME Helper Apps</h1>
+      <p class="tagline">
+        Tools for CME planners and educational coordinators at Michigan Medicine &mdash;
+        from application planning to content generation.
+      </p>
+    </div>
+  </header>
 
-  // ── Commendation ──
-  if (res.commendation.length > 0) {
-    L.push(sec("⭐","Commendation Criteria — Flag to OCME&amp;LL"));
-    L.push('<p class="sec-note">Your activity may qualify for ACCME Accreditation with Commendation. Flag these on submission — OCME&amp;LL will advise on evidence required.</p>');
-    var commItems = [];
-    res.commendation.forEach(function(cat){
-      cat.matched.forEach(function(cr){
-        commItems.push(bul(cr.label, cat.category, cr.code));
-      });
-    });
-    L.push(pul(commItems));
-  }
+  <main>
+    <div class="section-label">Available Tools</div>
 
-  // ── After the activity ──
-  L.push(sec("✅","After the Activity"));
-  L.push('<p class="sec-note">Complete these steps after the activity runs to close the credit record.</p>');
-  var afterItems = [];
-  afterItems.push(chk("Submit attendance list to OCME&amp;LL within 30 days"));
-  afterItems.push(chk("Share evaluation results with OCME&amp;LL"));
-  if (a.activity_structure==="rss") {
-    afterItems.push(chk("Log each session date and attendance in MiCME throughout the year", "do not wait until end of series"));
-  }
-  if (res.commendation.length > 0) {
-    afterItems.push(chk("Collect supporting evidence for commendation criteria", "planning committee roster, attendee data, outcomes — keep a file as you go"));
-  }
-  L.push(pul(afterItems));
+    <div class="cards">
 
-  L.push('<div class="doc-footer">Generated by the CME Credit Application Navigator &nbsp;·&nbsp; Michigan Medicine OCME&amp;LL &nbsp;·&nbsp; This is a preparation aid only — your OCME&amp;LL representative will guide the application in MiCME.</div>');
-  return L.join('');
-}
+      <!-- CME Credit Application Navigator -->
+      <div class="card">
+        <div class="card-icon icon-blue">&#x1F9ED;</div>
+        <h2>CME Credit Application Navigator</h2>
+        <p>
+          A guided questionnaire that walks planners through the CME application
+          process step by step &mdash; helping you identify the right application type,
+          eligible credit designations, MOC opportunities, and ACCME commendation criteria.
+        </p>
+        <ul class="feature-list">
+          <li>10-question adaptive workflow</li>
+          <li>Application type &amp; credit type recommendations</li>
+          <li>Specialty MOC eligibility (9 boards)</li>
+          <li>Generates planner checklist &amp; staff build brief</li>
+        </ul>
+        <a href="cme-navigator.html" class="btn btn-primary">Open Navigator &rarr;</a>
+      </div>
 
-// ─── DOCUMENT 2: OCME STAFF BUILD BRIEF ──────────────────────────────────────
-function generateStaffBrief(res, answers) {
-  var a = answers;
-  var date = new Date().toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"});
-  var appType = (res.application[0]||{}).appType || "";
-  var p = buildPills(res, answers);
-  var L = [];
+      <!-- CME Content Helper -->
+      <div class="card">
+        <div class="card-icon icon-teal">&#x270D;&#xFE0F;</div>
+        <h2>CME Content Helper</h2>
+        <p>
+          AI-powered content generation for CME application submissions &mdash; produces
+          compliant practice gap framings, educational need analyses, learning objectives,
+          and competency mappings, while flagging all eligible credit types.
+        </p>
+        <ul class="feature-list">
+          <li>Practice gap &amp; educational need generation</li>
+          <li>Learning objectives &amp; competency mapping</li>
+          <li>MOC, IPCE, nursing, pharmacy &amp; PA eligibility</li>
+          <li>ACCME Commendation criteria analysis</li>
+        </ul>
+        <a href="cme-content-helper.html" class="btn btn-primary">Open Content Helper &rarr;</a>
+      </div>
 
-  L.push(docHeader("MiCME Activity Build Brief","For OCME&amp;LL staff — CloudCME build reference",date));
-  L.push(summaryCard(appType, p.pills, p.yellowPills));
-  L.push(introBox('Generated from planner answers in the CME Navigator. <strong style="color:#00274C">Verify all fields with the planner before finalising.</strong>'));
+    </div>
+  </main>
 
-  // ── 1. Application Setup ──
-  L.push(sec("📂","Application Setup"));
-  L.push('<p class="sec-note">Enter these values into the corresponding fields in CloudCME when creating the activity record.</p>');
+  <footer>
+    Office of Continuing Medical Education &amp; Lifelong Learning &nbsp;&middot;&nbsp;
+    Michigan Medicine, University of Michigan &nbsp;&middot;&nbsp;
+    <a href="mailto:doctorhealy@gmail.com">Contact</a>
+  </footer>
 
-  var fmtFull = {live:"Live Educational Activity — In Person",livestream:"Live Educational Activity — Virtual (synchronous)",hybrid:"Live Educational Activity — Hybrid (in person + simultaneous live stream)",enduring:"Enduring Material"};
-  var envMap2 = {didactic:"Lecture / Didactic",workshop:"Workshop / Small Group / Case-Based",simulation:"Simulation / Hands-On Skills Lab",performance_improvement:"Performance Improvement / QI",self_assessment_learning:"Structured Self-Assessment"};
-  var envList2 = (a.learning_environment||[]).map(function(e){return envMap2[e]||e;}).filter(Boolean);
-
-  var setupRows = [];
-  setupRows.push(srow("Application Type", appType));
-  setupRows.push(srow("Delivery Format", fmtFull[a.delivery_format]||a.delivery_format||"—"));
-  if (envList2.length) setupRows.push(srow("Learning Environment", envList2.join(" + ")));
-  L.push(sgroup(setupRows));
-
-  // Setup notes (warnings/flags that affect how the record is built)
-  if (a.activity_structure==="rss")
-    L.push(bld("📅","RSS — register the series once","Log individual session dates and attendance throughout the year. Periodic evaluation is compliant per ACCME RSS policy.","highlight"));
-  if (a.activity_structure==="repeated")
-    L.push(bld("⚠","Repeated course — each run needs its own application","Independent attendance record and evaluation required per run.","warn"));
-  if ((a.hybrid_components||[]).includes("hybrid_enduring"))
-    L.push(bld("⚠","Public recording requires a second Enduring Material application","Separate credit designation, expiration date (max 3 years), and independent evaluation required.","warn"));
-  if ((a.hybrid_components||[]).includes("hybrid_enduring_bundled"))
-    L.push(bld("🔒","Bundled recording (registered attendees only) — include under live activity","Confirm access duration does not exceed 30 days; if it does, an Enduring Material application is required.","highlight"));
-  if ((a.learning_environment||[]).includes("simulation"))
-    L.push(bld("🩺","Simulation — accredited as Live Activity; application type is unchanged","Credit hours = supervised instructional time in simulation setting only.","action"));
-  L.push(bld("📋","Confirm disclosure forms before finalising","Every planning committee member and faculty presenter must complete COI disclosure in MiCME before the activity date.","action"));
-
-  // ── 2. Providership ──
-  var hasJoint = (a.planning_process||[]).includes("multi_org");
-  var hasCo = (a.planning_process||[]).includes("multi_org_accredited");
-  if (hasJoint || hasCo) {
-    L.push(sec("🤝","Providership"));
-    if (hasJoint) {
-      L.push(bld("⚠","Jointly Provided — agreement must be signed before activity proceeds","Do not finalise the record until the Joint Providership Agreement is in place.","warn"));
-      L.push('<p class="sec-note">Set these fields in CloudCME:</p>');
-      L.push(sgroup([
-        srow("Activity Type", "Jointly Provided"),
-        srow("Joint Provider Name", "[Partner Organisation Name — confirm with planner]"),
-        srow("Accreditation Statement", '"This activity has been planned and implemented in accordance with the accreditation requirements and policies of the ACCME through the joint providership of the University of Michigan Medical School Office of CME &amp; Lifelong Learning and [Partner Organization Name]."', true)
-      ]));
-    }
-    if (hasCo)
-      L.push(bld("ℹ","Co-organised with an ACCME-accredited institution","Directly provided accreditation statement applies. Acknowledge co-organiser in the activity description field only. Confirm which institution holds the accreditation lead.","action"));
-  }
-
-  // ── 3. Credit Designations ──
-  L.push(sec("💳","Credit Designations"));
-  L.push('<p class="sec-note">Designate each applicable credit type in CloudCME.</p>');
-  var creditExtras = res.additionalCredits.filter(function(c){
-    return c.label!=="Joint Providership Agreement Required" && c.label!=="Co-Organization with Another Accredited Institution";
-  });
-  var creditRows2 = [srow("AMA PRA Category 1 Credit™","Required for all physician learner activities")];
-  var creditIcons = {"Nursing CE (ANCC Contact Hours)":"🏥","Pharmacy CE (ACPE Credit)":"💊","PA CME (AAPA Category 1 Credit)":"👩‍⚕️","Interprofessional Continuing Education (IPCE)":"🏅","ABA MOCA 2.0® Patient Safety CME Credit":"🛡️"};
-  creditExtras.forEach(function(cr){ creditRows2.push(srow(cr.label, cr.who||cr.flag||"")); });
-  L.push(sgroup(creditRows2));
-
-  // ── 4. MOC ──
-  if (res.boardCredit && res.boardCredit.boards) {
-    L.push(sec("🏥","MOC / Board Certification Credit"));
-    var mocRows = [srow("Board", res.boardCredit.boards)];
-    L.push(sgroup(mocRows));
-    if (res.boardCredit.evalWarning)
-      L.push(bld("⚠","Evaluation requirement for MOC",res.boardCredit.evalWarning,"warn"));
-    L.push(bld("📤","Report credits to the board after activity completion","Follow standard board reporting workflow.","action"));
-  }
-
-  // ── 5. IPCE ──
-  var nonPhys = (a.audience_professions||[]).filter(function(prof){return ["nurses","pharmacists","pas","social_workers","psychologists","dietitians","other_hcp"].includes(prof);});
-  if (nonPhys.length >= 1 && (a.planning_process||[]).includes("multi_prof")) {
-    L.push(sec("🏅","Interprofessional Continuing Education (IPCE)"));
-    var profLabels={"physicians":"Physicians","nurses":"Nurses","pharmacists":"Pharmacists","pas":"Physician Assistants / PAs","social_workers":"Social Workers","psychologists":"Psychologists","dietitians":"Dietitians / Nutritionists","other_hcp":"Other health professionals","students":"Students / Trainees","patients":"Patients / Caregivers"};
-    var profDisplay=(a.audience_professions||[]).map(function(prof){return profLabels[prof]||prof;}).join(", ");
-    L.push(sgroup([srow("Professions in scope", profDisplay)]));
-    L.push(bld("✅","Meets IPCE definition — planned by and for two or more professions","Per ACCME/ACPE/ANCC joint definition. Track in MiCME and file in Joint Accreditation portfolio.","action"));
-    L.push(bld("📋","Required documentation","Interprofessional planning committee member list and faculty presenter roster — both must be on file with profession noted for each person.","action"));
-    L.push(bld("ℹ","IPCE Credit Mark requires Joint Accreditation (not yet held)","Designate as interprofessional activity in MiCME record as portfolio evidence.","action"));
-  }
-
-  // ── 6. Evaluation ──
-  L.push(sec("📊","Evaluation Setup"));
-  var evalLabels = {
-    survey_only:"Satisfaction survey — auto-generated in MiCME, no additional setup required",
-    pre_post:"Pre/post knowledge assessment + satisfaction survey — document results in the activity record",
-    performance_outcome:"Performance / practice change outcome measure + satisfaction survey — follow-up data collection required",
-    patient_outcome:"Patient or quality outcome measure + satisfaction survey — follow-up data collection required",
-    self_assessment_format:"Formal self-assessment or reflective practice component + satisfaction survey"
-  };
-  L.push(sgroup([srow("Evaluation type", evalLabels[a.evaluation_plan]||a.evaluation_plan||"Not specified")]));
-
-  // ── 7. Michigan Mandatory Topics ──
-  if (res.michigan.length > 0) {
-    L.push(sec("🔵","Michigan Mandatory Topic Designations"));
-    L.push('<p class="sec-note">Designate each topic in the CloudCME topic/tag fields. Verify correct coding in the MiCME compliance report.</p>');
-    var michRows = res.michigan.map(function(m){
-      return srow(m.label, m.req+(m.note?" — "+m.note:""));
-    });
-    L.push(sgroup(michRows));
-  }
-
-  // ── 8. Commendation ──
-  if (res.commendation.length > 0) {
-    L.push(sec("⭐","ACCME Commendation Criteria"));
-    L.push('<p class="sec-note">Map each criterion in the activity record. Supporting evidence must be attached before commendation review.</p>');
-    var commRows = [];
-    res.commendation.forEach(function(cat){
-      cat.matched.forEach(function(cr){
-        commRows.push(srow(cr.code,
-          '<div style="display:flex;flex-direction:column;gap:2px">'
-          +'<span>'+cr.label+'</span>'
-          +'<span style="font-size:11px;font-weight:400;color:#5a7a9a">'+cat.category+'</span>'
-          +'</div>'
-        ));
-      });
-    });
-    L.push(sgroup(commRows));
-  }
-
-  // ── 9. Content Tags ──
-  var cTags2 = {clinical_knowledge:"Clinical Knowledge Update",procedural:"Procedural / Technical Skills",patient_safety:"Patient Safety",qi_activity:"Quality Improvement",communication:"Communication Skills",mental_health:"Mental Health / Behavioral Health",population_health:"Population Health",sdoh:"Health Equity / SDOH",pain_management:"Pain Management / Controlled Substances",ethics:"Medical Ethics",research:"Research / EBP",technology:"Health Technology / Innovation"};
-  var tags2 = (a.content_focus||[]).filter(function(c){return cTags2[c];}).map(function(c){return cTags2[c];});
-  if (tags2.length > 0) {
-    L.push(sec("🏷","Content Tags"));
-    L.push(tagList(tags2));
-  }
-
-  L.push('<div class="doc-footer">Generated by CME Credit Application Navigator &nbsp;·&nbsp; Michigan Medicine OCME&amp;LL &nbsp;·&nbsp; Verify all details with the planner before finalising.</div>');
-  return L.join('');
-}
-
-
-// ─── PRINT VIA HIDDEN IFRAME (no popup needed, works everywhere) ──────────────
-function printDocument(title, bodyHtml) {
-  // Remove any previous print iframe
-  var old = document.getElementById('__cme_print_frame');
-  if (old) old.parentNode.removeChild(old);
-
-  var iframe = document.createElement('iframe');
-  iframe.id = '__cme_print_frame';
-  iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;border:none';
-  document.body.appendChild(iframe);
-
-  var doc = iframe.contentDocument || iframe.contentWindow.document;
-  doc.open();
-  doc.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+title+'</title>'
-    +'<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">'
-    +'<style>'+DOC_STYLES+'body{padding:0}.page{padding:28px 32px}@media print{body{padding:0}}</style>'
-    +'</head><body><div class="page">'+bodyHtml+'</div></body></html>');
-  doc.close();
-
-  // Wait for fonts then print
-  setTimeout(function(){
-    try { iframe.contentWindow.focus(); iframe.contentWindow.print(); }
-    catch(e) { window.print(); }
-  }, 400);
-}
-
-// ─── INLINE DOC PANEL ────────────────────────────────────────────────────────
-function renderDocPanel(config) {
-  var isOpen = state[config.stateKey] === true;
-  var wrap = el("div", {style:{marginBottom:"12px"}});
-
-  // Header / toggle button
-  var hdr = el("div", {style:{
-    border:"2px solid "+(isOpen ? config.accentColor : "#d0d9e3"),
-    borderRadius: isOpen ? "12px 12px 0 0" : "12px",
-    background: isOpen ? config.bgOpen : "#fff",
-    padding:"14px 16px", cursor:"pointer",
-    display:"flex", alignItems:"center", gap:"12px",
-    transition:"all 0.15s"
-  }});
-  hdr.onclick = function(){ state[config.stateKey] = !isOpen; render(); };
-
-  var ico = el("div",{style:{
-    width:"44px",height:"44px",flexShrink:"0",borderRadius:"10px",
-    background:isOpen ? config.accentColor : "#f0f2f5",
-    display:"flex",alignItems:"center",justifyContent:"center",fontSize:"22px",
-    transition:"background 0.15s"
-  }},[config.icon]);
-  hdr.appendChild(ico);
-
-  var txt = el("div",{style:{flex:"1",minWidth:0}});
-  txt.appendChild(el("div",{style:{fontWeight:"800",color:"#00274C",fontSize:"15px",marginBottom:"2px"}},[config.title]));
-  txt.appendChild(el("div",{style:{fontSize:"12px",color:"#4a6785",lineHeight:"1.4"}},[config.subtitle]));
-  hdr.appendChild(txt);
-
-  var chev = el("div",{style:{flexShrink:"0",width:"28px",height:"28px",borderRadius:"50%",
-    background:isOpen?"rgba(0,0,0,0.08)":"#f0f2f5",
-    display:"flex",alignItems:"center",justifyContent:"center",
-    fontSize:"12px",color:"#00274C",fontWeight:"800"
-  }},[isOpen?"▲":"▼"]);
-  hdr.appendChild(chev);
-  wrap.appendChild(hdr);
-
-  if (isOpen) {
-    // Action bar
-    var bar = el("div",{style:{
-      background:config.accentColor, padding:"6px 16px",
-      display:"flex", justifyContent:"space-between", alignItems:"center"
-    }});
-    bar.appendChild(el("span",{style:{fontSize:"11px",fontWeight:"700",color:config.barTextColor,opacity:"0.85"}},
-      ["Michigan Medicine · OCME&LL"]));
-
-    var pBtn = el("button",{style:{
-      background:config.printBg, color:config.printColor,
-      border:"none", padding:"4px 16px", borderRadius:"5px",
-      fontFamily:"inherit", fontSize:"11px", fontWeight:"700", cursor:"pointer"
-    }},["🖨  Print / Save PDF"]);
-    pBtn.onclick = function(e){
-      e.stopPropagation();
-      printDocument(config.title, bodyHtml);
-    };
-    bar.appendChild(pBtn);
-    wrap.appendChild(bar);
-
-    // Lazily generate document HTML on first open, cache it
-    if (!state[config.cacheKey]) state[config.cacheKey] = config.generateFn();
-    var bodyHtml = state[config.cacheKey];
-
-    // Document body — inject docStyles so screen rendering matches print
-    var body = el("div",{style:{
-      border:"2px solid "+config.accentColor, borderTop:"none",
-      borderRadius:"0 0 12px 12px",
-      background:"#fff",
-      maxHeight:"620px", overflowY:"auto"
-    }});
-    body.innerHTML = '<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">'
-      +'<style>'+DOC_STYLES+'</style>'
-      +'<div class="page" style="padding:24px 28px">'+bodyHtml+'</div>';
-    wrap.appendChild(body);
-  }
-
-  return wrap;
-}
-
-// ─── EXPORT TAB ──────────────────────────────────────────────────────────────
-function renderExportTab(res, answers) {
-  var wrap = el("div");
-
-  // Intro callout
-  var intro = el("div",{style:{
-    background:"#eef2f7", border:"1px solid #a8bdd4", borderRadius:"12px",
-    padding:"14px 16px", marginBottom:"18px", fontSize:"14px",
-    color:"#00274C", lineHeight:"1.6"
-  }});
-  intro.innerHTML = 'Two supporting documents for your MiCME application. '
-    + 'Use <strong>Print / Save PDF</strong> to generate a clean version of each. '
-    + 'The <strong>Application Preparation Checklist</strong> is for the educational planner — what to gather before submitting. '
-    + 'The <strong>MiCME Activity Build Brief</strong> is for your OCME&amp;LL representative — everything needed to build the activity correctly in CloudCME.';
-  wrap.appendChild(intro);
-
-  // Doc 1 — Planner Preparation Guide
-  wrap.appendChild(renderDocPanel({
-    stateKey: "docPlannerOpen",
-    icon: "📋",
-    title: "Planner Preparation Guide",
-    subtitle: "For the educational planner or Administrative Coordinator — what to gather and discuss before submitting your MiCME application",
-    accentColor: "#2F65A7",
-    bgOpen: "#eef2f7",
-    barTextColor: "#fff",
-    printBg: "#FFCB05",
-    printColor: "#00274C",
-    cacheKey: "docPlannerHtml",
-    generateFn: function(){ return generatePlannerGuide(res, answers); }
-  }));
-
-  // Doc 2 — OCME Staff Build Brief
-  wrap.appendChild(renderDocPanel({
-    stateKey: "docStaffOpen",
-    icon: "⚙️",
-    title: "OCME Staff Build Brief",
-    subtitle: "For your OCME&LL representative — MiCME/CloudCME setup reference in ACCME terminology",
-    accentColor: "#FFCB05",
-    bgOpen: "#fffbe6",
-    barTextColor: "#00274C",
-    printBg: "#00274C",
-    printColor: "#fff",
-    cacheKey: "docStaffHtml",
-    generateFn: function(){ return generateStaffBrief(res, answers); }
-  }));
-
-  wrap.appendChild(el("div",{style:{
-    fontSize:"12px",color:"#7a96b0",textAlign:"center",marginTop:"10px",lineHeight:"1.5"
-  }},["Click either document to expand it. Use Print / Save PDF to produce a clean copy to share or file. Only items relevant to your specific activity are included."]));
-
-  return wrap;
-}
-
-
-function render(){
-  var app=document.getElementById("app");
-  app.innerHTML="";
-  var nav=el("div",{style:{background:"#00274C",padding:"0",display:"flex",flexDirection:"column"}});
-  var navStripe=el("div",{style:{background:"#FFCB05",padding:"3px 20px",textAlign:"right"}});
-  navStripe.appendChild(el("span",{style:{fontSize:"11px",fontWeight:"700",color:"#00274C",letterSpacing:"0.4px"}},["​Michigan Medicine · University of Michigan"]));
-  nav.appendChild(navStripe);
-  var navMain=el("div",{style:{padding:"12px 20px",display:"flex",flexDirection:"column",gap:"4px"}});
-  var navRow=el("div",{style:{display:"flex",alignItems:"center"}});
-  navRow.appendChild(el("span",{style:{fontSize:"15px",fontWeight:"800",color:"#fff",letterSpacing:"0.2px"}},["​CME Credit Application Navigator"]));
-  navRow.appendChild(el("span",{style:{color:"#FFCB05",fontSize:"12px",fontWeight:"700",marginLeft:"auto",letterSpacing:"0.3px"}},["​OCME&LL"]));
-  navMain.appendChild(navRow);
-  navMain.appendChild(el("div",{style:{fontSize:"12px",color:"rgba(255,255,255,0.7)",lineHeight:"1.5",fontWeight:"400"}},["Identifies your application type, every credit your activity qualifies for, and flags opportunities that contribute to Michigan Medicine’s ACCME Accreditation with Commendation."]));
-  nav.appendChild(navMain);
-  app.appendChild(nav);
-  app.appendChild(state.done?renderResults():renderQuestion());
-  // close tooltip on outside click
-  setTimeout(function(){
-    document.addEventListener("click",function closeTooltip(){
-      if(state.openTooltip){state.openTooltip=null;render();}
-      document.removeEventListener("click",closeTooltip);
-    });
-  },0);
-}
-
-render();
-</script>
 </body>
 </html>
