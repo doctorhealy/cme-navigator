@@ -437,11 +437,20 @@ var SYSTEM_PROMPT = [
   "  }",
   "}",
   "",
-  "EDUCATIONAL NEEDS: Diagnose PRIMARY reason the gap exists.",
-  "- New evidence / guidelines / unfamiliar framework -> Knowledge",
-  "- Know evidence but cannot apply in clinical scenarios -> Competence",
-  "- Know and can do it but not doing it consistently -> Performance",
-  "Only add secondaryType if activity genuinely spans two domains. Never generate all three.",
+  "EDUCATIONAL NEEDS: Diagnose the PRIMARY root cause of the gap — pick exactly one of:",
+  "- Knowledge: learners are unaware of or unfamiliar with current evidence, guidelines, or a new framework. The gap exists because they don't know.",
+  "- Competence: learners know the evidence but cannot yet apply it correctly in clinical scenarios. The gap exists because they can't do it yet.",
+  "- Performance: learners know and can apply the evidence, but are not doing so consistently in real practice. The gap exists because they're not doing it.",
+  "",
+  "SECONDARY NEED — default is null. Only set secondaryType if BOTH conditions are true:",
+  "  1. The activity has structurally distinct components that separately target two different need types (e.g. a didactic session updating new guidelines AND a simulation lab building application skill).",
+  "  2. The secondary need explains a genuinely separate root cause — not just a related aspect of the same one.",
+  "Hard rules for secondary:",
+  "  - Never add Knowledge as secondary when primary is Performance. If they are not doing it, more knowledge rarely fixes that — the root cause is behavioral not informational.",
+  "  - Never add secondary just to seem more complete. If you have to search for a justification, secondaryType is null.",
+  "  - A single well-chosen need type with a strong specific description is always better than two weakly justified ones.",
+  "  - When in doubt: null.",
+  "Never generate all three.",
   "",
   "EXPECTED RESULTS: Always address competence. Add performance only if activity will drive practice change. Add patient outcomes only if genuinely plausible.",
   "",
@@ -569,12 +578,16 @@ async function handleGenerate() {
   try {
     var resp = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 3500, system: SYSTEM_PROMPT, messages: [{ role: "user", content: buildUserPrompt() }] })
+      body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 5000, system: SYSTEM_PROMPT, messages: [{ role: "user", content: buildUserPrompt() }] })
     });
     var data = await resp.json();
     if (!resp.ok) throw new Error(data.error ? data.error.message : "API request failed");
-    var text = data.content[0].text.trim().replace(/^```json?\s*/i, "").replace(/\s*```$/i, "").trim();
-    var p = JSON.parse(text);
+    var raw = data.content[0].text.trim().replace(/^```json?\s*/i, "").replace(/\s*```$/i, "").trim();
+    if (data.stop_reason === "max_tokens") throw new Error("Response was cut off — the activity description may be too long, or the AI generated too much content. Try shortening the content description and regenerate.");
+    var p;
+    try { p = JSON.parse(raw); } catch(je) {
+      throw new Error("Could not parse AI response as JSON. This usually means the response was truncated. Try again — if it keeps failing, shorten the content description field.");
+    }
     var en = p.educationalNeeds || {};
     state.results = p;
     state.selected = {
@@ -609,12 +622,16 @@ async function handleRegenerate() {
   try {
     var resp = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 3500, system: SYSTEM_PROMPT, messages: [{ role: "user", content: buildUserPrompt() }] })
+      body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 5000, system: SYSTEM_PROMPT, messages: [{ role: "user", content: buildUserPrompt() }] })
     });
     var data = await resp.json();
     if (!resp.ok) throw new Error(data.error ? data.error.message : "API request failed");
-    var text = data.content[0].text.trim().replace(/^```json?\s*/i, "").replace(/\s*```$/i, "").trim();
-    var p = JSON.parse(text);
+    var raw = data.content[0].text.trim().replace(/^```json?\s*/i, "").replace(/\s*```$/i, "").trim();
+    if (data.stop_reason === "max_tokens") throw new Error("Response was cut off — the activity description may be too long, or the AI generated too much content. Try shortening the content description and regenerate.");
+    var p;
+    try { p = JSON.parse(raw); } catch(je) {
+      throw new Error("Could not parse AI response as JSON. This usually means the response was truncated. Try again — if it keeps failing, shorten the content description field.");
+    }
     var en = p.educationalNeeds || {};
     state.results = p;
     state.selected = {
@@ -1012,7 +1029,7 @@ function renderEligibility(el) {
   var hasContent = false;
 
   // MOC
-  if (el.moc && el.moc.length) {
+  if (Array.isArray(el.moc) && el.moc.length) {
     hasContent = true;
     h += eligSection("\ud83c\udfe5", "Board Certification Credit (MOC)", "#2F65A7", "#eef2f7", "#a8bdd4",
       tip("tip-moc-elig", "<strong>Maintenance of Certification (MOC)</strong> is the ongoing process by which physicians demonstrate they are keeping their knowledge and skills current after initial board certification.<br><br>Most US specialty boards (ABIM, ABFM, ABP, ABA, etc.) allow physicians to earn MOC credit by attending accredited CME activities. A single activity can offer MOC credit for multiple boards simultaneously if physicians from multiple specialties attend.<br><br><strong>What you need to do:</strong> Select the relevant boards in the CloudCME application and flag to OCME&amp;LL. They handle registration with the boards and credit reporting after the activity.")
@@ -1025,7 +1042,7 @@ function renderEligibility(el) {
   }
 
   // Michigan mandatory topics
-  if (el.michiganTopics && el.michiganTopics.length) {
+  if (Array.isArray(el.michiganTopics) && el.michiganTopics.length) {
     hasContent = true;
     h += eligSection("\ud83d\udd35", "Michigan Mandatory Licensing Topics", "#0e7490", "#ecfeff", "#a5f3fc",
       tip("tip-mi-elig", "<strong>Michigan mandatory licensing topics</strong> are subject areas that Michigan state law requires physicians to cover in their CME as a condition of license renewal.<br><br>Current requirements include:<br>\u2022 <strong>Medical ethics</strong>: at least 1 hour per 3-year cycle<br>\u2022 <strong>Pain &amp; symptom management</strong>: at least 3 hours per cycle (including 1 hour on controlled substances)<br>\u2022 <strong>Implicit bias training</strong>: 1 hour per year of the license cycle<br>\u2022 <strong>Opioid / controlled substance prescribing</strong>: required every renewal period for prescribers<br>\u2022 <strong>Human trafficking identification</strong>: one-time requirement for Michigan physicians<br><br>If your activity covers any of these, OCME&amp;LL must designate it in CloudCME so it counts toward physicians\u2019 licensing requirements.")
@@ -1049,7 +1066,7 @@ function renderEligibility(el) {
   }
 
   // Commendation
-  if (el.commendation && el.commendation.length) {
+  if (Array.isArray(el.commendation) && el.commendation.length) {
     hasContent = true;
     h += eligSection("\u2b50", "ACCME Commendation Criteria \u2014 could your activity earn special recognition?", "#be123c", "#fff1f2", "#fecdd3",
       tip("tip-comm-elig", "<strong>ACCME Accreditation with Commendation</strong> is a recognised standard of excellence awarded to CME providers that go beyond basic requirements in educational design and impact.<br><br>There are 16 commendation criteria (C23\u2013C38) across five categories: Team-Based Education, Public Health Priorities, Enhances Skills, Educational Leadership, and Achieves Outcomes.<br><br>Each activity that qualifies for one or more of these criteria contributes evidence to Michigan Medicine\u2019s Commendation portfolio. <strong>Your job as an educational planner</strong> is to follow the steps listed, then flag the applicable criteria to OCME&amp;LL at submission and keep documentation as you go.")
@@ -1063,7 +1080,7 @@ function renderEligibility(el) {
   }
 
   // Other credits
-  if (el.otherCredits && el.otherCredits.length) {
+  if (Array.isArray(el.otherCredits) && el.otherCredits.length) {
     hasContent = true;
     h += eligSection("\ud83d\udcb3", "Additional Credit Types", "#15803d", "#f0fdf4", "#bbf7d0",
       tip("tip-other-elig", "<strong>Additional credit types</strong> are continuing education credits for non-physician health professions \u2014 each profession has its own accreditation system separate from physician CME.<br><br>\u2022 <strong>ANCC Contact Hours</strong>: nursing CE credit through the American Nurses Credentialing Center<br>\u2022 <strong>ACPE Credit</strong>: pharmacy continuing education through the Accreditation Council for Pharmacy Education<br>\u2022 <strong>AAPA Category 1</strong>: PA continuing medical education through the American Academy of PAs<br><br>Offering these credits typically requires Joint Accreditation status, which OCME&amp;LL is actively pursuing. Flag to them when any of these professions are in your audience.")
@@ -1168,19 +1185,19 @@ function handlePrint() {
   if (s.eligibility) {
     body += ph("What else this activity qualifies for", "eligibility review", "");
     var el = s.eligibility;
-    if (el.moc && el.moc.length) {
+    if (Array.isArray(el.moc) && el.moc.length) {
       body += subh("Board Certification Credit (MOC)", "#2F65A7");
       el.moc.filter(function(m) { return m.applies; }).forEach(function(m) {
         body += "<div style=\"margin-bottom:8px;padding:8px 12px;background:#eef2f7;border-radius:6px\"><strong style=\"font-size:13px;color:#00274C\">" + escHtml(m.board) + "</strong><br><span style=\"font-size:12px;color:#4a6785\">" + escHtml(m.rationale) + "</span>" + (m.flag ? "<br><span style=\"font-size:12px;color:#2F65A7;font-weight:600\">Flag to OCME&amp;LL: " + escHtml(m.flag) + "</span>" : "") + "</div>";
       });
     }
-    if (el.michiganTopics && el.michiganTopics.length) {
+    if (Array.isArray(el.michiganTopics) && el.michiganTopics.length) {
       body += subh("Michigan Mandatory Licensing Topics", "#0e7490");
       el.michiganTopics.filter(function(m) { return m.applies; }).forEach(function(m) {
         body += "<div style=\"margin-bottom:8px;padding:8px 12px;background:#ecfeff;border-radius:6px\"><strong style=\"font-size:13px;color:#00274C\">" + escHtml(m.topic) + "</strong><br><span style=\"font-size:12px;color:#4a6785\">" + escHtml(m.requirement) + "</span>" + (m.flag ? "<br><span style=\"font-size:12px;color:#0e7490;font-weight:600\">Flag to OCME&amp;LL: " + escHtml(m.flag) + "</span>" : "") + "</div>";
       });
     }
-    if (el.commendation && el.commendation.length) {
+    if (Array.isArray(el.commendation) && el.commendation.length) {
       body += subh("ACCME Commendation Criteria", "#be123c");
       el.commendation.forEach(function(c) {
         body += "<div style=\"margin-bottom:8px;padding:8px 12px;background:#fff1f2;border-radius:6px\"><strong style=\"font-size:13px;color:#00274C\">" + escHtml(c.code + " \u00b7 " + c.title) + "</strong><br><span style=\"font-size:12px;color:#4a6785\">" + escHtml(c.rationale) + "</span></div>";
