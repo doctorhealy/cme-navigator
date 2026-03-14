@@ -105,9 +105,9 @@ const QUESTIONS = [
     {value:"performance_improvement",icon:"📈",label:"Performance improvement or quality improvement activity",sublabel:"Learners engage with real practice data and commit to specific changes — often linked to a PI CME or QI framework"},
     {value:"self_assessment_learning",icon:"✅",label:"Structured self-assessment or reflective practice",sublabel:"Learners assess their own knowledge gaps, review performance data, or complete a guided self-evaluation before or during the activity"},
   ]},
-  {id:"target_specialty",question:"What is the primary physician specialty for this activity?",
-   hint:"Choose the specialty that best describes your main audience. If physicians from several specialties will attend, choose 'Mixed or multi-specialty.' MOC credit is always tied to the primary audience.",
-   type:"single",options:[
+  {id:"target_specialty",question:"Which physician specialties will attend?",
+   hint:"Select all that apply. Each specialty you select may qualify for its own board certification (MOC) credit — a single activity can offer multiple board credits simultaneously.",
+   type:"multi",options:[
     {value:"internal_med",label:"Internal Medicine or subspecialties (cardiology, GI, rheumatology, etc.)"},
     {value:"anesthesiology",label:"Anesthesiology, Pain Medicine, or Critical Care"},
     {value:"family_med",label:"Family Medicine"},
@@ -117,7 +117,6 @@ const QUESTIONS = [
     {value:"ob_gyn",label:"Obstetrics & Gynecology"},
     {value:"radiology",label:"Radiology or Radiation Oncology"},
     {value:"emergency_med",label:"Emergency Medicine"},
-    {value:"multi_specialty",label:"Mixed or multi-specialty audience"},
     {value:"other_specialty",label:"Another specialty"},
   ]},
   {id:"audience_professions",question:"Which professional groups will attend? Select all that apply.",
@@ -257,12 +256,12 @@ function deriveResults(answers) {
   var nonPhysProfs=profs.filter(function(p){return !["physicians","residents_fellows","students"].includes(p);});
   var hasInterprofPlanning=planning.includes("multi_prof");
   if (nonPhysProfs.length>=1 && hasInterprofPlanning) {
-    res.additionalCredits.push({icon:"🏅",label:"Interprofessional Continuing Education (IPCE)",who:"For all professions attending and planning together",why:"This activity meets the definition of IPCE — members of two or more professions learning with, from, and about each other. Important: the formal IPCE Credit Mark on certificates requires Joint Accreditation, which our office does not yet hold. However, this activity will be tracked internally as an interprofessional activity and builds the evidence portfolio required to achieve Joint Accreditation.",flag:"Flag this to your OCME&LL representative so it can be recorded as an interprofessional activity. Document both the interprofessional planning committee and faculty presenters — this documentation is essential for our Joint Accreditation application.",priority:"high"});
+    res.additionalCredits.push({icon:"🏅",label:"Interprofessional Continuing Education (IPCE)",who:"For all professions attending and planning together",why:"This activity meets the definition of IPCE. To qualify, all three of the following must be true:\n\n1. Planning committee: two or more professions involved in designing the activity\n2. Faculty presenters: two or more professions involved in delivering the content on the day\n3. Team-focused design: the activity is designed to improve how the healthcare team works together\n\nNote: the formal IPCE Credit Mark on certificates requires Joint Accreditation, which our office does not yet hold. This activity will be tracked as interprofessional and builds the evidence portfolio for Joint Accreditation.",flag:"Flag this to your OCME&LL representative so it can be recorded as an interprofessional activity. Document both the interprofessional planning committee and faculty presenters — this documentation is essential for our Joint Accreditation application.",priority:"high"});
   } else if (nonPhysProfs.length>=1 && !hasInterprofPlanning) {
-    res.flags.push("Multiple professions are attending, but the planning committee appears to be single-profession. If you can involve a nurse, pharmacist, or other professional in the planning process — and have a faculty presenter from another profession — this activity would qualify as interprofessional and contribute to our Joint Accreditation portfolio. Mention this to your OCME&LL representative.");
+    res.flags.push("Multiple professions are attending, but the planning committee appears to be single-profession. For an activity to qualify as IPCE, you need: (1) planners from two or more professions, and (2) faculty presenters from two or more professions, and (3) content designed to improve team-based practice. If you can meet all three, this activity would contribute to our Joint Accreditation portfolio. Mention this to your OCME\u0026LL representative.");
   }
 
-  if (a.target_specialty==="anesthesiology" && hasPatientSafety) {
+  if ((Array.isArray(a.target_specialty) ? a.target_specialty : [a.target_specialty]).includes("anesthesiology") && hasPatientSafety) {
     res.additionalCredits.push({icon:"🛡️",label:"ABA MOCA 2.0® Patient Safety CME Credit",who:"For anesthesiology audiences",why:"For anesthesiology activities that include cross-disciplinary patient safety content, there is a separate ABA Patient Safety CME designation available in addition to standard MOCA 2.0® credit. Anesthesiologists self-report this credit using their 8-digit ABA ID.",flag:"Flag this to your OCME&LL representative and make sure the patient safety content is clearly described in your application.",priority:"high"});
   }
   if (planning.includes("multi_org")) {
@@ -272,11 +271,25 @@ function deriveResults(answers) {
     res.additionalCredits.push({icon:"🤝",label:"Co-Organization with Another Accredited Institution",who:"Activities co-organized with a partner that holds its own ACCME accreditation",why:"When two ACCME-accredited organizations collaborate, this is not Joint Providership — no special agreement is required. One institution takes the accreditation lead and issues the credit; the other's involvement is simply acknowledged.",flag:"Confirm with your OCME&LL representative which institution will be the accreditation lead. If your partner is issuing the credit, you may not need to submit an application through our office at all.",priority:"medium"});
   }
 
-  var mocInfo=SPECIALTY_MOC[a.target_specialty];
-  if (mocInfo && mocInfo.boards) {
-    var needsRobustEval=a.target_specialty==="internal_med";
-    var hasRobustEval=["pre_post","performance_outcome","patient_outcome","self_assessment_format"].includes(evalMethod);
-    res.boardCredit={boards:mocInfo.boards,flag:mocInfo.flag,evalWarning:needsRobustEval&&!hasRobustEval?"Important: for ABIM MOC credit specifically, a satisfaction survey alone is not sufficient. A pre/post knowledge assessment or outcomes measurement is required. Ask your OCME&LL representative about adding this to your evaluation plan.":null};
+  var selectedSpecs = Array.isArray(a.target_specialty) ? a.target_specialty : (a.target_specialty ? [a.target_specialty] : []);
+  var mocBoards = [];
+  var mocFlags = [];
+  var needsRobustEval = false;
+  var hasRobustEval = ["pre_post","performance_outcome","patient_outcome","self_assessment_format"].includes(evalMethod);
+  selectedSpecs.forEach(function(spec) {
+    var mocInfo = SPECIALTY_MOC[spec];
+    if (mocInfo && mocInfo.boards) {
+      mocBoards.push(mocInfo.boards);
+      mocFlags.push(mocInfo.flag);
+      if (spec === "internal_med") needsRobustEval = true;
+    }
+  });
+  if (mocBoards.length > 0) {
+    res.boardCredit = {
+      boards: mocBoards.join(" · "),
+      flag: mocFlags.join(" "),
+      evalWarning: needsRobustEval && !hasRobustEval ? "Important: for ABIM MOC credit specifically, a satisfaction survey alone is not sufficient. A pre/post knowledge assessment or outcomes measurement is required. Ask your OCME&LL representative about adding this to your evaluation plan." : null
+    };
   }
 
   var allTriggers=content.concat(planning).concat(followUp).concat(learnEnv).concat([fmt,evalMethod]).filter(Boolean);
@@ -348,6 +361,47 @@ function card(extra,children){
   return el("div",{style:Object.assign({background:"#fff",borderRadius:"14px",padding:"20px",boxShadow:"0 1px 4px rgba(0,0,0,0.07)",marginBottom:"14px"},extra||{})},children);
 }
 
+// ─── COPY TO CLIPBOARD ───────────────────────────────────────────────────────
+function copyTextToClipboard(text, btn) {
+  navigator.clipboard.writeText(text).then(function() {
+    var orig = btn.textContent;
+    btn.textContent = "✓ Copied";
+    btn.style.background = "#dcfce7";
+    btn.style.color = "#15803d";
+    btn.style.borderColor = "#86efac";
+    setTimeout(function() {
+      btn.textContent = orig;
+      btn.style.background = "";
+      btn.style.color = "";
+      btn.style.borderColor = "";
+    }, 2000);
+  }).catch(function() {
+    // Fallback
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.top = "-9999px";
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy"); } catch(e) {}
+    document.body.removeChild(ta);
+    btn.textContent = "✓ Copied";
+    setTimeout(function() { btn.textContent = "Copy"; }, 2000);
+  });
+}
+
+function copyBtn(text) {
+  var btn = el("button", {style:{
+    fontSize:"11px", fontWeight:"700", padding:"3px 10px",
+    borderRadius:"5px", border:"1px solid #d0d9e3",
+    background:"#f8f9fb", color:"#7a96b0",
+    cursor:"pointer", marginLeft:"auto", flexShrink:"0",
+    transition:"all 0.15s", fontFamily:"inherit"
+  }}, ["Copy"]);
+  btn.onclick = function(e) { e.stopPropagation(); copyTextToClipboard(text, btn); };
+  return btn;
+}
+
 // ─── TOOLTIP ──────────────────────────────────────────────────────────────────
 function renderTooltip(text,id){
   var isOpen=state.openTooltip===id;
@@ -357,7 +411,7 @@ function renderTooltip(text,id){
   btn.onkeydown=function(e){if(e.key==="Enter"||e.key===" "){e.stopPropagation();var next=isOpen?null:id;if(state.openTooltip===next)return;state.openTooltip=next;render();}};
   wrap.appendChild(btn);
   if(isOpen){
-    var pop=el("div",{style:{position:"absolute",left:"50%",bottom:"calc(100% + 8px)",transform:"translateX(-50%)",background:"#1e293b",color:"#f0f2f5",borderRadius:"10px",padding:"12px 14px",fontSize:"13px",lineHeight:"1.6",width:"280px",zIndex:"999",boxShadow:"0 8px 24px rgba(0,0,0,0.25)",whiteSpace:"pre-wrap"}},[text]);
+    var pop=el("div",{style:{position:"absolute",left:"50%",bottom:"calc(100% + 8px)",transform:"translateX(-50%)",background:"#1e293b",color:"#f0f2f5",borderRadius:"10px",padding:"12px 14px",fontSize:"13px",lineHeight:"1.6",width:"280px",zIndex:"99999",boxShadow:"0 8px 24px rgba(0,0,0,0.35)",whiteSpace:"pre-wrap"}},[text]);
     var arrow=el("div",{style:{position:"absolute",bottom:"-6px",left:"50%",transform:"translateX(-50%)",width:"0",height:"0",borderLeft:"6px solid transparent",borderRight:"6px solid transparent",borderTop:"6px solid #1e293b"}});
     pop.appendChild(arrow);
     wrap.appendChild(pop);
@@ -492,7 +546,7 @@ function renderResults(){
     }
     var cl=card();
     cl.appendChild(el("div",{style:{fontWeight:"700",color:"#00274C",marginBottom:"12px"}},["📝 Application Checklist"]));
-    ["Faculty disclosure forms completed for all presenters","Educational objectives clearly stated (what will learners be able to do?)","Needs assessment or gap documentation attached","Evaluation plan described","Session agenda and credit hours calculated","Any commercial support or sponsorship disclosed"].forEach(function(item){
+    ["Disclosure forms completed for all educational planners and faculty presenters","Educational objectives clearly stated (what will learners be able to do?)","Needs assessment or gap documentation attached","Evaluation plan described","Session agenda and credit hours calculated","Any commercial support or sponsorship disclosed"].forEach(function(item){
       var row=el("div",{style:{display:"flex",gap:"10px",alignItems:"flex-start",marginBottom:"8px"}});
       row.appendChild(el("div",{style:{width:"18px",height:"18px",border:"2px solid #d0d9e3",borderRadius:"4px",flexShrink:"0",marginTop:"2px"}}));
       row.appendChild(el("span",{style:{fontSize:"14px",color:"#1a3a5c"}},[item]));
@@ -516,7 +570,10 @@ function renderResults(){
         hd.appendChild(ht); c.appendChild(hd);
         c.appendChild(el("p",{style:{fontSize:"14px",color:"#1a3a5c",lineHeight:"1.6",marginBottom:"12px"}},[cr.why]));
         var fb=el("div",{style:{background:"#eef2f7",borderRadius:"8px",padding:"12px 14px",borderLeft:"3px solid #00274C"}});
-        fb.appendChild(el("div",{style:{fontSize:"12px",fontWeight:"700",color:"#2F65A7",marginBottom:"4px"}},["FLAG TO OCME&LL"]));
+        var fbTop=el("div",{style:{display:"flex",alignItems:"center",marginBottom:"4px"}});
+        fbTop.appendChild(el("div",{style:{fontSize:"12px",fontWeight:"700",color:"#2F65A7"}},["FLAG TO OCME&LL"]));
+        fbTop.appendChild(copyBtn(cr.flag));
+        fb.appendChild(fbTop);
         fb.appendChild(el("div",{style:{fontSize:"14px",color:"#00274C"}},[cr.flag]));
         c.appendChild(fb); content.appendChild(c);
       });
@@ -532,7 +589,10 @@ function renderResults(){
       c.appendChild(el("div",{style:{fontSize:"11px",fontWeight:"700",color:"#6d28d9",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"6px"}},["Board Certification Credit (MOC)"]));
       c.appendChild(el("div",{style:{fontSize:"17px",fontWeight:"800",color:"#4c1d95",marginBottom:"10px"}},[bc.boards]));
       if(bc.evalWarning){var ew=card({background:"#fffbeb",border:"1px solid #fde68a",marginBottom:"12px"});ew.appendChild(el("p",{style:{fontSize:"13px",color:"#78350f",lineHeight:"1.5"}},["⚠️ "+bc.evalWarning]));c.appendChild(ew);}
-      c.appendChild(el("p",{style:{fontSize:"14px",color:"#1a3a5c",lineHeight:"1.6",marginBottom:"12px"}},[bc.flag]));
+      var mocFlagRow = el("div",{style:{display:"flex",alignItems:"flex-start",gap:"8px",marginBottom:"12px"}});
+      mocFlagRow.appendChild(el("p",{style:{fontSize:"14px",color:"#1a3a5c",lineHeight:"1.6",flex:"1"}}, [bc.flag]));
+      mocFlagRow.appendChild(copyBtn(bc.flag));
+      c.appendChild(mocFlagRow);
       var steps=el("div",{style:{background:"#f5f3ff",borderRadius:"8px",padding:"14px"}});
       steps.appendChild(el("div",{style:{fontSize:"12px",fontWeight:"700",color:"#6d28d9",marginBottom:"8px"}},["WHAT YOU NEED TO DO"]));
       ["Tell your OCME&LL representative you want MOC credit designated for this activity","OCME&LL registers the activity with the relevant certifying board","After the activity, OCME&LL reports the credit","Physicians self-report or receive automatic credit in their board portfolio"].forEach(function(s,i){
@@ -548,7 +608,7 @@ function renderResults(){
 
   if(state.activeTab==="commendation"){
     var intro=card({background:"#f0fdf4",border:"1px solid #bbf7d0"});
-    intro.appendChild(el("p",{style:{fontSize:"14px",color:"#166534",lineHeight:"1.6"}},["Accreditation with Commendation recognizes providers who go beyond standard requirements in educational design and impact. The criteria below matched your activity — flag each one to your OCME&LL representative."]));
+    intro.appendChild(el("p",{style:{fontSize:"14px",color:"#166534",lineHeight:"1.6"}},["These criteria contribute to Michigan Medicine’s ACCME Accreditation with Commendation — a recognition awarded to the institution at reaccreditation, not to individual activities. Every well-documented qualifying activity builds the evidence portfolio. Flag each matched criterion to your OCME&LL representative and keep documentation as you go."]));
     content.appendChild(intro);
     if(res.commendation.length===0){
       content.appendChild(el("div",{style:{textAlign:"center",padding:"40px",color:"#4a6785",fontSize:"15px"}},["No commendation criteria matched based on your selections. Review the planning and follow-up questions if you think some may apply."]));
@@ -810,7 +870,10 @@ function buildPills(res, answers) {
     else if (cr.label==="Pharmacy CE (ACPE Credit)") yellowPills.push("ACPE");
     else if (cr.label==="PA CME (AAPA Category 1 Credit)") yellowPills.push("AAPA");
   });
-  if (res.boardCredit && res.boardCredit.boards) yellowPills.push("MOC: "+res.boardCredit.boards);
+  if (res.boardCredit && res.boardCredit.boards) {
+    var mocShort = res.boardCredit.boards.length > 40 ? "Multiple MOC boards" : "MOC: "+res.boardCredit.boards;
+    yellowPills.push(mocShort);
+  }
   if (res.commendation.length > 0) yellowPills.push("Commendation eligible");
   return {pills:pills, yellowPills:yellowPills};
 }
@@ -957,7 +1020,7 @@ function generateStaffBrief(res, answers) {
     L.push(bld("🔒","Bundled recording (registered attendees only) — include under live activity","Confirm access duration does not exceed 30 days; if it does, an Enduring Material application is required.","highlight"));
   if ((a.learning_environment||[]).includes("simulation"))
     L.push(bld("🩺","Simulation — accredited as Live Activity; application type is unchanged","Credit hours = supervised instructional time in simulation setting only.","action"));
-  L.push(bld("📋","Confirm faculty disclosure forms before finalising","Every planning committee member and presenter must complete COI disclosure in MiCME before the activity date.","action"));
+  L.push(bld("📋","Confirm disclosure forms before finalising","Every planning committee member and faculty presenter must complete COI disclosure in MiCME before the activity date.","action"));
 
   // ── 2. Providership ──
   var hasJoint = (a.planning_process||[]).includes("multi_org");
@@ -1006,7 +1069,7 @@ function generateStaffBrief(res, answers) {
     var profDisplay=(a.audience_professions||[]).map(function(prof){return profLabels[prof]||prof;}).join(", ");
     L.push(sgroup([srow("Professions in scope", profDisplay)]));
     L.push(bld("✅","Meets IPCE definition — planned by and for two or more professions","Per ACCME/ACPE/ANCC joint definition. Track in MiCME and file in Joint Accreditation portfolio.","action"));
-    L.push(bld("📋","Required documentation","Interprofessional planning committee member list and faculty roster — both must be on file.","action"));
+    L.push(bld("📋","Required documentation","Interprofessional planning committee member list and faculty presenter roster — both must be on file with profession noted for each person.","action"));
     L.push(bld("ℹ","IPCE Credit Mark requires Joint Accreditation (not yet held)","Designate as interprofessional activity in MiCME record as portfolio evidence.","action"));
   }
 
@@ -1227,9 +1290,12 @@ function render(){
   var navStripe=el("div",{style:{background:"#FFCB05",padding:"3px 20px",textAlign:"right"}});
   navStripe.appendChild(el("span",{style:{fontSize:"11px",fontWeight:"700",color:"#00274C",letterSpacing:"0.4px"}},["​Michigan Medicine · University of Michigan"]));
   nav.appendChild(navStripe);
-  var navMain=el("div",{style:{padding:"14px 20px",display:"flex",alignItems:"center",gap:"12px"}});
-  navMain.appendChild(el("span",{style:{fontSize:"15px",fontWeight:"800",color:"#fff",letterSpacing:"0.2px"}},["​CME Credit Application Navigator"]));
-  navMain.appendChild(el("span",{style:{color:"#FFCB05",fontSize:"12px",fontWeight:"700",marginLeft:"auto",letterSpacing:"0.3px"}},["​OCME&LL"]));
+  var navMain=el("div",{style:{padding:"12px 20px",display:"flex",flexDirection:"column",gap:"4px"}});
+  var navRow=el("div",{style:{display:"flex",alignItems:"center"}});
+  navRow.appendChild(el("span",{style:{fontSize:"15px",fontWeight:"800",color:"#fff",letterSpacing:"0.2px"}},["​CME Credit Application Navigator"]));
+  navRow.appendChild(el("span",{style:{color:"#FFCB05",fontSize:"12px",fontWeight:"700",marginLeft:"auto",letterSpacing:"0.3px"}},["​OCME&LL"]));
+  navMain.appendChild(navRow);
+  navMain.appendChild(el("div",{style:{fontSize:"12px",color:"rgba(255,255,255,0.7)",lineHeight:"1.5",fontWeight:"400"}},["Identifies your application type, every credit your activity qualifies for, and flags opportunities that contribute to Michigan Medicine’s ACCME Accreditation with Commendation."]));
   nav.appendChild(navMain);
   app.appendChild(nav);
   app.appendChild(state.done?renderResults():renderQuestion());
