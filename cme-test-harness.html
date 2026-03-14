@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>CME Content Helper — Quality Test Harness</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#00274C;--maize:#FFCB05;--arb:#2F65A7;
+  --text:#00274C;--muted:#7a96b0;--sec:#4a6785;
+  --border:#d0d9e3;--bg:#f0f2f5;--card:#fff;--tint:#eef2f7;
+}
+body{background:var(--bg);font-family:"Nunito Sans",Arial,sans-serif;color:var(--text);font-size:14px;line-height:1.6}
+.header-stripe{background:var(--maize);padding:3px 20px;text-align:right;font-size:11px;font-weight:700;color:var(--blue)}
+.header-main{background:var(--blue);padding:12px 20px;display:flex;align-items:center;justify-content:space-between}
+.header-main h1{font-size:15px;font-weight:800;color:#fff}
+.header-main span{font-size:12px;font-weight:700;color:var(--maize)}
+.wrap{max-width:1100px;margin:0 auto;padding:20px 16px;display:flex;flex-direction:column;gap:16px}
+.card{background:var(--card);border-radius:14px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,0.07)}
+.sec-label{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;color:var(--arb);margin-bottom:8px}
+.test-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:760px){.test-grid{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.field label{font-size:13px;font-weight:700}
+.field textarea,.field select{font-family:inherit;font-size:13px;border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);background:#fff;resize:vertical}
+.field textarea:focus,.field select:focus{outline:none;border-color:var(--arb);box-shadow:0 0 0 3px rgba(47,101,167,0.1)}
+.btn-run{width:100%;padding:13px;background:var(--blue);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;transition:background 0.15s}
+.btn-run:hover:not(:disabled){background:#1a3a5c}
+.btn-run:disabled{opacity:0.55;cursor:not-allowed}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--arb);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto}
+
+/* SCORECARD */
+.scorecard{display:flex;flex-direction:column;gap:10px}
+.score-section{border:1.5px solid var(--border);border-radius:10px;overflow:hidden}
+.score-head{padding:8px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
+.score-title{font-size:13px;font-weight:700;flex:1}
+.score-grade{font-size:11px;font-weight:800;padding:2px 9px;border-radius:10px}
+.grade-pass{background:#dcfce7;color:#15803d}
+.grade-warn{background:#fef3c7;color:#92400e}
+.grade-fail{background:#fee2e2;color:#b91c1c}
+.grade-na{background:#f3f4f6;color:#6b7280}
+.score-body{padding:10px 14px;display:flex;flex-direction:column;gap:6px}
+.check-row{display:flex;align-items:flex-start;gap:8px;font-size:13px}
+.check-icon{flex-shrink:0;font-size:13px;margin-top:1px}
+.check-text{flex:1;line-height:1.4}
+.check-note{font-size:12px;color:var(--sec);line-height:1.4;font-style:italic}
+
+/* OUTPUT SECTIONS */
+.out-sections{display:flex;flex-direction:column;gap:12px}
+.out-block{border:1.5px solid var(--border);border-radius:10px;overflow:hidden}
+.out-head{padding:8px 14px;background:var(--tint);border-bottom:1px solid var(--border);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:var(--arb)}
+.out-body{padding:12px 14px}
+.out-text{font-size:13px;color:var(--text);line-height:1.65;white-space:pre-wrap}
+.out-option{margin-bottom:10px}
+.out-option-label{font-size:10px;font-weight:800;text-transform:uppercase;color:var(--muted);letter-spacing:0.4px;margin-bottom:3px}
+.pill-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px}
+.pill{font-size:11px;font-weight:700;padding:3px 9px;border-radius:10px;background:var(--tint);border:1px solid var(--border);color:var(--arb)}
+.obj-list{display:flex;flex-direction:column;gap:5px}
+.obj-item{font-size:13px;color:var(--text);line-height:1.55;padding-left:16px;position:relative}
+.obj-item::before{content:counter(obj);counter-increment:obj;position:absolute;left:0;font-weight:700;color:var(--arb)}
+.obj-wrap{counter-reset:obj}
+.elig-group{margin-bottom:10px}
+.elig-group-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:var(--sec);margin-bottom:5px}
+.elig-item-row{background:var(--tint);border-radius:6px;padding:8px 10px;margin-bottom:5px}
+.elig-item-title{font-size:13px;font-weight:700;color:var(--text)}
+.elig-item-body{font-size:12px;color:var(--sec);line-height:1.4;margin-top:2px}
+.reasoning-box{background:#f0f4f9;border-left:3px solid var(--arb);border-radius:0 6px 6px 0;padding:8px 11px;font-size:12px;color:var(--sec);font-style:italic;margin-bottom:8px}
+.summary-stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.stat-chip{background:var(--tint);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;color:var(--arb)}
+
+.issues-list{display:flex;flex-direction:column;gap:4px}
+.issue{font-size:12px;padding:5px 10px;border-radius:6px;line-height:1.4}
+.issue-warn{background:#fef3c7;color:#92400e}
+.issue-fail{background:#fee2e2;color:#b91c1c}
+.issue-pass{background:#dcfce7;color:#15803d}
+</style>
+</head>
+<body>
+<div class="header-stripe">Michigan Medicine · Office of CME &amp; Lifelong Learning</div>
+<div class="header-main"><h1>CME Content Helper — Quality Test Harness</h1><span>Prompt QA</span></div>
+
+<div class="wrap">
+
+  <div class="card">
+    <div class="sec-label">Test activity inputs</div>
+    <div class="test-grid">
+      <div>
+        <div class="field">
+          <label>Topic</label>
+          <textarea id="i-topic" rows="2">Sepsis Recognition and 1-Hour Bundle Adherence</textarea>
+        </div>
+        <div class="field">
+          <label>Content &amp; sessions</label>
+          <textarea id="i-content" rows="6">Half-day workshop. Session 1: Review of updated Surviving Sepsis Campaign guidelines and Michigan Medicine's own SEP-1 bundle compliance data (currently 58% compliance vs 80% institutional target). Session 2: Three simulation cases — early sepsis recognition in triage, qSOFA/SOFA scoring under time pressure, and 1-hour bundle execution including lactate draw, blood cultures, broad-spectrum antibiotics, and fluid resuscitation. Each simulation followed by immediate faculty-facilitated debrief. Session 3: Team communication breakout — structured handoff practice between ED nurses and physicians at point of sepsis recognition.</textarea>
+        </div>
+        <div class="field">
+          <label>Additional audience details</label>
+          <textarea id="i-other" rows="2">Mixed ED team — EM attendings, PGY2-4 EM residents, ED charge nurses and staff RNs. Approximately 40 participants per session.</textarea>
+        </div>
+      </div>
+      <div>
+        <div class="field">
+          <label>Professions attending</label>
+          <textarea id="i-profs" rows="2">Physicians, Residents / Fellows, Nurses / Nurse Practitioners</textarea>
+        </div>
+        <div class="field">
+          <label>Physician specialties</label>
+          <textarea id="i-specs" rows="2">Emergency Medicine</textarea>
+        </div>
+        <div class="field">
+          <label>Formats</label>
+          <textarea id="i-formats" rows="2">Simulation / skills lab, Case-based small group discussion</textarea>
+        </div>
+        <div class="field">
+          <label>Interprofessional planning committee?</label>
+          <select id="i-ipce">
+            <option value="yes" selected>Yes</option>
+            <option value="no">No / not sure</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Gap source</label>
+          <select id="i-gap">
+            <option value="Quality / registry data showing a practice gap" selected>Quality / registry data</option>
+            <option value="Prior activity evaluation identifying unmet needs">Prior evaluation</option>
+            <option value="Updated literature or new clinical guidelines">New literature / guidelines</option>
+            <option value="Expert or faculty presenter input on learner needs">Expert input</option>
+            <option value="Informal clinical observation">Informal observation</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <button class="btn-run" id="runBtn" onclick="runTest()">▶ Run Test — Generate &amp; Score Output</button>
+  </div>
+
+  <div id="results" style="display:none">
+    <div class="card">
+      <div class="sec-label">Quality scorecard</div>
+      <div id="scorecard" class="scorecard"></div>
+    </div>
+    <div class="card" style="margin-top:0">
+      <div class="sec-label">Raw AI output</div>
+      <div id="output-sections" class="out-sections"></div>
+    </div>
+  </div>
+
+  <div id="loading" style="display:none" class="card" style="text-align:center;padding:40px">
+    <div class="spinner"></div>
+    <div style="margin-top:12px;font-size:14px;font-weight:600;color:var(--sec);text-align:center">Calling claude-sonnet-4 · evaluating output quality…</div>
+  </div>
+
+  <div id="error-box" style="display:none" class="card">
+    <div style="color:#b91c1c;font-weight:700">Error</div>
+    <div id="error-msg" style="font-size:13px;color:#7f1d1d;margin-top:4px"></div>
+  </div>
+
+</div>
+
+<script>
+var SYSTEM_PROMPT = [
+  "You are an expert CME educational designer with deep knowledge of ACCME accreditation standards, Michigan Medicine policies, and US physician board certification requirements.",
+  "Generate professional, specific application language for MiCME/CloudCME applications at Michigan Medicine.",
+  "",
+  "Return ONLY a JSON object with this exact structure (no preamble, no markdown fences):",
+  "{",
+  "  \"practiceGap\": [\"option A text\", \"option B text\", \"option C text\"],",
+  "  \"educationalNeeds\": {",
+  "    \"primaryType\": \"Knowledge or Competence or Performance\",",
+  "    \"reasoning\": \"One plain-language sentence explaining why this is the primary need type\",",
+  "    \"primaryText\": \"2-3 sentence description of the primary educational need\",",
+  "    \"secondaryType\": \"Knowledge or Competence or Performance or null\",",
+  "    \"secondaryText\": \"2-3 sentences if genuinely needed, otherwise null\"",
+  "  },",
+  "  \"expectedResults\": \"2-3 sentences on what will change after the activity\",",
+  "  \"formatJustification\": \"2-3 sentences explaining why the format is appropriate\",",
+  "  \"learningObjectives\": [\"objective 1\", \"objective 2\", \"objective 3\", \"objective 4\"],",
+  "  \"competencies\": {",
+  "    \"acgme\": [\"only ACGME/ABMS competencies genuinely addressed from: Patient Care, Medical Knowledge, Practice-Based Learning and Improvement, Interpersonal and Communication Skills, Professionalism, Systems-Based Practice\"],",
+  "    \"iom\": [\"only IOM competencies genuinely addressed from: Provide Patient-Centered Care, Work in Interdisciplinary Teams, Employ Evidence-Based Practice, Apply Quality Improvement, Utilize Informatics\"],",
+  "    \"ipec\": [\"only IPEC competencies genuinely addressed from: Values and Ethics, Roles and Responsibilities, Interprofessional Communication, Teams and Teamwork\"]",
+  "  },",
+  "  \"needsAssessmentSummary\": \"3-5 sentence paragraph synthesising gap, primary need, source, and expected change\",",
+  "  \"eligibility\": {",
+  "    \"moc\": [{\"board\": \"Full board name\", \"applies\": true, \"rationale\": \"one sentence\", \"requirements\": [\"req 1\"], \"flag\": \"what to tell OCME&LL\"}],",
+  "    \"michiganTopics\": [{\"topic\": \"topic name\", \"code\": \"mi_code\", \"applies\": true, \"rationale\": \"one sentence\", \"requirement\": \"the MI licensing requirement\", \"flag\": \"what to tell OCME&LL\"}],",
+  "    \"commendation\": [{\"code\": \"C23-C38\", \"title\": \"plain English\", \"confidence\": \"high or possible\", \"rationale\": \"one sentence tied to this activity\", \"steps\": [\"step 1\", \"step 2\"]}],",
+  "    \"ipce\": {\"applies\": true, \"rationale\": \"why IPCE applies or not\", \"steps\": [\"step 1\"]},",
+  "    \"otherCredits\": [{\"name\": \"credit type\", \"applies\": true, \"rationale\": \"why\", \"flag\": \"what to tell OCME&LL\"}]",
+  "  }",
+  "}",
+  "",
+  "EDUCATIONAL NEEDS: Diagnose the PRIMARY root cause of the gap — pick exactly one of:",
+  "- Knowledge: learners are unaware of or unfamiliar with current evidence, guidelines, or a new framework. The gap exists because they don't know.",
+  "- Competence: learners know the evidence but cannot yet apply it correctly in clinical scenarios. The gap exists because they can't do it yet.",
+  "- Performance: learners know and can apply the evidence, but are not doing so consistently in real practice. The gap exists because they're not doing it.",
+  "",
+  "SECONDARY NEED — default is null. Only set secondaryType if BOTH conditions are true:",
+  "  1. The activity has structurally distinct components that separately target two different need types (e.g. a didactic session updating new guidelines AND a simulation lab building application skill).",
+  "  2. The secondary need explains a genuinely separate root cause — not just a related aspect of the same one.",
+  "Hard rules for secondary:",
+  "  - Never add Knowledge as secondary when primary is Performance. If they are not doing it, more knowledge rarely fixes that — the root cause is behavioral not informational.",
+  "  - Never add secondary just to seem more complete. If you have to search for a justification, secondaryType is null.",
+  "  - A single well-chosen need type with a strong specific description is always better than two weakly justified ones.",
+  "  - When in doubt: null.",
+  "Never generate all three.",
+  "",
+  "EXPECTED RESULTS: Always address competence. Add performance only if activity will drive practice change. Add patient outcomes only if genuinely plausible.",
+  "",
+  "LEARNING OBJECTIVES: 3-4 objectives. Verb level must match primaryType. Never use 'understand' or 'appreciate'. Every objective must be specific and observable.",
+  "",
+  "COMPETENCIES: Select only genuinely addressed ones. 2-4 per framework maximum. Listing all is always wrong.",
+  "",
+  "PRACTICE GAP: 3 meaningfully different versions varying framing, evidence angle, emphasis. Each 2-4 sentences. Must name audience and describe current vs ideal practice.",
+  "",
+  "ELIGIBILITY — this is the most important analytical section:",
+  "MOC: For each physician specialty in the audience determine MOC applicability. Include specific board requirements.",
+  "MICHIGAN MANDATORY TOPICS: Only include if activity GENUINELY covers it substantively. Do NOT include tangentially.",
+  "COMMENDATION C23: requires interprofessional planning AND delivery. C26: uses real institutional data as educational content. C30: simulation with observed evaluation qualifies. C37: linked to QI initiative.",
+  "IPCE: applies only if physicians + another profession attend AND planning is interprofessional.",
+  "OTHER CREDITS: ANCC if nurses attend, ACPE if pharmacists, AAPA if PAs.",
+  "Return ONLY the JSON object. No preamble, no markdown fences."
+].join("\n");
+
+function buildPrompt() {
+  return [
+    "Topic: " + document.getElementById("i-topic").value.trim(),
+    "Content and sessions: " + document.getElementById("i-content").value.trim(),
+    "Professions attending: " + document.getElementById("i-profs").value.trim(),
+    "Physician specialties attending: " + document.getElementById("i-specs").value.trim(),
+    "Additional audience details: " + document.getElementById("i-other").value.trim(),
+    "Educational format(s): " + document.getElementById("i-formats").value.trim(),
+    "Planning committee is interprofessional: " + document.getElementById("i-ipce").value,
+    "Gap source: " + document.getElementById("i-gap").value,
+    "",
+    "Generate complete CME application language and full eligibility review for this activity."
+  ].join("\n");
+}
+
+async function runTest() {
+  var btn = document.getElementById("runBtn");
+  btn.disabled = true; btn.textContent = "Running…";
+  document.getElementById("results").style.display = "none";
+  document.getElementById("error-box").style.display = "none";
+  document.getElementById("loading").style.display = "block";
+
+  try {
+    var resp = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 5000,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: "user", content: buildPrompt() }]
+      })
+    });
+    var data = await resp.json();
+    if (!resp.ok) throw new Error(data.error ? data.error.message : "API error " + resp.status);
+
+    var raw = data.content[0].text.trim().replace(/^```json?\s*/i,"").replace(/\s*```$/i,"").trim();
+    if (data.stop_reason === "max_tokens") throw new Error("Response truncated — the activity description may be too long. Try shortening the content field and run again.");
+    var p;
+    try { p = JSON.parse(raw); } catch(je) {
+      throw new Error("JSON parse failed — response was likely truncated mid-generation. Try again, or shorten the content description. Detail: " + je.message);
+    }
+
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("results").style.display = "block";
+
+    renderScorecard(p);
+    renderOutput(p);
+
+  } catch(e) {
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("error-box").style.display = "block";
+    document.getElementById("error-msg").textContent = e.message;
+  }
+
+  btn.disabled = false; btn.textContent = "▶ Run Test Again — New Generation";
+}
+
+// ── QUALITY SCORING ENGINE ──
+function score(p) {
+  var issues = [];
+  var sections = [];
+
+  // 1. PRACTICE GAP
+  var gapChecks = [];
+  var gaps = Array.isArray(p.practiceGap) ? p.practiceGap : [];
+  gapChecks.push({ pass: gaps.length === 3, text: "Exactly 3 options generated", note: gaps.length + " found" });
+  var audienceWords = ["emergency", "physician", "resident", "nurse", "em ", "ed "];
+  gapChecks.push({ pass: gaps.every(function(g){ return audienceWords.some(function(w){ return g.toLowerCase().includes(w); }); }), text: "All options name the target audience" });
+  gapChecks.push({ pass: gaps.every(function(g){ var l=g.toLowerCase(); return (l.includes("currently") || l.includes("despite") || l.includes("although") || l.includes("below") || l.includes("inadequate") || l.includes("gap")); }), text: "All options describe current vs ideal practice" });
+  var bundleWords = ["bundle","sep-1","sepsis","compliance","adherence"];
+  gapChecks.push({ pass: gaps.every(function(g){ return bundleWords.some(function(w){ return g.toLowerCase().includes(w); }); }), text: "All options are topic-specific (not generic)" });
+  gapChecks.push({ pass: (function(){ var texts = gaps.map(function(g){ return g.toLowerCase(); }); for(var i=0;i<texts.length;i++) for(var j=i+1;j<texts.length;j++) { var shared = texts[i].split(" ").filter(function(w){ return w.length>6 && texts[j].includes(w); }).length; if(shared > 20) return false; } return true; })(), text: "3 options are meaningfully different (not near-duplicates)" });
+  var gapScore = gapChecks.filter(function(c){return c.pass;}).length;
+  sections.push({ title: "Practice gap", checks: gapChecks, score: gapScore, total: gapChecks.length });
+
+  // 2. EDUCATIONAL NEEDS
+  var needChecks = [];
+  var en = p.educationalNeeds || {};
+  needChecks.push({ pass: en.primaryType === "Performance", text: "Correctly identifies Performance as primary need type", note: "Got: " + (en.primaryType || "missing") + " — Performance is correct for a simulation addressing known but inconsistent bundle adherence" });
+  needChecks.push({ pass: !!en.reasoning && en.reasoning.length > 20, text: "Reasoning provided for need type diagnosis" });
+  needChecks.push({ pass: !!en.primaryText && en.primaryText.length > 80, text: "Primary need text is substantive (>80 chars)" });
+  needChecks.push({
+    pass: !en.secondaryType || en.secondaryType === null || en.secondaryType === "null" || en.secondaryType === "Competence",
+    text: "Secondary need is appropriate (Competence is valid alongside Performance for simulation; Knowledge is not)",
+    note: "Secondary: " + (en.secondaryType || "none — correct") + (en.secondaryType === "Knowledge" ? " ← incorrect: Knowledge secondary contradicts a Performance diagnosis" : en.secondaryType === "Competence" ? " ← acceptable for simulation-based activity" : "")
+  });
+  var needWords = ["emergency","physician","resident","nurse","bundle","sepsis","adherence"];
+  needChecks.push({ pass: needWords.some(function(w){ return (en.primaryText||"").toLowerCase().includes(w); }), text: "Need text is activity-specific (not generic)" });
+  var needScore = needChecks.filter(function(c){return c.pass;}).length;
+  sections.push({ title: "Educational need", checks: needChecks, score: needScore, total: needChecks.length });
+
+  // 3. LEARNING OBJECTIVES
+  var objChecks = [];
+  var objs = Array.isArray(p.learningObjectives) ? p.learningObjectives : [];
+  objChecks.push({ pass: objs.length >= 3 && objs.length <= 4, text: "3–4 objectives generated", note: objs.length + " found" });
+  var badVerbs = ["understand","appreciate","learn","know","be aware","recognize the importance"];
+  objChecks.push({ pass: objs.every(function(o){ return !badVerbs.some(function(v){ return o.toLowerCase().startsWith(v) || o.toLowerCase().includes(" " + v + " "); }); }), text: "No weak verbs (understand, appreciate, know)" });
+  var performVerbs = ["implement","execute","demonstrate","perform","apply","manage","initiate","conduct","complete","coordinate","sequence","activate"];
+  objChecks.push({ pass: objs.some(function(o){ return performVerbs.some(function(v){ return o.toLowerCase().startsWith(v); }); }), text: "At least one performance-level verb (implement, execute, demonstrate, etc.)" });
+  var simWords = ["bundle","sep-1","sepsis","sofa","qsofa","lactate","blood culture","antibiotic","fluid","simulation","handoff","recognition"];
+  objChecks.push({ pass: objs.every(function(o){ return simWords.some(function(w){ return o.toLowerCase().includes(w); }); }), text: "All objectives are activity-specific" });
+  var objScore = objChecks.filter(function(c){return c.pass;}).length;
+  sections.push({ title: "Learning objectives", checks: objChecks, score: objScore, total: objChecks.length });
+
+  // 4. ELIGIBILITY
+  var eligChecks = [];
+  var el = p.eligibility || {};
+  var moc = Array.isArray(el.moc) ? el.moc : [];
+  eligChecks.push({ pass: moc.some(function(m){
+    var b = (m.board||"").toLowerCase();
+    return m.applies && (b.includes("abem") || b.includes("emergency medicine") || b.includes("american board of emergency"));
+  }), text: "ABEM MOC identified for Emergency Medicine physicians",
+  note: "Checks for 'abem', 'emergency medicine', or 'american board of emergency' in board name" });
+  eligChecks.push({ pass: !moc.some(function(m){ return m.applies && (m.board||"").toLowerCase().includes("abim"); }), text: "ABIM not incorrectly included (no IM physicians in audience)" });
+  var comm = Array.isArray(el.commendation) ? el.commendation : [];
+  var commCodes = comm.map(function(c){ return c.code; });
+  eligChecks.push({ pass: commCodes.some(function(c){ return c && c.includes("C26"); }), text: "C26 identified (uses real SEP-1 compliance data as educational content)" });
+  eligChecks.push({ pass: commCodes.some(function(c){ return c && c.includes("C30"); }), text: "C30 identified (simulation with observed debrief = skills training with feedback)" });
+  var ipce = el.ipce || {};
+  eligChecks.push({ pass: ipce.applies === true, text: "IPCE correctly identified (physicians + nurses + interprofessional planning)" });
+  var other = Array.isArray(el.otherCredits) ? el.otherCredits : [];
+  eligChecks.push({ pass: other.some(function(c){ return c.applies && (c.name||"").toLowerCase().includes("ancc"); }), text: "ANCC Contact Hours identified for nurses in audience" });
+  var eligScore = eligChecks.filter(function(c){return c.pass;}).length;
+  sections.push({ title: "Eligibility analysis", checks: eligChecks, score: eligScore, total: eligChecks.length });
+
+  // 5. FORMAT / EXPECTED RESULTS
+  var fmtChecks = [];
+  fmtChecks.push({ pass: (p.formatJustification||"").length > 80, text: "Format justification is substantive" });
+  fmtChecks.push({ pass: (p.formatJustification||"").toLowerCase().includes("simulat"), text: "Format justification specifically addresses simulation" });
+  fmtChecks.push({ pass: (p.expectedResults||"").length > 80, text: "Expected results text is substantive" });
+  var perfWords = ["practice","performance","routinely","consistently","will implement","will execute","will initiate"];
+  fmtChecks.push({ pass: perfWords.some(function(w){ return (p.expectedResults||"").toLowerCase().includes(w); }), text: "Expected results addresses performance change (not just competence)" });
+  var fmtScore = fmtChecks.filter(function(c){return c.pass;}).length;
+  sections.push({ title: "Format + expected results", checks: fmtChecks, score: fmtScore, total: fmtChecks.length });
+
+  // 6. NEEDS SUMMARY
+  var sumChecks = [];
+  var s = p.needsAssessmentSummary || "";
+  sumChecks.push({ pass: s.length > 150, text: "Summary paragraph is substantive (>150 chars)" });
+  var sumWords = ["58%","compliance","bundle","quality","registry","data","performance","sepsis"];
+  sumChecks.push({ pass: sumWords.some(function(w){ return s.toLowerCase().includes(w.toLowerCase()); }), text: "Summary references the gap source (quality/registry data)" });
+  sumChecks.push({ pass: s.toLowerCase().includes("emergency") || s.toLowerCase().includes("physician") || s.toLowerCase().includes("resident") || s.toLowerCase().includes("nurse"), text: "Summary names the audience" });
+  var sumScore = sumChecks.filter(function(c){return c.pass;}).length;
+  sections.push({ title: "Needs assessment summary", checks: sumChecks, score: sumScore, total: sumChecks.length });
+
+  var totalScore = sections.reduce(function(a,s){ return a + s.score; }, 0);
+  var totalPossible = sections.reduce(function(a,s){ return a + s.total; }, 0);
+  return { sections: sections, totalScore: totalScore, totalPossible: totalPossible };
+}
+
+function gradeLabel(s, t) {
+  var pct = s / t;
+  if (pct >= 0.85) return { label: "Pass", cls: "grade-pass" };
+  if (pct >= 0.6)  return { label: "Needs work", cls: "grade-warn" };
+  return { label: "Fail", cls: "grade-fail" };
+}
+
+function renderScorecard(p) {
+  var scored = score(p);
+  var overall = gradeLabel(scored.totalScore, scored.totalPossible);
+  var html = "<div class=\"summary-stats\">"
+    + "<span class=\"stat-chip\">Overall: " + scored.totalScore + " / " + scored.totalPossible + " checks</span>"
+    + "<span class=\"stat-chip " + overall.cls + "\">" + overall.label + "</span>"
+    + "</div><div class=\"issues-list\">";
+
+  scored.sections.forEach(function(sec) {
+    var g = gradeLabel(sec.score, sec.total);
+    html += "<div class=\"score-section\">";
+    html += "<div class=\"score-head\"><span class=\"score-title\">" + sec.title + "</span>"
+      + "<span class=\"score-grade " + g.cls + "\">" + sec.score + "/" + sec.total + " · " + g.label + "</span></div>";
+    html += "<div class=\"score-body\">";
+    sec.checks.forEach(function(c) {
+      html += "<div class=\"check-row\"><span class=\"check-icon\">" + (c.pass ? "✅" : "❌") + "</span>"
+        + "<div class=\"check-text\">" + c.text + (c.note ? "<br><span class=\"check-note\">" + c.note + "</span>" : "") + "</div></div>";
+    });
+    html += "</div></div>";
+  });
+
+  html += "</div>";
+  document.getElementById("scorecard").innerHTML = html;
+}
+
+function esc(s) { return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+function renderOutput(p) {
+  var html = "";
+  var en = p.educationalNeeds || {};
+
+  // Practice gap
+  html += "<div class=\"out-block\"><div class=\"out-head\">Practice gap — 3 options</div><div class=\"out-body\">";
+  (Array.isArray(p.practiceGap) ? p.practiceGap : []).forEach(function(g, i) {
+    html += "<div class=\"out-option\"><div class=\"out-option-label\">Option " + String.fromCharCode(65+i) + "</div><div class=\"out-text\">" + esc(g) + "</div></div>";
+  });
+  html += "</div></div>";
+
+  // Educational need
+  html += "<div class=\"out-block\"><div class=\"out-head\">Educational need · Primary: " + esc(en.primaryType||"?") + "</div><div class=\"out-body\">";
+  if (en.reasoning) html += "<div class=\"reasoning-box\">💡 " + esc(en.reasoning) + "</div>";
+  html += "<div class=\"out-text\">" + esc(en.primaryText) + "</div>";
+  if (en.secondaryType && en.secondaryText && en.secondaryType !== "null") {
+    html += "<div style=\"margin-top:8px;font-size:11px;font-weight:800;text-transform:uppercase;color:var(--muted)\">Secondary: " + esc(en.secondaryType) + "</div>";
+    html += "<div class=\"out-text\" style=\"margin-top:4px\">" + esc(en.secondaryText) + "</div>";
+  }
+  html += "</div></div>";
+
+  // Expected results
+  html += "<div class=\"out-block\"><div class=\"out-head\">Expected results</div><div class=\"out-body\"><div class=\"out-text\">" + esc(p.expectedResults) + "</div></div></div>";
+
+  // Format justification
+  html += "<div class=\"out-block\"><div class=\"out-head\">Format justification</div><div class=\"out-body\"><div class=\"out-text\">" + esc(p.formatJustification) + "</div></div></div>";
+
+  // Objectives
+  html += "<div class=\"out-block\"><div class=\"out-head\">Learning objectives (" + (p.learningObjectives||[]).length + ")</div><div class=\"out-body obj-wrap\">";
+  html += "<div style=\"font-size:12px;color:var(--sec);margin-bottom:8px;font-style:italic\">At the conclusion of this activity, participants will be able to:</div>";
+  html += "<div class=\"obj-list\">";
+  (Array.isArray(p.learningObjectives) ? p.learningObjectives : []).forEach(function(o) { html += "<div class=\"obj-item\">" + esc(o) + "</div>"; });
+  html += "</div></div></div>";
+
+  // Competencies
+  if (p.competencies) {
+    var compDefs = [{key:"acgme",label:"ACGME / ABMS"},{key:"iom",label:"IOM"},{key:"ipec",label:"IPEC"}];
+    html += "<div class=\"out-block\"><div class=\"out-head\">Competencies</div><div class=\"out-body\">";
+    compDefs.forEach(function(cd) {
+      var items = (p.competencies[cd.key]||[]);
+      if (!items.length) return;
+      html += "<div style=\"margin-bottom:8px\"><div style=\"font-size:10px;font-weight:800;text-transform:uppercase;color:var(--arb);margin-bottom:4px\">" + cd.label + "</div><div class=\"pill-row\">";
+      items.forEach(function(item) { html += "<span class=\"pill\">" + esc(item) + "</span>"; });
+      html += "</div></div>";
+    });
+    html += "</div></div>";
+  }
+
+  // Needs assessment summary
+  html += "<div class=\"out-block\"><div class=\"out-head\">Needs assessment summary</div><div class=\"out-body\"><div class=\"out-text\">" + esc(p.needsAssessmentSummary) + "</div></div></div>";
+
+  // Eligibility
+  var el = p.eligibility || {};
+  html += "<div class=\"out-block\"><div class=\"out-head\">Eligibility analysis</div><div class=\"out-body\">";
+
+  if ((Array.isArray(el.moc) ? el.moc : []).length) {
+    html += "<div class=\"elig-group\"><div class=\"elig-group-label\">MOC / Board Credit</div>";
+    (Array.isArray(el.moc) ? el.moc : []).forEach(function(m) {
+      if (!m.applies) return;
+      html += "<div class=\"elig-item-row\"><div class=\"elig-item-title\">" + esc(m.board) + "</div><div class=\"elig-item-body\">" + esc(m.rationale) + "</div>";
+      if (m.flag) html += "<div class=\"elig-item-body\" style=\"color:var(--arb);margin-top:3px\">Flag to OCME&amp;LL: " + esc(m.flag) + "</div>";
+      html += "</div>";
+    });
+    html += "</div>";
+  }
+
+  if (el.ipce && el.ipce.applies) {
+    html += "<div class=\"elig-group\"><div class=\"elig-group-label\">IPCE</div><div class=\"elig-item-row\"><div class=\"elig-item-body\">" + esc(el.ipce.rationale) + "</div></div></div>";
+  }
+
+  if ((Array.isArray(el.commendation) ? el.commendation : []).length) {
+    html += "<div class=\"elig-group\"><div class=\"elig-group-label\">ACCME Commendation criteria</div>";
+    (Array.isArray(el.commendation) ? el.commendation : []).forEach(function(c) {
+      html += "<div class=\"elig-item-row\"><div class=\"elig-item-title\">" + esc(c.code) + " · " + esc(c.title) + " <span style=\"font-size:11px;font-weight:600;color:var(--sec)\">(" + esc(c.confidence) + ")</span></div><div class=\"elig-item-body\">" + esc(c.rationale) + "</div></div>";
+    });
+    html += "</div>";
+  }
+
+  if ((Array.isArray(el.otherCredits) ? el.otherCredits : []).length) {
+    html += "<div class=\"elig-group\"><div class=\"elig-group-label\">Additional credit types</div>";
+    (Array.isArray(el.otherCredits) ? el.otherCredits : []).forEach(function(c) {
+      if (!c.applies) return;
+      html += "<div class=\"elig-item-row\"><div class=\"elig-item-title\">" + esc(c.name) + "</div><div class=\"elig-item-body\">" + esc(c.rationale) + "</div></div>";
+    });
+    html += "</div>";
+  }
+
+  html += "</div></div>";
+
+  document.getElementById("output-sections").innerHTML = html;
+}
+</script>
+</body>
+</html>
