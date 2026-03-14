@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>CME Content Helper · Michigan Medicine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --michigan-blue:#00274C;--michigan-maize:#FFCB05;--arboretum-blue:#2F65A7;
+  --text-primary:#00274C;--text-secondary:#4a6785;--text-muted:#7a96b0;
+  --border-light:#d0d9e3;--border-mid:#a8bdd4;
+  --bg-main:#f0f2f5;--bg-card:#ffffff;--bg-blue-tint:#eef2f7;
+}
+body{background:var(--bg-main);font-family:"Nunito Sans",Arial,sans-serif;color:var(--text-primary);line-height:1.6;min-height:100vh}
+button{font-family:inherit;cursor:pointer}
+textarea,select{font-family:inherit}
+textarea{resize:vertical}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.fade-up{animation:fadeUp 0.25s ease both}
+
+/* LAYOUT */
+.app-wrap{display:flex;flex-direction:column;min-height:100vh}
+.main-layout{display:flex;flex:1;max-width:1280px;margin:0 auto;width:100%;padding:20px 16px;gap:20px}
+.input-panel{width:35%;flex-shrink:0;display:flex;flex-direction:column;gap:14px}
+.output-panel{flex:1;min-width:0;display:flex;flex-direction:column;gap:16px}
+@media(max-width:820px){.main-layout{flex-direction:column;padding:12px}.input-panel{width:100%}}
+
+/* HEADER */
+.header-stripe{background:var(--michigan-maize);padding:3px 20px;text-align:right}
+.header-stripe span{font-size:11px;font-weight:700;color:var(--michigan-blue);letter-spacing:0.4px}
+.header-main{background:var(--michigan-blue);padding:14px 20px;display:flex;align-items:center}
+.header-title{font-size:15px;font-weight:800;color:#fff}
+.header-badge{color:var(--michigan-maize);font-size:12px;font-weight:700;margin-left:auto}
+
+/* CARDS */
+.card{background:var(--bg-card);border-radius:14px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,0.07);position:relative;overflow:visible}
+.card-tight{background:var(--bg-card);border-radius:14px;padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,0.07)}
+
+/* INPUTS */
+.field-group{display:flex;flex-direction:column;gap:5px}
+.field-label{font-size:13px;font-weight:700;color:var(--text-primary)}
+.field-hint{font-size:12px;color:var(--text-secondary);line-height:1.4}
+.field-textarea{width:100%;border:1.5px solid var(--border-light);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--text-primary);background:#fff;transition:border-color 0.15s;line-height:1.5}
+.field-textarea:focus{outline:none;border-color:var(--arboretum-blue);box-shadow:0 0 0 3px rgba(47,101,167,0.1)}
+.field-textarea::placeholder{color:var(--text-muted)}
+
+/* REQUIRED BADGE */
+.req-badge{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.4px;background:var(--michigan-maize);color:var(--michigan-blue);border-radius:4px;padding:1px 6px;margin-left:6px;vertical-align:middle}
+
+/* CHECK TILES — audience professions and physician specialties */
+.check-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:4px}
+.check-tile{display:flex;align-items:center;gap:7px;padding:7px 10px;border:1.5px solid var(--border-light);border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text-secondary);transition:all 0.12s;user-select:none}
+.check-tile:hover{border-color:var(--border-mid);background:var(--bg-blue-tint)}
+.check-tile.checked{border-color:var(--arboretum-blue);background:var(--bg-blue-tint);color:var(--arboretum-blue)}
+.check-tile input{accent-color:var(--arboretum-blue);width:13px;height:13px;flex-shrink:0;pointer-events:none}
+
+/* FORMAT CHIPS */
+.chip-grid{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.chip{display:flex;align-items:center;gap:5px;padding:5px 10px;border:1.5px solid var(--border-light);border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text-secondary);transition:all 0.12s;user-select:none}
+.chip:hover{border-color:var(--border-mid);background:var(--bg-blue-tint)}
+.chip.checked{border-color:var(--arboretum-blue);background:var(--bg-blue-tint);color:var(--arboretum-blue)}
+.chip input{accent-color:var(--arboretum-blue);width:12px;height:12px;flex-shrink:0;pointer-events:none}
+
+/* SECTION DIVIDER inside input card */
+.input-divider{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);padding:4px 0 2px;border-top:1px solid var(--border-light);margin-top:4px}
+
+/* EXPANDER */
+.expander-toggle{display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--bg-blue-tint);border:1.5px solid var(--border-light);border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text-secondary);width:100%;text-align:left;transition:all 0.15s}
+.expander-toggle:hover{border-color:var(--border-mid)}
+.expander-chev{margin-left:auto;font-size:10px;transition:transform 0.2s;display:inline-block}
+.expander-toggle.open .expander-chev{transform:rotate(180deg)}
+.expander-body{padding-top:10px;display:none}
+.expander-body.open{display:block}
+
+/* BUTTONS */
+.btn-generate{width:100%;padding:14px;background:var(--michigan-blue);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:800;box-shadow:0 4px 14px rgba(0,39,76,0.3);transition:all 0.15s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-generate:hover:not(:disabled){background:#1a3a5c;transform:translateY(-1px)}
+.btn-generate:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+.btn-regen{padding:9px 16px;background:var(--bg-blue-tint);color:var(--arboretum-blue);border:1.5px solid var(--border-mid);border-radius:8px;font-size:13px;font-weight:700;transition:all 0.15s}
+.btn-regen:hover{background:#dde8f4}
+.btn-print{padding:9px 18px;background:var(--michigan-blue);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;transition:all 0.15s;display:flex;align-items:center;gap:6px}
+.btn-print:hover{background:#1a3a5c}
+
+/* EMPTY / LOADING / ERROR */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center;gap:12px;color:var(--text-muted)}
+.empty-icon{font-size:48px;opacity:0.35}
+.empty-title{font-size:16px;font-weight:700;color:var(--text-secondary)}
+.empty-sub{font-size:13px;max-width:300px;line-height:1.5}
+.loading-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:14px}
+.spinner{width:36px;height:36px;border:3px solid var(--border-light);border-top-color:var(--arboretum-blue);border-radius:50%;animation:spin 0.8s linear infinite}
+.loading-text{font-size:14px;font-weight:600;color:var(--text-secondary)}
+.loading-sub{font-size:12px;color:var(--text-muted);text-align:center;max-width:320px;line-height:1.5}
+.error-box{background:#fff5f5;border:1.5px solid #feb2b2;border-radius:10px;padding:16px;color:#c53030;font-size:14px;display:flex;align-items:flex-start;gap:10px}
+
+/* OUTPUT SECTIONS */
+.out-section-title{font-size:14px;font-weight:800;color:var(--michigan-blue);display:flex;align-items:baseline;flex-wrap:wrap;gap:6px;padding-bottom:7px;border-bottom:2.5px solid var(--michigan-maize);margin-bottom:5px}
+.out-section-accme{font-size:10px;font-weight:600;color:var(--text-muted);font-style:italic}
+.section-desc{font-size:13px;color:var(--text-secondary);line-height:1.5;margin-bottom:4px}
+.cloudcme-tag{font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:0.3px;display:block;margin-bottom:12px}
+
+/* REASONING BOX */
+.reasoning-box{display:flex;align-items:flex-start;gap:10px;background:#f0f4f9;border:1.5px solid #c8d8ea;border-radius:10px;padding:11px 13px;margin-bottom:12px}
+
+/* OPTION PILLS */
+.option-pills{display:flex;gap:7px;margin-bottom:10px;flex-wrap:wrap}
+.option-pill{padding:5px 14px;border-radius:20px;font-size:13px;font-weight:700;border:2px solid var(--border-mid);background:#fff;color:var(--text-secondary);transition:all 0.12s;cursor:pointer}
+.option-pill.active{background:var(--arboretum-blue);border-color:var(--arboretum-blue);color:#fff;box-shadow:0 2px 8px rgba(47,101,167,0.25)}
+
+/* EDITABLES */
+.editable-area{width:100%;border:1.5px solid var(--border-light);border-radius:8px;padding:11px 13px;font-size:14px;color:var(--text-primary);background:#fff;line-height:1.6;transition:border-color 0.15s;min-height:80px}
+.editable-area:focus{outline:none;border-color:var(--arboretum-blue);box-shadow:0 0 0 3px rgba(47,101,167,0.08)}
+.editable-area.tall{min-height:110px}
+
+/* NEED BLOCKS */
+.need-block{border:1.5px solid var(--border-light);border-radius:10px;overflow:hidden;margin-bottom:10px}
+.need-header{padding:9px 13px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.need-body{padding:11px 13px}
+
+/* OBJECTIVES */
+.obj-list{display:flex;flex-direction:column;gap:8px}
+.obj-row{display:flex;align-items:flex-start;gap:10px}
+.obj-check{width:17px;height:17px;flex-shrink:0;margin-top:4px;accent-color:var(--arboretum-blue);cursor:pointer}
+.obj-text{flex:1;border:1.5px solid var(--border-light);border-radius:8px;padding:8px 12px;font-size:14px;color:var(--text-primary);background:#fff;line-height:1.5;min-height:44px;transition:border-color 0.15s}
+.obj-text:focus{outline:none;border-color:var(--arboretum-blue);box-shadow:0 0 0 3px rgba(47,101,167,0.08)}
+.obj-row.dimmed .obj-text{opacity:0.38;text-decoration:line-through}
+
+/* COMPETENCY CHIPS */
+.comp-section{margin-bottom:12px}
+.comp-section-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px}
+.comp-chips{display:flex;flex-wrap:wrap;gap:5px}
+.comp-chip{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;padding:4px 10px;border-radius:5px;border:1.5px solid;background:#f8f9fb}
+
+/* ELIGIBILITY PANEL */
+.elig-panel{background:var(--bg-card);border-radius:14px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,0.07);border-top:4px solid var(--michigan-maize)}
+.elig-item{border-radius:10px;overflow:hidden;margin-bottom:10px}
+.elig-header{padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.elig-body{padding:12px 14px}
+.elig-badge{font-size:11px;font-weight:700;padding:2px 9px;border-radius:10px;margin-left:auto;white-space:nowrap}
+.elig-steps ol{margin:0 0 0 16px;display:flex;flex-direction:column;gap:4px}
+.elig-steps li{font-size:13px;color:#1a3a5c;line-height:1.55}
+.elig-note{font-size:12px;font-style:italic;color:var(--text-secondary);background:var(--bg-blue-tint);border-left:3px solid var(--arboretum-blue);border-radius:0 6px 6px 0;padding:7px 11px;margin-top:8px;line-height:1.5}
+
+.action-bar{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+@media print{.no-print{display:none!important}body{background:#fff}}
+
+/* TOOLTIPS */
+.tip-wrap{position:relative;display:inline-flex;align-items:center;vertical-align:middle}
+.tip-btn{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:var(--arboretum-blue);color:#fff;font-size:9px;font-weight:800;cursor:pointer;flex-shrink:0;border:none;line-height:1;margin-left:5px;user-select:none;transition:background 0.12s}
+.tip-btn:hover{background:#1a4f8a}
+.tip-pop{position:fixed;z-index:99999;width:280px;background:#1e293b;color:#f0f2f5;border-radius:10px;padding:13px 15px;font-size:12px;line-height:1.6;box-shadow:0 8px 24px rgba(0,0,0,0.3);pointer-events:none;opacity:0;transition:opacity 0.15s}
+.tip-pop.show{opacity:1;pointer-events:auto}
+.tip-pop strong{color:#FFCB05;font-weight:700}
+.tip-pop .tip-arrow{position:absolute;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent}
+/* Arrow directions — position set by JS for fixed tooltips */
+.tip-pop.below .tip-arrow{top:-6px;border-bottom:6px solid #1e293b}
+.tip-pop.above .tip-arrow{bottom:-6px;border-top:6px solid #1e293b}
+@media(max-width:820px){.tip-pop{width:240px}}
+
+/* COPY BUTTON */
+.copy-wrap{position:relative;display:block}
+.copy-btn{position:absolute;top:7px;right:7px;width:28px;height:28px;border-radius:6px;border:1px solid var(--border-light);background:rgba(255,255,255,0.9);color:var(--text-muted);font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity 0.15s,background 0.15s,color 0.15s,border-color 0.15s;z-index:2;backdrop-filter:blur(2px)}
+.copy-wrap:hover .copy-btn{opacity:1}
+.copy-btn:hover{background:#fff;border-color:var(--arboretum-blue);color:var(--arboretum-blue)}
+.copy-btn.copied{opacity:1;background:#dcfce7;border-color:#86efac;color:#15803d}
+.copy-btn svg{width:13px;height:13px;flex-shrink:0}
+</style>
+</head>
+<body>
+<div class="app-wrap">
+  <div>
+    <div class="header-stripe"><span>Michigan Medicine · University of Michigan</span></div>
+    <div class="header-main" style="flex-wrap:wrap;gap:4px 12px;padding:12px 20px">
+      <div style="display:flex;align-items:center;width:100%;justify-content:space-between">
+        <span class="header-title">CME Content Helper</span>
+        <span class="header-badge">OCME&amp;LL</span>
+      </div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.72);line-height:1.5;width:100%;font-weight:400;letter-spacing:0.1px">
+        Generates compliant CME application content, identifies every credit type your activity qualifies for, and flags opportunities that contribute to Michigan Medicine&rsquo;s ACCME Accreditation with Commendation.
+      </div>
+    </div>
+  </div>
+
+  <div class="main-layout">
+    <!-- ── INPUT PANEL ── -->
+    <div class="input-panel">
+      <div class="card">
+        <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;line-height:1.5">
+          Answer three questions and the AI will suggest application content and identify everything your activity may qualify for.
+          <strong>All three marked <span class="req-badge">Required</span> must be completed.</strong>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px">
+
+          <!-- 1. TOPIC -->
+          <div class="field-group">
+            <label class="field-label" for="topic">What is the topic? <span class="req-badge">Required</span></label>
+            <div class="field-hint">Be specific — this shapes everything the AI suggests.</div>
+            <textarea class="field-textarea" id="topic" rows="2" placeholder="e.g. Sepsis bundle adherence · Acute pain management · Implementation science in learning health systems"></textarea>
+          </div>
+
+          <!-- 2. CONTENT -->
+          <div class="field-group">
+            <label class="field-label" for="content">What will be covered? <span class="req-badge">Required</span></label>
+            <div class="field-hint">Sessions, format, learning activities, faculty presenters, data used.</div>
+            <textarea class="field-textarea" id="content" rows="3" placeholder="e.g. Keynote on updated guidelines, case-based small group sessions, simulation skills lab, panel Q&amp;A, pre/post knowledge test..."></textarea>
+          </div>
+
+          <!-- 3. WHO ATTENDS — professions + specialties together -->
+          <div class="field-group">
+            <div class="field-label">Who will attend? <span class="req-badge">Required</span></div>
+            <div class="field-hint" style="margin-bottom:6px">Select all professions and specialties that apply.</div>
+
+            <!-- Professions -->
+            <div class="input-divider">Professions</div>
+            <div class="check-grid" id="profGrid">
+              <label class="check-tile"><input type="checkbox" value="Physicians" onchange="this.closest('label').classList.toggle('checked',this.checked)"> Physicians</label>
+              <label class="check-tile"><input type="checkbox" value="Residents / Fellows" onchange="this.closest('label').classList.toggle('checked',this.checked)"> Residents / Fellows</label>
+              <label class="check-tile"><input type="checkbox" value="Nurses / Nurse Practitioners" onchange="this.closest('label').classList.toggle('checked',this.checked)"> Nurses / NPs</label>
+              <label class="check-tile"><input type="checkbox" value="Physician Assistants" onchange="this.closest('label').classList.toggle('checked',this.checked)"> Physician Assistants</label>
+              <label class="check-tile"><input type="checkbox" value="Pharmacists" onchange="this.closest('label').classList.toggle('checked',this.checked)"> Pharmacists</label>
+              <label class="check-tile"><input type="checkbox" value="Social Workers" onchange="this.closest('label').classList.toggle('checked',this.checked)"> Social Workers</label>
+              <label class="check-tile"><input type="checkbox" value="Medical Students" onchange="this.closest('label').classList.toggle('checked',this.checked)"> Medical Students</label>
+              <label class="check-tile"><input type="checkbox" value="Other Healthcare Professionals" onchange="this.closest('label').classList.toggle('checked',this.checked)"> Other HCPs</label>
+            </div>
+
+            <!-- Physician specialties — multi-select, supports multiple MOC credits -->
+            <div class="input-divider" style="margin-top:8px">Physician specialties <span style="font-size:10px;font-weight:400;text-transform:none;letter-spacing:0">(select all — each may qualify for MOC credit)</span></div>
+            <div class="check-grid" id="specGrid">
+              <label class="check-tile"><input type="checkbox" value="internal_med" onchange="this.closest('label').classList.toggle('checked',this.checked)"> Internal Medicine</label>
+              <label class="check-tile"><input type="checkbox" value="family_med" onchange="this.closest('label').classList.toggle('checked',this.checked)"> Family Medicine</label>
+              <label class="check-tile"><input type="checkbox" value="pediatrics" onchange="this.closest('label').classList.toggle('checked',this.checked)"> Pediatrics</label>
+              <label class="check-tile"><input type="checkbox" value="emergency_med" onchange="this.closest('label').classList.toggle('checked',this.checked)"> Emergency Medicine</label>
+              <label class="check-tile"><input type="checkbox" value="anesthesiology" onchange="this.closest('label').classList.toggle('checked',this.checked)"> Anesthesiology</label>
+              <label class="check-tile"><input type="checkbox" value="surgery" onchange="this.closest('label').classList.toggle('checked',this.checked)"> Surgery</label>
+              <label class="check-tile"><input type="checkbox" value="psychiatry_neuro" onchange="this.closest('label').classList.toggle('checked',this.checked)"> Psychiatry / Neurology</label>
+              <label class="check-tile"><input type="checkbox" value="ob_gyn" onchange="this.closest('label').classList.toggle('checked',this.checked)"> Ob/Gyn</label>
+              <label class="check-tile"><input type="checkbox" value="radiology" onchange="this.closest('label').classList.toggle('checked',this.checked)"> Radiology</label>
+              <label class="check-tile"><input type="checkbox" value="other_spec" onchange="this.closest('label').classList.toggle('checked',this.checked)"> Other specialty</label>
+            </div>
+
+            <textarea class="field-textarea" id="audienceOther" rows="1" style="margin-top:6px" placeholder="Add specifics, e.g. PGY2–3 only, mixed ED team, community health workers..."></textarea>
+          </div>
+
+          <!-- 4. FORMAT -->
+          <div class="field-group">
+            <div class="field-label">Activity format <span style="font-size:12px;font-weight:400;color:var(--text-muted)">(select all that apply)</span></div>
+            <div class="chip-grid" id="formatGrid">
+              <label class="chip"><input type="checkbox" value="Lecture / didactic presentation" onchange="this.closest('label').classList.toggle('checked',this.checked)"> 🎤 Lecture</label>
+              <label class="chip"><input type="checkbox" value="Panel discussion" onchange="this.closest('label').classList.toggle('checked',this.checked)"> 👥 Panel</label>
+              <label class="chip"><input type="checkbox" value="Case-based small group discussion" onchange="this.closest('label').classList.toggle('checked',this.checked)"> 💬 Case-based</label>
+              <label class="chip"><input type="checkbox" value="Simulation / skills lab" onchange="this.closest('label').classList.toggle('checked',this.checked)"> 🩺 Simulation</label>
+              <label class="chip"><input type="checkbox" value="Hands-on workshop" onchange="this.closest('label').classList.toggle('checked',this.checked)"> 🔧 Workshop</label>
+              <label class="chip"><input type="checkbox" value="Online / self-paced module" onchange="this.closest('label').classList.toggle('checked',this.checked)"> 💻 Online</label>
+              <label class="chip"><input type="checkbox" value="Quality improvement activity" onchange="this.closest('label').classList.toggle('checked',this.checked)"> 📊 QI Activity</label>
+              <label class="chip"><input type="checkbox" value="Journal club" onchange="this.closest('label').classList.toggle('checked',this.checked)"> 📖 Journal Club</label>
+            </div>
+          </div>
+
+          <!-- 5. ONE QUALIFYING QUESTION — interprofessional planning -->
+          <div class="field-group">
+            <div class="field-label">Is the planning committee interprofessional?
+              <span class="tip-wrap">
+                <button class="tip-btn" onclick="toggleTip('tip-ipce',event)" aria-label="More information">i</button>
+                <div class="tip-pop below" id="tip-ipce"><div class="tip-arrow"></div>
+                  <strong>Three things must all be true &#8212; not just one or two:</strong><br><br>
+                  <strong>1. Planning committee:</strong> two or more professions involved in designing the activity &#8212; e.g. both a physician <em>and</em> a nurse, pharmacist, or social worker sit on the planning group.<br><br>
+                  <strong>2. Faculty presenters:</strong> two or more professions involved in delivering the content on the day &#8212; e.g. both a physician <em>and</em> a nurse present or facilitate sessions.<br><br>
+                  <strong>3. Team-focused design:</strong> the activity is designed to improve how the healthcare team works together, not just to update individual clinicians.<br><br>
+                  Planning collaboration alone is not enough. The interprofessional involvement must extend to who delivers the content as well.
+                </div>
+              </span>
+            </div>
+            <div class="field-hint" style="margin-bottom:6px">The AI cannot infer this from the content — it determines eligibility for interprofessional education recognition.</div>
+            <div class="chip-grid">
+              <label class="chip" id="ipYesChip"><input type="radio" name="ipce" value="yes" onchange="document.getElementById('ipNoChip').classList.remove('checked');this.closest('label').classList.add('checked')"> ✓ Yes</label>
+              <label class="chip" id="ipNoChip"><input type="radio" name="ipce" value="no" onchange="document.getElementById('ipYesChip').classList.remove('checked');this.closest('label').classList.add('checked')"> ✗ No / not sure</label>
+            </div>
+          </div>
+
+          <!-- OPTIONAL: Gap source -->
+          <div>
+            <button class="expander-toggle" id="togGap" onclick="toggleExp('bodyGap','togGap')">
+              ▸ How was the gap identified? <span style="font-weight:400;color:var(--text-muted);font-size:11px">(optional — improves output)</span>
+              <span class="tip-wrap" onclick="event.stopPropagation()">
+                <button class="tip-btn" onclick="toggleTip('tip-gap-src',event)" aria-label="More information">i</button>
+                <div class="tip-pop below" id="tip-gap-src"><div class="tip-arrow"></div>
+                  <strong>Why this matters:</strong> ACCME requires CME to be based on a genuine, identified need. Describing how the gap was found strengthens your application and is required in the needs assessment.<br><br>
+                  <strong>Quality / registry data</strong> — audit results, bundle compliance rates, quality metrics<br>
+                  <strong>Prior evaluation</strong> — gaps identified from a previous activity<br>
+                  <strong>New literature / guidelines</strong> — evidence that changes best practice<br>
+                  <strong>Expert input</strong> — faculty presenters or clinical leaders identifying a need<br>
+                  <strong>Informal observation</strong> — clinical experience suggesting a gap
+                </div>
+              </span>
+              <span class="expander-chev">▾</span>
+            </button>
+            <div class="expander-body" id="bodyGap">
+              <select id="gapSource" style="width:100%;border:1.5px solid var(--border-light);border-radius:8px;padding:9px 12px;font-size:13px;color:var(--text-primary);background:#fff;appearance:none;margin-top:2px">
+                <option value="">— Select —</option>
+                <option value="Quality / registry data showing a practice gap">Quality / registry data</option>
+                <option value="Prior activity evaluation identifying unmet needs">Prior activity evaluation</option>
+                <option value="Updated literature or new clinical guidelines">New literature / updated guidelines</option>
+                <option value="Expert or faculty presenter input on learner needs">Expert or faculty presenter input</option>
+                <option value="Informal clinical observation">Informal clinical observation</option>
+                <option value="Not formally assessed">Not formally assessed</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- DISCLAIMER -->
+          <div style="background:#fffbeb;border:1.5px solid #fcd34d;border-radius:8px;padding:10px 13px;font-size:12px;color:#78350f;line-height:1.5">
+            <strong>&#9888; AI-generated content requires review.</strong> All text is a starting point only. Educational planners must review, verify, and edit all sections before submission to reflect the actual planned activity and the genuine needs of your learners. OCME&amp;LL staff will review all applications on submission.
+          </div>
+
+          <button class="btn-generate" id="generateBtn" onclick="handleGenerate()">
+            <span id="btnIcon">&#10022;</span><span id="btnText">Generate Application Content &#8594;</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- CloudCME map -->
+      <div class="card-tight" style="border-left:3px solid var(--michigan-maize)">
+        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--arboretum-blue);margin-bottom:8px">Where each section pastes in CloudCME</div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <div style="font-size:12px;color:var(--text-secondary);display:flex;gap:8px"><span style="color:var(--arboretum-blue);font-weight:700;min-width:110px;flex-shrink:0">Practice gap</span><span>Gap and Needs &#8594; Practice Gap</span></div>
+          <div style="font-size:12px;color:var(--text-secondary);display:flex;gap:8px"><span style="color:var(--arboretum-blue);font-weight:700;min-width:110px;flex-shrink:0">Ed. need</span><span>Gap and Needs &#8594; Educational Needs</span></div>
+          <div style="font-size:12px;color:var(--text-secondary);display:flex;gap:8px"><span style="color:var(--arboretum-blue);font-weight:700;min-width:110px;flex-shrink:0">Results</span><span>Gap and Needs &#8594; Expected Results</span></div>
+          <div style="font-size:12px;color:var(--text-secondary);display:flex;gap:8px"><span style="color:var(--arboretum-blue);font-weight:700;min-width:110px;flex-shrink:0">Why this format</span><span>Gap and Needs &#8594; Educational Format</span></div>
+          <div style="font-size:12px;color:var(--text-secondary);display:flex;gap:8px"><span style="color:var(--arboretum-blue);font-weight:700;min-width:110px;flex-shrink:0">Objectives</span><span>Learning Outcomes &amp; Competencies</span></div>
+          <div style="font-size:12px;color:var(--text-secondary);display:flex;gap:8px"><span style="color:var(--arboretum-blue);font-weight:700;min-width:110px;flex-shrink:0">Competencies</span><span>Learning Outcomes &#8594; Competencies</span></div>
+          <div style="font-size:12px;color:var(--text-secondary);display:flex;gap:8px"><span style="color:var(--arboretum-blue);font-weight:700;min-width:110px;flex-shrink:0">Needs summary</span><span>Gap and Needs &#8594; Needs Assessment</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── OUTPUT PANEL ── -->
+    <div class="output-panel" id="outputPanel">
+      <div class="card">
+        <div class="empty-state">
+          <div class="empty-icon">&#10022;</div>
+          <div class="empty-title">Ready to generate your application content</div>
+          <div class="empty-sub">Fill in the topic, content, and audience on the left, then click <strong>Generate Application Content</strong>.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── STATE ──
+var state = {
+  status: "idle",
+  results: null,
+  selected: {
+    practiceGapOption: 0, practiceGapText: "",
+    needsPrimaryType: "", needsReasoning: "", needsPrimaryText: "",
+    needsSecondaryType: null, needsSecondaryText: "",
+    expectedResults: "", formatJustification: "",
+    objectives: [], competencies: null, summaryText: "",
+    eligibility: null
+  },
+  errorMessage: null
+};
+
+// ── SYSTEM PROMPT ──
+var SYSTEM_PROMPT = [
+  "You are an expert CME educational designer with deep knowledge of ACCME accreditation standards, Michigan Medicine policies, and US physician board certification requirements.",
+  "Generate professional, specific application language for MiCME/CloudCME applications at Michigan Medicine.",
+  "",
+  "Return ONLY a JSON object with this exact structure (no preamble, no markdown fences):",
+  "{",
+  '  "practiceGap": ["option A text", "option B text", "option C text"],',
+  '  "educationalNeeds": {',
+  '    "primaryType": "Knowledge or Competence or Performance",',
+  '    "reasoning": "One plain-language sentence explaining why this is the primary need type",',
+  '    "primaryText": "2-3 sentence description of the primary educational need",',
+  '    "secondaryType": "Knowledge or Competence or Performance or null",',
+  '    "secondaryText": "2-3 sentences if genuinely needed, otherwise null"',
+  "  },",
+  '  "expectedResults": "2-3 sentences on what will change after the activity: what participants will be able to do (competence), what they will do in practice (performance if plausible), how patients or care quality will benefit (only if genuinely achievable). Must extend beyond knowledge.",',
+  '  "formatJustification": "2-3 sentences naming the specific format(s) and explaining concretely why each is appropriate for the gap and learner need.",',
+  '  "learningObjectives": ["objective 1", "objective 2", "objective 3", "objective 4"],',
+  '  "competencies": {',
+  '    "acgme": ["only ACGME/ABMS competencies genuinely addressed from: Patient Care, Medical Knowledge, Practice-Based Learning and Improvement, Interpersonal and Communication Skills, Professionalism, Systems-Based Practice"],',
+  '    "iom": ["only IOM competencies genuinely addressed from: Provide Patient-Centered Care, Work in Interdisciplinary Teams, Employ Evidence-Based Practice, Apply Quality Improvement, Utilize Informatics"],',
+  '    "ipec": ["only IPEC competencies genuinely addressed from: Values and Ethics, Roles and Responsibilities, Interprofessional Communication, Teams and Teamwork"]',
+  "  },",
+
+
+  "  ],",
+  '  "needsAssessmentSummary": "3-5 sentence paragraph synthesising gap, primary need, source, and expected change",',
+  '  "eligibility": {',
+  '    "moc": [',
+  '      {',
+  '        "board": "Full board name e.g. ABIM MOC Part II",',
+  '        "applies": true,',
+  '        "rationale": "One sentence why this board credit applies to this activity and audience",',
+  '        "requirements": ["specific requirement 1", "specific requirement 2"],',
+  '        "flag": "What the planner needs to tell OCME&LL"',
+  '      }',
+  "    ],",
+  '    "michiganTopics": [',
+  '      {',
+  '        "topic": "Plain English topic name",',
+  '        "code": "mi_ethics or mi_pain or mi_implicit_bias or mi_opioid or mi_human_trafficking",',
+  '        "applies": true,',
+  '        "rationale": "One sentence why this topic applies",',
+  '        "requirement": "The Michigan licensing requirement this satisfies",',
+  '        "flag": "What the planner needs to tell OCME&LL"',
+  '      }',
+  "    ],",
+  '    "commendation": [',
+  '      {',
+  '        "code": "C23 through C38",',
+  '        "title": "Short plain-English title",',
+  '        "confidence": "high or possible",',
+  '        "rationale": "One sentence tied specifically to this activity content explaining why it qualifies",',
+  '        "steps": ["concrete step 1", "concrete step 2", "concrete step 3"]',
+  '      }',
+  "    ],",
+  '    "ipce": {',
+  '      "applies": true or false,',
+  '      "rationale": "Why IPCE does or does not apply",',
+  '      "steps": ["step 1", "step 2"]',
+  '    },',
+  '    "otherCredits": [',
+  '      {',
+  '        "name": "Credit type name e.g. ANCC Contact Hours, ACPE Credit, AAPA Category 1",',
+  '        "applies": true,',
+  '        "rationale": "Why this applies",',
+  '        "flag": "What the planner needs to tell OCME&LL"',
+  '      }',
+  "    ]",
+  "  }",
+  "}",
+  "",
+  "EDUCATIONAL NEEDS: Diagnose PRIMARY reason the gap exists.",
+  "- New evidence / guidelines / unfamiliar framework -> Knowledge",
+  "- Know evidence but cannot apply in clinical scenarios -> Competence",
+  "- Know and can do it but not doing it consistently -> Performance",
+  "Only add secondaryType if activity genuinely spans two domains. Never generate all three.",
+  "",
+  "EXPECTED RESULTS: Always address competence. Add performance only if activity will drive practice change. Add patient outcomes only if genuinely plausible.",
+  "",
+  "LEARNING OBJECTIVES: 3-4 objectives. Verb level must match primaryType. Never use 'understand' or 'appreciate'. Every objective must be specific and observable.",
+  "",
+  "COMPETENCIES: Select only genuinely addressed ones. 2-4 per framework maximum. Listing all is always wrong.",
+  "",
+  
+  "",
+  "PRACTICE GAP: 3 meaningfully different versions varying framing, evidence angle, emphasis. Each 2-4 sentences. Must name audience and describe current vs ideal practice.",
+  "",
+  "ELIGIBILITY — this is the most important analytical section. Read the entire activity description carefully:",
+  "",
+  "MOC: For each physician specialty in the audience, determine whether MOC credit is applicable. A single activity CAN offer multiple board MOC credits simultaneously. Only include boards where physicians from that specialty are genuinely in the audience. Include specific requirements each board has (e.g. ABIM requires pre/post assessment, not satisfaction survey alone). Leave moc as empty array if no physician specialties selected.",
+  "",
+  "MICHIGAN MANDATORY TOPICS: Analyse the topic and content carefully for the following Michigan physician licensing requirements. Only include a topic if the activity content GENUINELY covers it substantively:",
+  "- mi_ethics: Medical ethics content (Michigan requires min 1 hour per 3-year cycle)",
+  "- mi_pain: Pain management or symptom management (Michigan requires min 3 hours per cycle including 1 hour on controlled substances)",
+  "- mi_implicit_bias: Implicit bias training content (Michigan requires 1 hour per year of license cycle)",
+  "- mi_opioid: Opioid / controlled substance prescribing content (required every renewal for prescribers)",
+  "- mi_human_trafficking: Human trafficking identification content (one-time requirement for Michigan physicians)",
+  "Do NOT include a topic just because it is tangentially related. Pain management content must be the explicit focus of at least part of the activity. Leave michiganTopics as empty array if none genuinely apply.",
+  "",
+  "COMMENDATION: Analyse the full activity description and identify which ACCME commendation criteria (C23-C38) genuinely apply. For each:",
+  "- C23: Interprofessional teams plan AND deliver the activity (requires: multi-profession planning committee AND multi-profession faculty presenters AND activity designed to change team competence/performance)",
+  "- C24: Patient or community representatives plan AND present",
+  "- C25: Health professions students plan AND present",
+  "- C26: Activity uses real health or practice data as educational content (not just mentions data exists)",
+  "- C27: Teaches actionable strategies for population health or health equity (not just awareness)",
+  "- C28: Collaboration with another organisation to address population health",
+  "- C29: Communication skills training WITH observed evaluation AND formative feedback",
+  "- C30: Procedural/technical skills training WITH observed evaluation AND formative feedback (simulation qualifies)",
+  "- C31: Longitudinal curriculum over weeks/months with individualised feedback",
+  "- C32: Post-activity support strategies with periodic effectiveness analysis",
+  "- C33: Activity linked to research or scholarly project",
+  "- C35: Genuinely innovative educational approach beyond standard lecture",
+  "- C36: Measures and demonstrates improvement in learner performance in practice",
+  "- C37: Linked to QI initiative and demonstrates healthcare quality improvement",
+  "- C38: Demonstrates impact on patient or community outcomes",
+  "Only include criteria with genuine evidence from the activity description. Rationale must reference specific activity content, not generic statements. Steps must be concrete and specific to this activity.",
+  "",
+  "IPCE: Apply only if (1) the audience includes physicians AND at least one other health profession, AND (2) the planning is interprofessional (as indicated in inputs). If only one profession attends, IPCE does not apply regardless of topic.",
+  "",
+  "OTHER CREDITS: Include ANCC if nurses attend, ACPE if pharmacists attend, AAPA if PAs attend. Only include if relevant profession is in the audience.",
+  "",
+  "Return ONLY the JSON object. No preamble, no markdown fences."
+].join("\n");
+
+// ── HELPERS ──
+function toggleExp(bodyId, togId) {
+  document.getElementById(bodyId).classList.toggle("open");
+  document.getElementById(togId).classList.toggle("open");
+}
+
+function getProfs() {
+  return Array.from(document.querySelectorAll("#profGrid input:checked")).map(function(el) { return el.value; });
+}
+function getSpecs() {
+  return Array.from(document.querySelectorAll("#specGrid input:checked")).map(function(el) { return el.value; });
+}
+function getFormats() {
+  return Array.from(document.querySelectorAll("#formatGrid input:checked")).map(function(el) { return el.value; });
+}
+function getIPCE() {
+  var r = document.querySelector("input[name='ipce']:checked");
+  return r ? r.value : "not_specified";
+}
+
+function buildUserPrompt() {
+  var topic = document.getElementById("topic").value.trim();
+  var content = document.getElementById("content").value.trim();
+  var profs = getProfs();
+  var specs = getSpecs();
+  var other = document.getElementById("audienceOther").value.trim();
+  var formats = getFormats();
+  var ipce = getIPCE();
+  var gapSource = document.getElementById("gapSource").value;
+
+  var audience = profs.concat(specs.map(function(s) { return specLabel(s); }));
+  if (other) audience.push(other);
+
+  return [
+    "Topic: " + topic,
+    "Content and sessions: " + content,
+    "Professions attending: " + (profs.length ? profs.join(", ") : "Not specified"),
+    "Physician specialties attending: " + (specs.length ? specs.map(specLabel).join(", ") : "Not specified"),
+    "Additional audience details: " + (other || "None"),
+    "Educational format(s): " + (formats.length ? formats.join(", ") : "Not specified"),
+    "Planning committee is interprofessional: " + ipce,
+    "Gap source: " + (gapSource || "Not specified"),
+    "",
+    "Generate complete CME application language and full eligibility review for this activity."
+  ].join("\n");
+}
+
+function specLabel(v) {
+  var map = {
+    internal_med: "Internal Medicine / subspecialties",
+    family_med: "Family Medicine",
+    pediatrics: "Pediatrics",
+    emergency_med: "Emergency Medicine",
+    anesthesiology: "Anesthesiology / Pain / Critical Care",
+    surgery: "Surgery",
+    psychiatry_neuro: "Psychiatry / Neurology",
+    ob_gyn: "Obstetrics and Gynecology",
+    radiology: "Radiology / Radiation Oncology",
+    other_spec: "Other physician specialty"
+  };
+  return map[v] || v;
+}
+
+// ── GENERATE ──
+async function handleGenerate() {
+  var topic = document.getElementById("topic").value.trim();
+  var content = document.getElementById("content").value.trim();
+  var profs = getProfs();
+  var specs = getSpecs();
+  if (!topic || !content || (!profs.length && !specs.length && !document.getElementById("audienceOther").value.trim())) {
+    alert("Please fill in the topic, content, and at least one audience group."); return;
+  }
+  state.status = "loading"; renderOutput();
+  var btn = document.getElementById("generateBtn");
+  if (btn) { btn.disabled = true; document.getElementById("btnText").textContent = "Generating\u2026"; }
+
+  try {
+    var resp = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 3500, system: SYSTEM_PROMPT, messages: [{ role: "user", content: buildUserPrompt() }] })
+    });
+    var data = await resp.json();
+    if (!resp.ok) throw new Error(data.error ? data.error.message : "API request failed");
+    var text = data.content[0].text.trim().replace(/^```json?\s*/i, "").replace(/\s*```$/i, "").trim();
+    var p = JSON.parse(text);
+    var en = p.educationalNeeds || {};
+    state.results = p;
+    state.selected = {
+      practiceGapOption: 0, practiceGapText: (p.practiceGap || [""])[0],
+      needsPrimaryType: en.primaryType || "Knowledge",
+      needsReasoning: en.reasoning || "",
+      needsPrimaryText: en.primaryText || "",
+      needsSecondaryType: en.secondaryType || null,
+      needsSecondaryText: en.secondaryText || "",
+      expectedResults: p.expectedResults || "",
+      formatJustification: p.formatJustification || "",
+      objectives: (p.learningObjectives || []).map(function(t) { return { text: t, checked: true }; }),
+      competencies: p.competencies || null,
+  
+      summaryText: p.needsAssessmentSummary || "",
+      eligibility: p.eligibility || null
+    };
+    state.status = "done";
+  } catch(e) {
+    state.status = "error"; state.errorMessage = e.message || "Unexpected error.";
+  }
+
+  if (btn) { btn.disabled = false; document.getElementById("btnText").textContent = "Generate Application Content \u2192"; }
+  renderOutput();
+}
+
+async function handleRegenerate() { state.results = null; await handleGenerate(); }
+
+function selectGapOption(idx) {
+  state.selected.practiceGapOption = idx;
+  state.selected.practiceGapText = state.results.practiceGap[idx];
+  var ta = document.getElementById("gapTextarea");
+  if (ta) ta.value = state.selected.practiceGapText;
+}
+function toggleObjective(idx, checked) { state.selected.objectives[idx].checked = checked; }
+
+
+// ── COPY TO CLIPBOARD ──
+var COPY_ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="9" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h8"/></svg>';
+var CHECK_ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l3.5 3.5L13 5"/></svg>';
+
+function copyText(btnEl, sourceId) {
+  var ta = document.getElementById(sourceId);
+  var text = ta ? ta.value : "";
+  if (!text.trim()) return;
+  navigator.clipboard.writeText(text).then(function() {
+    btnEl.classList.add("copied");
+    btnEl.innerHTML = CHECK_ICON;
+    btnEl.title = "Copied!";
+    setTimeout(function() {
+      btnEl.classList.remove("copied");
+      btnEl.innerHTML = COPY_ICON;
+      btnEl.title = "Copy to clipboard";
+    }, 2000);
+  }).catch(function() {
+    // Fallback for sandboxed environments
+    try {
+      ta.select();
+      document.execCommand("copy");
+      btnEl.classList.add("copied");
+      btnEl.innerHTML = CHECK_ICON;
+      setTimeout(function() {
+        btnEl.classList.remove("copied");
+        btnEl.innerHTML = COPY_ICON;
+      }, 2000);
+    } catch(e) {}
+  });
+}
+
+// Wrap a textarea HTML string with a copy button
+// taId must be the id of the textarea; taHtml is the full textarea HTML string
+function copyWrap(taId, taHtml) {
+  return "<div class=\"copy-wrap\">"
+    + taHtml
+    + "<button class=\"copy-btn\" onclick=\"copyText(this,'" + taId + "')\" title=\"Copy to clipboard\" aria-label=\"Copy to clipboard\">"
+    + COPY_ICON
+    + "</button></div>";
+}
+
+function copyAllObjectives(btnEl) {
+  var checked = state.selected.objectives.filter(function(o) { return o.checked; });
+  if (!checked.length) return;
+  var text = "At the conclusion of this activity, participants will be able to:\n"
+    + checked.map(function(o, i) { return (i+1) + ". " + o.text; }).join("\n");
+  navigator.clipboard.writeText(text).then(function() {
+    var orig = btnEl.innerHTML;
+    btnEl.classList.add("copied");
+    btnEl.innerHTML = CHECK_ICON + " Copied!";
+    setTimeout(function() { btnEl.classList.remove("copied"); btnEl.innerHTML = COPY_ICON + " Copy all"; }, 2000);
+  }).catch(function() {});
+}
+
+// ── SECTION HEADER ──
+function secHead(icon, title, accme, desc, cloudcme, required, tipId, tipHtml) {
+  return "<div style=\"margin-bottom:12px\">"
+    + "<div class=\"out-section-title\">" + icon + " " + title
+    + (accme ? "<span class=\"out-section-accme\">(" + accme + ")</span>" : "")
+    + (tipId ? tip(tipId, tipHtml) : "")
+    + (required ? "<span class=\"req-badge\" style=\"margin-left:6px\">REQUIRED</span>" : "")
+    + "</div>"
+    + (desc ? "<div class=\"section-desc\">" + desc + "</div>" : "")
+    + (cloudcme ? "<span class=\"cloudcme-tag\">Pastes into \u2192 " + cloudcme + "</span>" : "")
+    + "</div>";
+}
+
+
+// ── TOOLTIP SYSTEM ──
+var activeTip = null;
+function showTip(id) {
+  if (activeTip && activeTip !== id) hideTip(activeTip);
+  var pop = document.getElementById(id);
+  if (pop) { pop.classList.add("show"); activeTip = id; }
+}
+function hideTip(id) {
+  var pop = document.getElementById(id);
+  if (pop) { pop.classList.remove("show"); if (activeTip === id) activeTip = null; }
+}
+function toggleTip(id, event) {
+  event.stopPropagation();
+  var pop = document.getElementById(id);
+  if (!pop) return;
+  if (pop.classList.contains("show")) { hideTip(id); return; }
+  if (activeTip) hideTip(activeTip);
+
+  // Position fixed: calculate from button viewport coords
+  var btn = event.currentTarget;
+  var rect = btn.getBoundingClientRect();
+  var popW = 280;
+  var spaceBelow = window.innerHeight - rect.bottom;
+  var spaceAbove = rect.top;
+  var openAbove = spaceBelow < 220 && spaceAbove > spaceBelow;
+
+  // Remove direction classes and inline styles
+  pop.classList.remove("below", "above", "right");
+  pop.style.top = "";
+  pop.style.bottom = "";
+  pop.style.left = "";
+  pop.style.right = "";
+  pop.style.transform = "";
+
+  // Horizontal: centre on button, clamp to viewport
+  var leftPos = rect.left + (rect.width / 2) - (popW / 2);
+  leftPos = Math.max(8, Math.min(leftPos, window.innerWidth - popW - 8));
+
+  if (openAbove) {
+    pop.style.bottom = (window.innerHeight - rect.top + 8) + "px";
+    pop.style.left = leftPos + "px";
+    pop.classList.add("above");
+  } else {
+    pop.style.top = (rect.bottom + 8) + "px";
+    pop.style.left = leftPos + "px";
+    pop.classList.add("below");
+  }
+
+  // Reposition arrow to align with button centre
+  var arrow = pop.querySelector(".tip-arrow");
+  if (arrow) {
+    var arrowLeft = (rect.left + rect.width / 2) - leftPos - 6;
+    arrowLeft = Math.max(10, Math.min(arrowLeft, popW - 22));
+    arrow.style.left = arrowLeft + "px";
+    arrow.style.transform = "none";
+  }
+
+  showTip(id);
+}
+document.addEventListener("click", function() { if (activeTip) hideTip(activeTip); });
+
+// Build tooltip HTML — call this inline in section headers
+function tip(id, html, position) {
+  var pos = position || "below";
+  return "<span class=\"tip-wrap\">"
+    + "<button class=\"tip-btn\" onclick=\"toggleTip('" + id + "',event)\" aria-label=\"More information\">i</button>"
+    + "<div class=\"tip-pop " + pos + "\" id=\"" + id + "\">"
+    + "<div class=\"tip-arrow\"></div>"
+    + html
+    + "</div></span>";
+}
+
+// ── RENDER OUTPUT ──
+function renderOutput() {
+  var panel = document.getElementById("outputPanel");
+  panel.innerHTML = "";
+
+  if (state.status === "idle") {
+    panel.innerHTML = "<div class=\"card\"><div class=\"empty-state\"><div class=\"empty-icon\">\u2726</div><div class=\"empty-title\">Ready to generate your application content</div><div class=\"empty-sub\">Fill in the three required fields on the left and click <strong>Generate Application Content</strong>.</div></div></div>";
+    return;
+  }
+  if (state.status === "loading") {
+    panel.innerHTML = "<div class=\"card\"><div class=\"loading-state\"><div class=\"spinner\"></div><div class=\"loading-text\">Writing your application content\u2026</div><div class=\"loading-sub\">Generating practice gap, educational need, expected results, format justification, objectives, competencies, barriers, needs assessment summary, and full eligibility review.</div></div></div>";
+    return;
+  }
+  if (state.status === "error") {
+    var ed = document.createElement("div"); ed.className = "card";
+    ed.innerHTML = "<div class=\"error-box\"><span style=\"font-size:20px\">\u26a0</span><div><strong>Generation failed</strong><br>" + escHtml(state.errorMessage) + "</div></div><div style=\"margin-top:12px;text-align:right\"><button class=\"btn-regen\" onclick=\"handleRegenerate()\">&#8635; Try Again</button></div>";
+    panel.appendChild(ed); return;
+  }
+
+  var r = state.results, s = state.selected;
+  var typeLabels = {
+    "Knowledge":   { plain: "They don\u2019t know it yet",            cloudcme: "Knowledge",        color: "#2F65A7", bg: "#eef2f7", border: "#a8bdd4" },
+    "Competence":  { plain: "They can\u2019t apply it yet",           cloudcme: "Skill / Strategy", color: "#15803d", bg: "#f0fdf4", border: "#86efac" },
+    "Performance": { plain: "They\u2019re not doing it in practice",  cloudcme: "Performance",      color: "#b45309", bg: "#fffbeb", border: "#fcd34d" }
+  };
+  // Top action bar
+  var tb = document.createElement("div"); tb.className = "action-bar no-print";
+  tb.innerHTML = "<button class=\"btn-regen\" onclick=\"handleRegenerate()\">&#8635; Regenerate</button><button class=\"btn-print\" onclick=\"handlePrint()\">&#128424; Print / Save PDF</button>";
+  panel.appendChild(tb);
+
+  // ── 1. PRACTICE GAP ──
+  var g = document.createElement("div"); g.className = "card fade-up";
+  var gh = secHead("\ud83d\udccd", "Why this activity is needed", "practice gap", "Describes the difference between what your learners currently do and what they should do. Choose the version that best fits, then edit freely.", "Gap and Needs \u2192 Practice Gap", true, "tip-gap", "<strong>Practice gap</strong> (ACCME term) is the difference between what clinicians currently do and what they should do based on best evidence or guidelines.<br><br>A strong gap statement: names the audience, describes current practice, states ideal practice, and implies why the difference matters for patients.");
+  gh += "<div class=\"option-pills\">";
+  ["Version A", "Version B", "Version C"].forEach(function(l, i) {
+    if (r.practiceGap && r.practiceGap[i]) gh += "<button class=\"option-pill" + (s.practiceGapOption === i ? " active" : "") + "\" onclick=\"selectGapOption(" + i + ")\">" + l + "</button>";
+  });
+  gh += "</div>" + copyWrap("gapTextarea", "<textarea class=\"editable-area tall\" id=\"gapTextarea\" onchange=\"state.selected.practiceGapText=this.value\" oninput=\"state.selected.practiceGapText=this.value\">" + escHtml(s.practiceGapText) + "</textarea>");
+  g.innerHTML = gh; panel.appendChild(g);
+
+  // ── 2. EDUCATIONAL NEED ──
+  var nc = document.createElement("div"); nc.className = "card fade-up";
+  var pt = typeLabels[s.needsPrimaryType] || typeLabels["Knowledge"];
+  var st = s.needsSecondaryType ? (typeLabels[s.needsSecondaryType] || null) : null;
+  var nh = secHead("\ud83c\udfaf", "What learners are missing", "educational need", "The specific deficit driving this activity. Diagnosed from your topic and format \u2014 edit the text to fit your context.", "Gap and Needs \u2192 Educational Needs", true, "tip-need", "<strong>Educational need</strong> is why the gap exists \u2014 the root cause, not the gap itself.<br><br><strong>Knowledge need</strong>: learners are unaware of current evidence or guidelines.<br><strong>Competence need</strong>: learners know the evidence but struggle to apply it in clinical scenarios.<br><strong>Performance need</strong>: learners know and can apply it but aren\u2019t doing it consistently in real practice.<br><br>ACCME requires at least one to be identified. Most activities have a single dominant type.");
+  if (s.needsReasoning) nh += "<div class=\"reasoning-box\"><span style=\"font-size:16px;flex-shrink:0\">\ud83d\udca1</span><div><div style=\"font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:var(--arboretum-blue);margin-bottom:2px\">Why this need type?</div><div style=\"font-size:13px;color:var(--text-primary);line-height:1.5\">" + escHtml(s.needsReasoning) + "</div></div></div>";
+  nh += "<div class=\"need-block\" style=\"border-color:" + pt.border + ";margin-bottom:" + (st ? "10px" : "0") + "\">";
+  nh += "<div class=\"need-header\" style=\"background:" + pt.bg + ";border-bottom-color:" + pt.border + "\"><span style=\"font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:" + pt.color + "\">Primary \u2014 " + escHtml(s.needsPrimaryType) + " need</span><span style=\"font-size:12px;font-weight:600;color:" + pt.color + ";margin-left:4px\">\u00b7 " + pt.plain + "</span><span style=\"font-size:10px;color:var(--text-muted);margin-left:auto\">CloudCME: " + pt.cloudcme + "</span></div>";
+  nh += "<div class=\"need-body\">" + copyWrap("needPrimaryTA", "<textarea class=\"editable-area\" id=\"needPrimaryTA\" style=\"min-height:80px\" onchange=\"state.selected.needsPrimaryText=this.value\" oninput=\"state.selected.needsPrimaryText=this.value\">" + escHtml(s.needsPrimaryText) + "</textarea>") + "</div></div>";
+  if (st && s.needsSecondaryText) {
+    nh += "<div class=\"need-block\" style=\"border-color:" + st.border + "\">";
+    nh += "<div class=\"need-header\" style=\"background:" + st.bg + ";border-bottom-color:" + st.border + "\"><span style=\"font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:" + st.color + "\">Secondary \u2014 " + escHtml(s.needsSecondaryType) + " need</span><span style=\"font-size:12px;font-weight:600;color:" + st.color + ";margin-left:4px\">\u00b7 " + st.plain + "</span><span style=\"font-size:10px;color:var(--text-muted);margin-left:auto\">CloudCME: " + st.cloudcme + "</span></div>";
+    nh += "<div class=\"need-body\">" + copyWrap("needSecondaryTA", "<textarea class=\"editable-area\" id=\"needSecondaryTA\" style=\"min-height:80px\" onchange=\"state.selected.needsSecondaryText=this.value\" oninput=\"state.selected.needsSecondaryText=this.value\">" + escHtml(s.needsSecondaryText) + "</textarea>") + "</div></div>";
+  }
+  nc.innerHTML = nh; panel.appendChild(nc);
+
+  // ── 3. EXPECTED RESULTS ──
+  var rc = document.createElement("div"); rc.className = "card fade-up";
+  var rh = secHead("\ud83c\udfc1", "What will change after this activity", "expected results", "ACCME requires CME to extend beyond knowledge. Describes what participants will be able to do differently \u2014 and, where relevant, how patients or care quality will benefit.", "Gap and Needs \u2192 Expected Results", true, "tip-results", "<strong>Expected results</strong> is what ACCME calls \u201coutcomes\u201d \u2014 the changes your activity is designed to produce.<br><br>ACCME requires that expected results go beyond simply \u201clearning something new\u201d and describe what learners will be able to <em>do</em> differently.<br><br><strong>Competence</strong>: what they will be able to do if given the opportunity.<br><strong>Performance</strong>: what they will routinely do in practice.<br><strong>Patient outcomes</strong>: how patients will benefit as a result.");
+  rh += copyWrap("expectedResultsTA", "<textarea class=\"editable-area tall\" id=\"expectedResultsTA\" onchange=\"state.selected.expectedResults=this.value\" oninput=\"state.selected.expectedResults=this.value\">" + escHtml(s.expectedResults) + "</textarea>");
+  rc.innerHTML = rh; panel.appendChild(rc);
+
+  // ── 4. WHY THIS FORMAT ──
+  var fc = document.createElement("div"); fc.className = "card fade-up";
+  var fh = secHead("\ud83c\udf93", "Why this format works for these learners", "educational format justification", "Explains why the chosen format is appropriate for the identified gap. A brief, specific explanation is all that is needed.", "Gap and Needs \u2192 Educational Format", false, "tip-format", "<strong>Educational format justification</strong> explains why your chosen format matches the learning goal \u2014 not just that you chose it.<br><br>Examples:<br>\u2022 Lectures efficiently deliver new evidence to large groups<br>\u2022 Simulation allows deliberate practice of procedural skills in a safe environment<br>\u2022 Case-based discussion lets learners apply knowledge to realistic scenarios<br>\u2022 Panel Q&amp;A lets learners test their understanding directly with experts");
+  fh += copyWrap("formatJustTA", "<textarea class=\"editable-area\" id=\"formatJustTA\" style=\"min-height:80px\" onchange=\"state.selected.formatJustification=this.value\" oninput=\"state.selected.formatJustification=this.value\">" + escHtml(s.formatJustification) + "</textarea>");
+  fc.innerHTML = fh; panel.appendChild(fc);
+
+  // ── 5. LEARNING OBJECTIVES ──
+  var oc = document.createElement("div"); oc.className = "card fade-up";
+  var oh = secHead("\u2705", "What learners will be able to do", "learning objectives", "These go directly into your application. Uncheck any that don\u2019t fit \u2014 unchecked objectives are excluded from the printed output.", "Learning Outcomes &amp; Competencies \u2192 Learning Objectives", true, "tip-obj", "<strong>Learning objectives</strong> are measurable statements of what learners will be able to do after the activity \u2014 not what they will \u2018know\u2019 or \u2018understand\u2019.<br><br>Each must start with an action verb from Bloom\u2019s taxonomy:<br>\u2022 <strong>Knowledge level</strong>: identify, describe, explain, define, discuss<br>\u2022 <strong>Competence level</strong>: apply, demonstrate, select, interpret, calculate<br>\u2022 <strong>Performance level</strong>: implement, manage, evaluate, integrate<br><br>\u201cUnderstand\u201d and \u201cappreciate\u201d are not acceptable \u2014 they are not measurable.");
+  oh += "<div style=\"display:flex;align-items:center;justify-content:space-between;margin-bottom:10px\">"      + "<div style=\"font-size:12px;color:var(--text-muted);font-style:italic\">At the conclusion of this activity, participants will be able to:</div>"      + "<button class=\"copy-btn\" style=\"position:static;opacity:1;width:auto;padding:4px 10px;font-size:11px;font-weight:700;gap:5px\" onclick=\"copyAllObjectives(this)\" title=\"Copy all checked objectives\">" + COPY_ICON + " Copy all</button>"      + "</div><div class=\"obj-list\">";
+  s.objectives.forEach(function(obj, i) {
+    var dim = !obj.checked ? " dimmed" : "";
+    oh += "<div class=\"obj-row" + dim + "\" id=\"oRow" + i + "\"><input type=\"checkbox\" class=\"obj-check\" " + (obj.checked ? "checked" : "") + " onchange=\"toggleObjective(" + i + ",this.checked);document.getElementById('oRow" + i + "').className='obj-row'+(this.checked?'':' dimmed')\"><textarea class=\"obj-text\" rows=\"2\" onchange=\"state.selected.objectives[" + i + "].text=this.value\" oninput=\"state.selected.objectives[" + i + "].text=this.value\">" + escHtml(obj.text) + "</textarea></div>";
+  });
+  oh += "</div>";
+  oc.innerHTML = oh; panel.appendChild(oc);
+
+  // ── 6. COMPETENCIES ──
+  if (s.competencies) {
+    var cc = document.createElement("div"); cc.className = "card fade-up";
+    var ch = secHead("\ud83c\udfdb\ufe0f", "Competency frameworks addressed", "ACGME/ABMS \u00b7 IOM \u00b7 IPEC", "Only the competencies your activity genuinely addresses. Tick these in the Competencies section of your CloudCME application.", "Learning Outcomes &amp; Competencies \u2192 Competencies", false, "tip-comp", "<strong>Competency frameworks</strong> are nationally recognised standards for physician and healthcare team capabilities.<br><br><strong>ACGME/ABMS</strong>: The six core competencies for US physicians \u2014 Medical Knowledge, Patient Care, Practice-Based Learning and Improvement, Interpersonal &amp; Communication Skills, Professionalism, Systems-Based Practice.<br><br><strong>IOM</strong>: Institute of Medicine competencies for healthcare quality \u2014 Patient-Centered Care, Interdisciplinary Teams, Evidence-Based Practice, Quality Improvement, Informatics.<br><br><strong>IPEC</strong>: Interprofessional Education Collaborative competencies for team-based care \u2014 Values/Ethics, Roles/Responsibilities, Communication, Teams &amp; Teamwork.<br><br>Only select those your activity <em>genuinely</em> addresses. Selecting all of them is always incorrect.");
+    var compDefs = [{ key: "acgme", label: "ACGME / ABMS Core Competencies", color: "#2F65A7" }, { key: "iom", label: "Institute of Medicine (IOM)", color: "#15803d" }, { key: "ipec", label: "Interprofessional Education Collaborative (IPEC)", color: "#6d28d9" }];
+    compDefs.forEach(function(cd) {
+      var items = s.competencies[cd.key] || [];
+      if (!items.length) return;
+      ch += "<div class=\"comp-section\"><div class=\"comp-section-label\" style=\"color:" + cd.color + "\">" + cd.label + "</div><div class=\"comp-chips\">";
+      items.forEach(function(item) { ch += "<span class=\"comp-chip\" style=\"border-color:" + cd.color + ";color:" + cd.color + "\">\u2713 " + escHtml(item) + "</span>"; });
+      ch += "</div></div>";
+    });
+    cc.innerHTML = ch; panel.appendChild(cc);
+  }
+
+  // ── 7. NEEDS ASSESSMENT SUMMARY ──
+  var sc = document.createElement("div"); sc.className = "card fade-up";
+  var sh = secHead("\ud83d\udccb", "One-paragraph summary for your application", "needs assessment summary", "A ready-to-paste paragraph pulling together the gap, the learner deficit, and how it was identified.", "Gap and Needs \u2192 Needs Assessment \u2192 Summary of findings", false, "tip-summary", "<strong>Needs assessment summary</strong> is a brief written account of how you identified that this activity is needed.<br><br>ACCME requires CME activities to be based on identified educational needs. This paragraph explains:<br>\u2022 What the gap is<br>\u2022 What kind of need underlies it (knowledge, competence, or performance)<br>\u2022 How you found out the gap existed (data, evaluation, guidelines, expert input)<br>\u2022 What change the activity is designed to produce");
+  sh += copyWrap("summaryTA", "<textarea class=\"editable-area tall\" id=\"summaryTA\" onchange=\"state.selected.summaryText=this.value\" oninput=\"state.selected.summaryText=this.value\">" + escHtml(s.summaryText) + "</textarea>");
+  sc.innerHTML = sh; panel.appendChild(sc);
+
+  // ── 9. ELIGIBILITY REVIEW ──
+  if (s.eligibility) {
+    var elCard = document.createElement("div"); elCard.className = "elig-panel fade-up";
+    elCard.innerHTML = renderEligibility(s.eligibility);
+    panel.appendChild(elCard);
+  }
+
+  // Bottom bar
+  var bb = document.createElement("div"); bb.className = "action-bar no-print"; bb.style.paddingBottom = "20px";
+  bb.innerHTML = "<button class=\"btn-regen\" onclick=\"handleRegenerate()\">&#8635; Regenerate</button><button class=\"btn-print\" onclick=\"handlePrint()\">&#128424; Print / Save PDF</button>";
+  panel.appendChild(bb);
+}
+
+// ── ELIGIBILITY RENDER ──
+function renderEligibility(el) {
+  var h = "<div class=\"out-section-title\">\u2728 What else does this activity qualify for? <span class=\"out-section-accme\">AI analysis of your full activity content</span></div>";
+  h += "<div class=\"section-desc\" style=\"margin-bottom:16px\">Based on a holistic reading of your topic, content, audience, and format \u2014 not just the checkboxes you ticked. For each item, follow the steps and flag to OCME&amp;LL when you submit.</div>";
+
+  var hasContent = false;
+
+  // MOC
+  if (el.moc && el.moc.length) {
+    hasContent = true;
+    h += eligSection("\ud83c\udfe5", "Board Certification Credit (MOC)", "#2F65A7", "#eef2f7", "#a8bdd4",
+      tip("tip-moc-elig", "<strong>Maintenance of Certification (MOC)</strong> is the ongoing process by which physicians demonstrate they are keeping their knowledge and skills current after initial board certification.<br><br>Most US specialty boards (ABIM, ABFM, ABP, ABA, etc.) allow physicians to earn MOC credit by attending accredited CME activities. A single activity can offer MOC credit for multiple boards simultaneously if physicians from multiple specialties attend.<br><br><strong>What you need to do:</strong> Select the relevant boards in the CloudCME application and flag to OCME&amp;LL. They handle registration with the boards and credit reporting after the activity.")
+    );
+    el.moc.forEach(function(m) {
+      if (!m.applies) return;
+      h += eligItem(m.board, m.rationale, m.requirements, m.steps ? m.steps : (m.flag ? [m.flag] : []), "#2F65A7", "#eef2f7", "#a8bdd4", "high", "Applicable");
+    });
+    h += "</div>";
+  }
+
+  // Michigan mandatory topics
+  if (el.michiganTopics && el.michiganTopics.length) {
+    hasContent = true;
+    h += eligSection("\ud83d\udd35", "Michigan Mandatory Licensing Topics", "#0e7490", "#ecfeff", "#a5f3fc",
+      tip("tip-mi-elig", "<strong>Michigan mandatory licensing topics</strong> are subject areas that Michigan state law requires physicians to cover in their CME as a condition of license renewal.<br><br>Current requirements include:<br>\u2022 <strong>Medical ethics</strong>: at least 1 hour per 3-year cycle<br>\u2022 <strong>Pain &amp; symptom management</strong>: at least 3 hours per cycle (including 1 hour on controlled substances)<br>\u2022 <strong>Implicit bias training</strong>: 1 hour per year of the license cycle<br>\u2022 <strong>Opioid / controlled substance prescribing</strong>: required every renewal period for prescribers<br>\u2022 <strong>Human trafficking identification</strong>: one-time requirement for Michigan physicians<br><br>If your activity covers any of these, OCME&amp;LL must designate it in CloudCME so it counts toward physicians\u2019 licensing requirements.")
+    );
+    el.michiganTopics.forEach(function(m) {
+      if (!m.applies) return;
+      h += eligItem(m.topic, m.rationale, [m.requirement], [m.flag], "#0e7490", "#ecfeff", "#a5f3fc", "high", "Applicable");
+    });
+    h += "</div>";
+  }
+
+  // IPCE
+  if (el.ipce && el.ipce.applies) {
+    hasContent = true;
+    h += eligSection("\ud83e\udd1d", "Interprofessional Continuing Education (IPCE)", "#6d28d9", "#f5f3ff", "#ddd6fe",
+      tip("tip-ipce-elig", "<strong>IPCE (Interprofessional Continuing Education)</strong> is formal recognition for education where members of two or more health professions learn with, from, and about each other to improve how they work together as a team.<br><br><strong>All three of the following must be true:</strong><br>\u2022 <strong>Planning committee</strong>: two or more professions involved in designing the activity (e.g. a physician planner and a nurse or pharmacist planner)<br>\u2022 <strong>Faculty presenters</strong>: two or more professions involved in delivering the content on the day (e.g. a physician and a nurse both present)<br>\u2022 <strong>Team-focused design</strong>: the activity is designed to improve how the healthcare team works together \u2014 not just to update individual clinician knowledge<br><br>Planning collaboration alone is not sufficient \u2014 the interprofessional involvement must extend to who delivers the content as well.<br><br>Michigan Medicine is building toward Joint Accreditation, which will allow the IPCE Credit Mark on certificates. Until then, qualifying activities are tracked and contribute to that portfolio.")
+    );
+    h += eligItem("IPCE Recognition", el.ipce.rationale, [], el.ipce.steps || [], "#6d28d9", "#f5f3ff", "#ddd6fe", "high", "Applicable");
+    h += "<div style=\"font-size:12px;color:#6d28d9;font-style:italic;padding:0 2px 10px;line-height:1.5\">The formal IPCE Credit Mark on certificates requires Joint Accreditation, which OCME&amp;LL is actively pursuing. In the meantime, this activity will be tracked as interprofessional and contributes to the Joint Accreditation portfolio.</div>";
+    h += "</div>";
+  }
+
+  // Commendation
+  if (el.commendation && el.commendation.length) {
+    hasContent = true;
+    h += eligSection("\u2b50", "ACCME Commendation Criteria \u2014 could your activity earn special recognition?", "#be123c", "#fff1f2", "#fecdd3",
+      tip("tip-comm-elig", "<strong>ACCME Accreditation with Commendation</strong> is a recognised standard of excellence awarded to CME providers that go beyond basic requirements in educational design and impact.<br><br>There are 16 commendation criteria (C23\u2013C38) across five categories: Team-Based Education, Public Health Priorities, Enhances Skills, Educational Leadership, and Achieves Outcomes.<br><br>Each activity that qualifies for one or more of these criteria contributes evidence to Michigan Medicine\u2019s Commendation portfolio. <strong>Your job as an educational planner</strong> is to follow the steps listed, then flag the applicable criteria to OCME&amp;LL at submission and keep documentation as you go.")
+    );
+    h += "<div style=\"font-size:13px;color:#9a3412;font-style:italic;padding:0 2px 12px;line-height:1.5\">These criteria contribute to the Medical School\u2019s Accreditation with Commendation. Flag each one to OCME&amp;LL at submission and keep documentation as you go.</div>";
+    el.commendation.forEach(function(c) {
+      var isHigh = c.confidence === "high";
+      h += eligItem(c.code + " \u00b7 " + c.title, c.rationale, [], c.steps || [], "#be123c", "#fff1f2", "#fecdd3", c.confidence, isHigh ? "Likely applicable" : "Possibly applicable");
+    });
+    h += "</div>";
+  }
+
+  // Other credits
+  if (el.otherCredits && el.otherCredits.length) {
+    hasContent = true;
+    h += eligSection("\ud83d\udcb3", "Additional Credit Types", "#15803d", "#f0fdf4", "#bbf7d0",
+      tip("tip-other-elig", "<strong>Additional credit types</strong> are continuing education credits for non-physician health professions \u2014 each profession has its own accreditation system separate from physician CME.<br><br>\u2022 <strong>ANCC Contact Hours</strong>: nursing CE credit through the American Nurses Credentialing Center<br>\u2022 <strong>ACPE Credit</strong>: pharmacy continuing education through the Accreditation Council for Pharmacy Education<br>\u2022 <strong>AAPA Category 1</strong>: PA continuing medical education through the American Academy of PAs<br><br>Offering these credits typically requires Joint Accreditation status, which OCME&amp;LL is actively pursuing. Flag to them when any of these professions are in your audience.")
+    );
+    el.otherCredits.forEach(function(c) {
+      if (!c.applies) return;
+      h += eligItem(c.name, c.rationale, [], [c.flag], "#15803d", "#f0fdf4", "#bbf7d0", "high", "Applicable");
+    });
+    h += "</div>";
+  }
+
+  if (!hasContent) {
+    h += "<div style=\"font-size:13px;color:var(--text-muted);padding:12px 0\">No additional eligibility identified for this activity based on the content provided. Add more detail to the content description to improve the analysis.</div>";
+  }
+
+  return h;
+}
+
+function eligSection(icon, title, color, bg, border, tipHtml) {
+  return "<div style=\"margin-bottom:16px\"><div style=\"font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:" + color + ";padding:8px 0 6px;border-bottom:1px solid " + border + ";margin-bottom:10px;display:flex;align-items:center;gap:6px\">"
+    + icon + " " + title
+    + (tipHtml || "")
+    + "</div>";
+}
+
+function eligItem(title, rationale, requirements, steps, color, bg, border, confidence, badgeLabel) {
+  var isHigh = confidence === "high";
+  var h = "<div class=\"elig-item\" style=\"border:1.5px solid " + border + "\">";
+  h += "<div class=\"elig-header\" style=\"background:" + bg + ";border-bottom:1px solid " + border + "\">";
+  h += "<span style=\"font-size:13px;font-weight:700;color:" + color + "\">" + escHtml(title) + "</span>";
+  h += "<span class=\"elig-badge\" style=\"background:" + (isHigh ? color : "#e5e7eb") + ";color:" + (isHigh ? "#fff" : "#6b7280") + "\">" + (isHigh ? "\u2713 " : "\u25d0 ") + escHtml(badgeLabel) + "</span>";
+  h += "</div><div class=\"elig-body\">";
+  if (rationale) h += "<div style=\"font-size:13px;color:var(--text-secondary);line-height:1.5;margin-bottom:" + (steps.length ? "10px" : "0") + "\">" + escHtml(rationale) + "</div>";
+  if (requirements && requirements.length) {
+    h += "<div style=\"font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:" + color + ";margin-bottom:5px\">ACCME requires</div>";
+    h += "<ul style=\"margin:0 0 10px 16px;display:flex;flex-direction:column;gap:3px\">";
+    requirements.forEach(function(req) { h += "<li style=\"font-size:12px;color:#1a3a5c;line-height:1.5\">" + escHtml(req) + "</li>"; });
+    h += "</ul>";
+  }
+  if (steps && steps.length) {
+    h += "<div style=\"font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:" + color + ";margin-bottom:5px\">What you need to do</div>";
+    h += "<div class=\"elig-steps\"><ol>";
+    steps.forEach(function(st) { h += "<li>" + escHtml(st) + "</li>"; });
+    h += "</ol></div>";
+  }
+  h += "</div></div>";
+  return h;
+}
+
+// ── PRINT ──
+function handlePrint() {
+  var s = state.selected;
+  var topic = document.getElementById("topic").value.trim();
+  var profs = getProfs(), specs = getSpecs(), other = document.getElementById("audienceOther").value.trim();
+  var formats = getFormats();
+  var date = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  var gapTA = document.getElementById("gapTextarea"); if (gapTA) s.practiceGapText = gapTA.value;
+  var checkedObjs = s.objectives.filter(function(o) { return o.checked; });
+  var audience = profs.concat(specs.map(specLabel));
+  if (other) audience.push(other);
+
+  function ph(title, accme, cloudcme) {
+    return "<h2 style=\"font-size:9.5px;font-weight:800;color:#00274C;text-transform:uppercase;letter-spacing:1px;margin:22px 0 4px;padding-bottom:5px;border-bottom:2px solid #FFCB05\">" + title + (accme ? "<span style=\"font-size:9px;font-weight:400;font-style:italic;text-transform:none;letter-spacing:0;color:#7a96b0;margin-left:6px\">(" + accme + ")</span>" : "") + (cloudcme ? "<span style=\"font-size:9px;font-weight:400;text-transform:none;letter-spacing:0;color:#9ab0c4;margin-left:8px\">\u2192 " + cloudcme + "</span>" : "") + "</h2>";
+  }
+  function pp(txt) { return "<p style=\"font-size:13.5px;color:#1a3a5c;line-height:1.65;margin-bottom:8px;white-space:pre-wrap\">" + escHtml(txt) + "</p>"; }
+  function subh(lbl, col) { return "<div style=\"font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:" + (col || "#2F65A7") + ";margin:8px 0 3px\">" + lbl + "</div>"; }
+
+  var body = "<div style=\"font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1.4px;color:#7a96b0;margin-bottom:5px\">Michigan Medicine \u00b7 Office of CME &amp; Lifelong Learning</div>"
+    + "<div style=\"font-size:22px;font-weight:800;color:#00274C;margin-bottom:4px\">CME Application Content</div>"
+    + "<div style=\"font-size:12px;color:#5a7a9a\">Generated " + date + "</div>"
+    + "<hr style=\"border:none;border-top:2.5px solid #FFCB05;margin:10px 0 18px\">"
+    + "<div style=\"background:#00274C;color:#fff;border-radius:8px;padding:14px 18px;margin-bottom:20px\">"
+    + "<div style=\"font-size:9px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:5px\">Activity</div>"
+    + "<div style=\"font-size:13px;margin-bottom:3px\"><strong>Topic:</strong> " + escHtml(topic) + "</div>"
+    + "<div style=\"font-size:13px;margin-bottom:3px\"><strong>Audience:</strong> " + escHtml(audience.join(", ")) + "</div>"
+    + "<div style=\"font-size:13px\"><strong>Format:</strong> " + escHtml(formats.join(", ") || "Not specified") + "</div></div>"
+    + ph("Why this activity is needed", "practice gap", "Gap and Needs \u2192 Practice Gap") + pp(s.practiceGapText)
+    + ph("What learners are missing", "educational need", "Gap and Needs \u2192 Educational Needs")
+    + (s.needsReasoning ? "<div style=\"font-size:12px;font-style:italic;color:#4a6785;background:#f0f4f9;border-left:3px solid #2F65A7;border-radius:0 5px 5px 0;padding:7px 11px;margin-bottom:8px\">\ud83d\udca1 " + escHtml(s.needsReasoning) + "</div>" : "")
+    + subh((s.needsPrimaryType || "Knowledge") + " need (primary) \u2014 CloudCME: " + ({ "Knowledge": "Knowledge", "Competence": "Skill / Strategy", "Performance": "Performance" }[s.needsPrimaryType] || s.needsPrimaryType))
+    + pp(s.needsPrimaryText)
+    + (s.needsSecondaryText && s.needsSecondaryType ? subh(s.needsSecondaryType + " need (secondary)") + pp(s.needsSecondaryText) : "")
+    + ph("What will change after this activity", "expected results", "Gap and Needs \u2192 Expected Results") + pp(s.expectedResults)
+    + ph("Why this format works", "educational format justification", "Gap and Needs \u2192 Educational Format") + pp(s.formatJustification)
+    + ph("What learners will be able to do", "learning objectives", "Learning Outcomes &amp; Competencies \u2192 Learning Objectives")
+    + "<p style=\"font-size:12px;color:#4a6785;font-style:italic;margin-bottom:8px\">At the conclusion of this activity, participants will be able to:</p>"
+    + "<ol style=\"margin-left:18px;display:flex;flex-direction:column;gap:5px\">" + checkedObjs.map(function(o) { return "<li style=\"font-size:13.5px;color:#1a3a5c;line-height:1.55\">" + escHtml(o.text) + "</li>"; }).join("") + "</ol>";
+
+  if (s.competencies) {
+    body += ph("Competency frameworks addressed", "ACGME/ABMS \u00b7 IOM \u00b7 IPEC", "Learning Outcomes \u2192 Competencies");
+    [{ key: "acgme", label: "ACGME / ABMS", color: "#2F65A7" }, { key: "iom", label: "IOM", color: "#15803d" }, { key: "ipec", label: "IPEC", color: "#6d28d9" }].forEach(function(cd) {
+      var items = s.competencies[cd.key] || [];
+      if (!items.length) return;
+      body += subh(cd.label, cd.color) + "<div style=\"display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px\">" + items.map(function(item) { return "<span style=\"font-size:11px;font-weight:700;background:#eef2f7;border:1px solid #a8bdd4;border-radius:4px;padding:2px 8px;color:#2F65A7\">\u2713 " + escHtml(item) + "</span>"; }).join("") + "</div>";
+    });
+  }
+
+
+  body += ph("One-paragraph summary", "needs assessment summary", "Gap and Needs \u2192 Needs Assessment \u2192 Summary of findings") + pp(s.summaryText);
+
+  // Eligibility in print
+  if (s.eligibility) {
+    body += ph("What else this activity qualifies for", "eligibility review", "");
+    var el = s.eligibility;
+    if (el.moc && el.moc.length) {
+      body += subh("Board Certification Credit (MOC)", "#2F65A7");
+      el.moc.filter(function(m) { return m.applies; }).forEach(function(m) {
+        body += "<div style=\"margin-bottom:8px;padding:8px 12px;background:#eef2f7;border-radius:6px\"><strong style=\"font-size:13px;color:#00274C\">" + escHtml(m.board) + "</strong><br><span style=\"font-size:12px;color:#4a6785\">" + escHtml(m.rationale) + "</span>" + (m.flag ? "<br><span style=\"font-size:12px;color:#2F65A7;font-weight:600\">Flag to OCME&amp;LL: " + escHtml(m.flag) + "</span>" : "") + "</div>";
+      });
+    }
+    if (el.michiganTopics && el.michiganTopics.length) {
+      body += subh("Michigan Mandatory Licensing Topics", "#0e7490");
+      el.michiganTopics.filter(function(m) { return m.applies; }).forEach(function(m) {
+        body += "<div style=\"margin-bottom:8px;padding:8px 12px;background:#ecfeff;border-radius:6px\"><strong style=\"font-size:13px;color:#00274C\">" + escHtml(m.topic) + "</strong><br><span style=\"font-size:12px;color:#4a6785\">" + escHtml(m.requirement) + "</span>" + (m.flag ? "<br><span style=\"font-size:12px;color:#0e7490;font-weight:600\">Flag to OCME&amp;LL: " + escHtml(m.flag) + "</span>" : "") + "</div>";
+      });
+    }
+    if (el.commendation && el.commendation.length) {
+      body += subh("ACCME Commendation Criteria", "#be123c");
+      el.commendation.forEach(function(c) {
+        body += "<div style=\"margin-bottom:8px;padding:8px 12px;background:#fff1f2;border-radius:6px\"><strong style=\"font-size:13px;color:#00274C\">" + escHtml(c.code + " \u00b7 " + c.title) + "</strong><br><span style=\"font-size:12px;color:#4a6785\">" + escHtml(c.rationale) + "</span></div>";
+      });
+    }
+  }
+
+  body += "<div style=\"margin-top:26px;padding:9px 13px;border-radius:6px;background:#f8f9fb;border:1px solid #e4eaf2;font-size:10.5px;color:#8a9bb0;font-style:italic;line-height:1.5\">Generated by CME Content Helper \u00b7 Michigan Medicine OCME&amp;LL \u00b7 Review and edit before submitting to MiCME.</div>";
+
+  printDocument("CME Application Content", body);
+}
+
+function printDocument(title, bodyHtml) {
+  var fullHtml = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>" + title + "</title>"
+    + "<link href=\"https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap\" rel=\"stylesheet\">"
+    + "<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Nunito Sans',Arial,sans-serif;color:#1a2a3a;background:#fff;font-size:13.5px;line-height:1.6}.page{max-width:640px;margin:0 auto;padding:32px 40px}html{-webkit-print-color-adjust:exact;print-color-adjust:exact}.nb{display:flex;gap:10px;justify-content:flex-end;padding:14px 40px 0;max-width:640px;margin:0 auto}.bp{background:#00274C;color:#fff;padding:7px 18px;border-radius:7px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;border:none}.bc{background:#f0f2f5;color:#00274C;padding:7px 18px;border-radius:7px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;border:1.5px solid #d0d9e3}@media print{.nb{display:none!important}.page{padding:20px 28px}}</style>"
+    + "</head><body><div class=\"nb\"><button class=\"bc\" onclick=\"window.close()\">\u2715 Close</button><button class=\"bp\" onclick=\"window.print()\">\ud83d\udda8 Print / Save as PDF</button></div>"
+    + "<div class=\"page\">" + bodyHtml + "</div>"
+    + "<script>window.onload=function(){window.print();}<\/script></body></html>";
+  var win = window.open("", "_blank", "width=820,height=920,scrollbars=yes");
+  if (win) { win.document.open(); win.document.write(fullHtml); win.document.close(); return; }
+  try {
+    var blob = new Blob([fullHtml], { type: "text/html" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a"); a.href = url; a.target = "_blank"; a.rel = "noopener";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function() { URL.revokeObjectURL(url); }, 10000);
+  } catch(e) { alert("Print blocked by browser. Please allow pop-ups for this page and try again."); }
+}
+
+function escHtml(str) {
+  if (!str) return "";
+  return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+renderOutput();
+</script>
+</body>
+</html>
