@@ -68,13 +68,6 @@ textarea{resize:vertical}
 /* SECTION DIVIDER inside input card */
 .input-divider{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);padding:4px 0 2px;border-top:1px solid var(--border-light);margin-top:4px}
 
-/* EXPANDER */
-.expander-toggle{display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--bg-blue-tint);border:1.5px solid var(--border-light);border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text-secondary);width:100%;text-align:left;transition:all 0.15s}
-.expander-toggle:hover{border-color:var(--border-mid)}
-.expander-chev{margin-left:auto;font-size:10px;transition:transform 0.2s;display:inline-block}
-.expander-toggle.open .expander-chev{transform:rotate(180deg)}
-.expander-body{padding-top:10px;display:none}
-.expander-body.open{display:block}
 
 /* BUTTONS */
 .btn-generate{width:100%;padding:14px;background:var(--michigan-blue);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:800;box-shadow:0 4px 14px rgba(0,39,76,0.3);transition:all 0.15s;display:flex;align-items:center;justify-content:center;gap:8px}
@@ -84,6 +77,10 @@ textarea{resize:vertical}
 .btn-regen:hover{background:#dde8f4}
 .btn-print{padding:9px 18px;background:var(--michigan-blue);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;transition:all 0.15s;display:flex;align-items:center;gap:6px}
 .btn-print:hover{background:#1a3a5c}
+.btn-copy-all{padding:9px 16px;background:#fff;color:var(--arboretum-blue);border:1.5px solid var(--border-mid);border-radius:8px;font-size:13px;font-weight:700;transition:all 0.15s;display:flex;align-items:center;gap:6px;cursor:pointer}
+.btn-copy-all:hover{background:var(--bg-blue-tint)}
+.btn-copy-all.copied{background:#dcfce7;border-color:#86efac;color:#15803d}
+.action-bar{display:flex;gap:8px;justify-content:flex-end;flex-wrap:nowrap;align-items:center}
 
 /* EMPTY / LOADING / ERROR */
 .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center;gap:12px;color:var(--text-muted)}
@@ -280,11 +277,11 @@ textarea{resize:vertical}
             </div>
           </div>
 
-          <!-- OPTIONAL: Gap source -->
-          <div>
-            <button class="expander-toggle" id="togGap" onclick="toggleExp('bodyGap','togGap')">
-              ▸ How was the gap identified? <span style="font-weight:400;color:var(--text-muted);font-size:11px">(optional — improves output)</span>
-              <span class="tip-wrap" onclick="event.stopPropagation()">
+          <!-- Gap source — radio chips, always visible -->
+          <div class="field-group">
+            <div class="field-label">How was the gap identified?
+              <span style="font-size:12px;font-weight:400;color:var(--text-muted)"> (optional — improves output)</span>
+              <span class="tip-wrap">
                 <button class="tip-btn" onclick="toggleTip('tip-gap-src',event)" aria-label="More information">i</button>
                 <div class="tip-pop below" id="tip-gap-src"><div class="tip-arrow"></div>
                   <strong>Why this matters:</strong> ACCME requires CME to be based on a genuine, identified need. Describing how the gap was found strengthens your application and is required in the needs assessment.<br><br>
@@ -295,18 +292,14 @@ textarea{resize:vertical}
                   <strong>Informal observation</strong> — clinical experience suggesting a gap
                 </div>
               </span>
-              <span class="expander-chev">▾</span>
-            </button>
-            <div class="expander-body" id="bodyGap">
-              <select id="gapSource" style="width:100%;border:1.5px solid var(--border-light);border-radius:8px;padding:9px 12px;font-size:13px;color:var(--text-primary);background:#fff;appearance:none;margin-top:2px">
-                <option value="">— Select —</option>
-                <option value="Quality / registry data showing a practice gap">Quality / registry data</option>
-                <option value="Prior activity evaluation identifying unmet needs">Prior activity evaluation</option>
-                <option value="Updated literature or new clinical guidelines">New literature / updated guidelines</option>
-                <option value="Expert or faculty presenter input on learner needs">Expert or faculty presenter input</option>
-                <option value="Informal clinical observation">Informal clinical observation</option>
-                <option value="Not formally assessed">Not formally assessed</option>
-              </select>
+            </div>
+            <div class="chip-grid" id="gapSourceGrid">
+              <label class="chip" id="gs1"><input type="radio" name="gapSource" value="Quality / registry data showing a practice gap" onchange="selectGapChip('gs1')"> 📊 Quality data</label>
+              <label class="chip" id="gs2"><input type="radio" name="gapSource" value="Prior activity evaluation identifying unmet needs" onchange="selectGapChip('gs2')"> 📋 Prior evaluation</label>
+              <label class="chip" id="gs3"><input type="radio" name="gapSource" value="Updated literature or new clinical guidelines" onchange="selectGapChip('gs3')"> 📄 New guidelines</label>
+              <label class="chip" id="gs4"><input type="radio" name="gapSource" value="Expert or faculty presenter input on learner needs" onchange="selectGapChip('gs4')"> 👤 Expert input</label>
+              <label class="chip" id="gs5"><input type="radio" name="gapSource" value="Informal clinical observation" onchange="selectGapChip('gs5')"> 👁 Observation</label>
+              <label class="chip" id="gs6"><input type="radio" name="gapSource" value="Not formally assessed" onchange="selectGapChip('gs6')"> — Not assessed</label>
             </div>
           </div>
 
@@ -368,30 +361,28 @@ var state = {
 // ── SYSTEM PROMPT ──
 var SYSTEM_PROMPT = [
   "You are an expert CME educational designer with deep knowledge of ACCME accreditation standards, Michigan Medicine policies, and US physician board certification requirements.",
-  "Generate professional, specific application language for MiCME/CloudCME applications at Michigan Medicine.",
+  "Generate professional, specific, CONCISE application language for MiCME/CloudCME applications at Michigan Medicine.",
+  "Writing style: precise and direct. Every sentence must earn its place. Never pad, never restate, never add caveats. A planner should be able to paste your output with minimal editing — which means it must be tight enough that they actually read it first.",
   "",
   "Return ONLY a JSON object with this exact structure (no preamble, no markdown fences):",
   "{",
   '  "practiceGap": ["option A text", "option B text", "option C text"],',
   '  "educationalNeeds": {',
   '    "primaryType": "Knowledge or Competence or Performance",',
-  '    "reasoning": "One plain-language sentence explaining why this is the primary need type",',
-  '    "primaryText": "2-3 sentence description of the primary educational need",',
+  '    "reasoning": "One plain-language sentence (max 20 words) explaining why this is the primary need type",',
+  '    "primaryText": "2-3 sentences describing the specific deficit — name the audience, what they lack, and why it matters clinically. Max 80 words.",',
   '    "secondaryType": "Knowledge or Competence or Performance or null",',
-  '    "secondaryText": "2-3 sentences if genuinely needed, otherwise null"',
+  '    "secondaryText": "2-3 sentences if genuinely needed, otherwise null. Max 70 words."',
   "  },",
-  '  "expectedResults": "2-3 sentences on what will change after the activity: what participants will be able to do (competence), what they will do in practice (performance if plausible), how patients or care quality will benefit (only if genuinely achievable). Must extend beyond knowledge.",',
-  '  "formatJustification": "2-3 sentences naming the specific format(s) and explaining concretely why each is appropriate for the gap and learner need.",',
-  '  "learningObjectives": ["objective 1", "objective 2", "objective 3", "objective 4"],',
+  '  "expectedResults": "2-3 sentences: what participants will be able to do differently (competence), what they will do in practice (performance if plausible), and patient/care quality benefit if genuinely achievable. Max 80 words. Do not restate the gap.",',
+  '  "formatJustification": "2-3 sentences: name the specific format(s) and explain concretely why each is appropriate for the identified gap and learner need. Max 70 words.",',
+  '  "learningObjectives": ["objective 1", "objective 2", "objective 3"],',
   '  "competencies": {',
   '    "acgme": ["only ACGME/ABMS competencies genuinely addressed from: Patient Care, Medical Knowledge, Practice-Based Learning and Improvement, Interpersonal and Communication Skills, Professionalism, Systems-Based Practice"],',
   '    "iom": ["only IOM competencies genuinely addressed from: Provide Patient-Centered Care, Work in Interdisciplinary Teams, Employ Evidence-Based Practice, Apply Quality Improvement, Utilize Informatics"],',
   '    "ipec": ["only IPEC competencies genuinely addressed from: Values and Ethics, Roles and Responsibilities, Interprofessional Communication, Teams and Teamwork"]',
   "  },",
-
-
-  "  ],",
-  '  "needsAssessmentSummary": "3-5 sentence paragraph synthesising gap, primary need, source, and expected change",',
+  '  "needsAssessmentSummary": "3-4 sentences synthesising the gap, the educational need type and root cause, how the gap was identified, and what change the activity is designed to produce. Max 110 words.",',
   '  "eligibility": {',
   '    "moc": [',
   '      {',
@@ -454,13 +445,13 @@ var SYSTEM_PROMPT = [
   "",
   "EXPECTED RESULTS: Always address competence. Add performance only if activity will drive practice change. Add patient outcomes only if genuinely plausible.",
   "",
-  "LEARNING OBJECTIVES: 3-4 objectives. Verb level must match primaryType. Never use 'understand' or 'appreciate'. Every objective must be specific and observable.",
+  "LEARNING OBJECTIVES: 3-4 objectives. Each begins with an action verb — no preamble, no 'participants will be able to' prefix (that is added by the UI). Verb level must match primaryType. Never use understand or appreciate. Be specific and observable. Max 25 words each.",
   "",
   "COMPETENCIES: Select only genuinely addressed ones. 2-4 per framework maximum. Listing all is always wrong.",
   "",
   
   "",
-  "PRACTICE GAP: 3 meaningfully different versions varying framing, evidence angle, emphasis. Each 2-4 sentences. Must name audience and describe current vs ideal practice.",
+  "PRACTICE GAP: 3 meaningfully different versions varying framing, evidence angle, or emphasis. Each 2-3 sentences, max 75 words. Name the audience and describe current vs ideal practice with clinical specificity. Not generic — every option should be unmistakably about this topic and this audience.",
   "",
   "ELIGIBILITY — this is the most important analytical section. Read the entire activity description carefully:",
   "",
@@ -490,20 +481,23 @@ var SYSTEM_PROMPT = [
   "- C36: Measures and demonstrates improvement in learner performance in practice",
   "- C37: Linked to QI initiative and demonstrates healthcare quality improvement",
   "- C38: Demonstrates impact on patient or community outcomes",
-  "Only include criteria with genuine evidence from the activity description. Rationale must reference specific activity content, not generic statements. Steps must be concrete and specific to this activity.",
+  "Only include criteria with genuine evidence from the activity description. Rationale: one sentence, max 25 words, must name something specific from this activity. Steps: 2 max, each under 20 words, concrete and actionable.",
   "",
   "IPCE: Apply only if (1) the audience includes physicians AND at least one other health profession, AND (2) the planning is interprofessional (as indicated in inputs). If only one profession attends, IPCE does not apply regardless of topic.",
   "",
-  "OTHER CREDITS: Include ANCC if nurses attend, ACPE if pharmacists attend, AAPA if PAs attend. Only include if relevant profession is in the audience.",
+  "OTHER CREDITS: Include ANCC if nurses attend, ACPE if pharmacists, AAPA if PAs. One sentence rationale each. Only include if that profession is genuinely in the audience.",
   "",
   "Return ONLY the JSON object. No preamble, no markdown fences."
 ].join("\n");
 
 // ── HELPERS ──
-function toggleExp(bodyId, togId) {
-  document.getElementById(bodyId).classList.toggle("open");
-  document.getElementById(togId).classList.toggle("open");
+function selectGapChip(selectedId) {
+  ["gs1","gs2","gs3","gs4","gs5","gs6"].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle("checked", id === selectedId);
+  });
 }
+
 
 function getProfs() {
   return Array.from(document.querySelectorAll("#profGrid input:checked")).map(function(el) { return el.value; });
@@ -527,7 +521,8 @@ function buildUserPrompt() {
   var other = document.getElementById("audienceOther").value.trim();
   var formats = getFormats();
   var ipce = getIPCE();
-  var gapSource = document.getElementById("gapSource").value;
+  var gapSourceEl = document.querySelector("input[name='gapSource']:checked");
+  var gapSource = gapSourceEl ? gapSourceEl.value : "";
 
   var audience = profs.concat(specs.map(function(s) { return specLabel(s); }));
   if (other) audience.push(other);
@@ -581,12 +576,15 @@ async function handleGenerate() {
       body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 5000, system: SYSTEM_PROMPT, messages: [{ role: "user", content: buildUserPrompt() }] })
     });
     var data = await resp.json();
-    if (!resp.ok) throw new Error(data.error ? data.error.message : "API request failed");
-    var raw = data.content[0].text.trim().replace(/^```json?\s*/i, "").replace(/\s*```$/i, "").trim();
-    if (data.stop_reason === "max_tokens") throw new Error("Response was cut off — the activity description may be too long, or the AI generated too much content. Try shortening the content description and regenerate.");
+    if (!resp.ok) throw new Error((data.error ? data.error.message : "API request failed") + " [HTTP " + resp.status + "]");
+    if (!data.content || !data.content.length) throw new Error("API returned an empty response. Full response: " + JSON.stringify(data).slice(0, 300));
+    var firstBlock = data.content[0];
+    if (firstBlock.type !== "text") throw new Error("API returned unexpected content type: " + firstBlock.type + ". Expected text. Full response: " + JSON.stringify(data).slice(0, 300));
+    var raw = firstBlock.text.trim().replace(/^```json?\s*/i, "").replace(/\s*```$/i, "").trim();
+    if (data.stop_reason === "max_tokens") throw new Error("Response was cut off (max_tokens). Raw start: " + raw.slice(0, 200));
     var p;
     try { p = JSON.parse(raw); } catch(je) {
-      throw new Error("Could not parse AI response as JSON. This usually means the response was truncated. Try again — if it keeps failing, shorten the content description field.");
+      throw new Error("JSON parse failed: " + je.message + ". Raw response start: " + raw.slice(0, 300));
     }
     var en = p.educationalNeeds || {};
     state.results = p;
@@ -601,7 +599,6 @@ async function handleGenerate() {
       formatJustification: p.formatJustification || "",
       objectives: (p.learningObjectives || []).map(function(t) { return { text: t, checked: true }; }),
       competencies: p.competencies || null,
-  
       summaryText: p.needsAssessmentSummary || "",
       eligibility: p.eligibility || null
     };
@@ -625,12 +622,15 @@ async function handleRegenerate() {
       body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 5000, system: SYSTEM_PROMPT, messages: [{ role: "user", content: buildUserPrompt() }] })
     });
     var data = await resp.json();
-    if (!resp.ok) throw new Error(data.error ? data.error.message : "API request failed");
-    var raw = data.content[0].text.trim().replace(/^```json?\s*/i, "").replace(/\s*```$/i, "").trim();
-    if (data.stop_reason === "max_tokens") throw new Error("Response was cut off — the activity description may be too long, or the AI generated too much content. Try shortening the content description and regenerate.");
+    if (!resp.ok) throw new Error((data.error ? data.error.message : "API request failed") + " [HTTP " + resp.status + "]");
+    if (!data.content || !data.content.length) throw new Error("API returned an empty response. Full response: " + JSON.stringify(data).slice(0, 300));
+    var firstBlock = data.content[0];
+    if (firstBlock.type !== "text") throw new Error("API returned unexpected content type: " + firstBlock.type + ". Expected text.");
+    var raw = firstBlock.text.trim().replace(/^```json?\s*/i, "").replace(/\s*```$/i, "").trim();
+    if (data.stop_reason === "max_tokens") throw new Error("Response was cut off (max_tokens). Raw start: " + raw.slice(0, 200));
     var p;
     try { p = JSON.parse(raw); } catch(je) {
-      throw new Error("Could not parse AI response as JSON. This usually means the response was truncated. Try again — if it keeps failing, shorten the content description field.");
+      throw new Error("JSON parse failed: " + je.message + ". Raw response start: " + raw.slice(0, 300));
     }
     var en = p.educationalNeeds || {};
     state.results = p;
@@ -935,7 +935,7 @@ function renderOutput() {
   };
   // Top action bar
   var tb = document.createElement("div"); tb.className = "action-bar no-print";
-  tb.innerHTML = "<button class=\"btn-regen\" title=\"Re-runs the AI with the same inputs to produce fresh alternative content. Your form fields are not affected.\" onclick=\"handleRegenerate()\">&#8635; New AI Draft</button><button class=\"copy-btn\" style=\"position:static;opacity:1;width:auto;padding:7px 14px;font-size:13px;font-weight:700;gap:6px;border-radius:8px\" onclick=\"copyAllSections(this)\" title=\"Copy all sections as plain text — paste directly into CloudCME or a document\">" + COPY_ICON + " Copy all sections</button><button class=\"btn-print\" onclick=\"handlePrint()\">&#128424; Print / Save PDF</button>";
+  tb.innerHTML = "<button class=\"btn-regen\" title=\"Re-runs the AI with the same inputs — your form fields are not affected.\" onclick=\"handleRegenerate()\">&#8635; New AI Draft</button>" + "<button class=\"btn-copy-all\" onclick=\"copyAllSections(this)\" title=\"Copy all sections as plain text\">" + COPY_ICON + " Copy all sections</button>" + "<button class=\"btn-print\" onclick=\"handlePrint()\">&#128424; Print / Save PDF</button>";
   panel.appendChild(tb);
 
   // ── 1. PRACTICE GAP ──
@@ -1017,7 +1017,7 @@ function renderOutput() {
 
   // Bottom bar
   var bb = document.createElement("div"); bb.className = "action-bar no-print"; bb.style.paddingBottom = "20px";
-  bb.innerHTML = "<button class=\"btn-regen\" title=\"Re-runs the AI with the same inputs to produce fresh alternative content. Your form fields are not affected.\" onclick=\"handleRegenerate()\">&#8635; New AI Draft</button><button class=\"copy-btn\" style=\"position:static;opacity:1;width:auto;padding:7px 14px;font-size:13px;font-weight:700;gap:6px;border-radius:8px\" onclick=\"copyAllSections(this)\" title=\"Copy all sections as plain text — paste directly into CloudCME or a document\">" + COPY_ICON + " Copy all sections</button><button class=\"btn-print\" onclick=\"handlePrint()\">&#128424; Print / Save PDF</button>";
+  bb.innerHTML = "<button class=\"btn-regen\" title=\"Re-runs the AI with the same inputs — your form fields are not affected.\" onclick=\"handleRegenerate()\">&#8635; New AI Draft</button>" + "<button class=\"btn-copy-all\" onclick=\"copyAllSections(this)\" title=\"Copy all sections as plain text\">" + COPY_ICON + " Copy all sections</button>" + "<button class=\"btn-print\" onclick=\"handlePrint()\">&#128424; Print / Save PDF</button>";
   panel.appendChild(bb);
 }
 
@@ -1130,94 +1130,186 @@ function eligItem(title, rationale, requirements, steps, color, bg, border, conf
   return h;
 }
 
-// ── PRINT ──
+// -- PRINT --
 function handlePrint() {
   var s = state.selected;
   var topic = document.getElementById("topic").value.trim();
   var profs = getProfs(), specs = getSpecs(), other = document.getElementById("audienceOther").value.trim();
   var formats = getFormats();
-  var date = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
   var gapTA = document.getElementById("gapTextarea"); if (gapTA) s.practiceGapText = gapTA.value;
   var checkedObjs = s.objectives.filter(function(o) { return o.checked; });
   var audience = profs.concat(specs.map(specLabel));
   if (other) audience.push(other);
+  var typeMap = { "Knowledge": "Knowledge", "Competence": "Skill / Strategy", "Performance": "Performance" };
+  var e = escHtml;
 
-  function ph(title, accme, cloudcme) {
-    return "<h2 style=\"font-size:9.5px;font-weight:800;color:#00274C;text-transform:uppercase;letter-spacing:1px;margin:22px 0 4px;padding-bottom:5px;border-bottom:2px solid #FFCB05\">" + title + (accme ? "<span style=\"font-size:9px;font-weight:400;font-style:italic;text-transform:none;letter-spacing:0;color:#7a96b0;margin-left:6px\">(" + accme + ")</span>" : "") + (cloudcme ? "<span style=\"font-size:9px;font-weight:400;text-transform:none;letter-spacing:0;color:#9ab0c4;margin-left:8px\">\u2192 " + cloudcme + "</span>" : "") + "</h2>";
+  function ph(title, accme, cmc) {
+    return "<div class=\"sec-hd\"><span class=\"sec-title\">" + title + "</span>"
+      + (accme ? "<span class=\"sec-accme\">(" + accme + ")</span>" : "")
+      + (cmc ? "<span class=\"sec-cmc\">&rarr; " + cmc + "</span>" : "")
+      + "</div>";
   }
-  function pp(txt) { return "<p style=\"font-size:13.5px;color:#1a3a5c;line-height:1.65;margin-bottom:8px;white-space:pre-wrap\">" + escHtml(txt) + "</p>"; }
-  function subh(lbl, col) { return "<div style=\"font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:" + (col || "#2F65A7") + ";margin:8px 0 3px\">" + lbl + "</div>"; }
+  function pp(txt) { return "<div class=\"sec-body\">" + e(txt) + "</div>"; }
+  function sublbl(lbl, col) { return "<div class=\"need-lbl\" style=\"color:" + (col || "#2F65A7") + "\">" + lbl + "</div>"; }
+  function sec(h, b) { return "<div class=\"sec\">" + h + b + "</div>"; }
 
-  var body = "<div style=\"font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1.4px;color:#7a96b0;margin-bottom:5px\">Michigan Medicine \u00b7 Office of CME &amp; Lifelong Learning</div>"
-    + "<div style=\"font-size:22px;font-weight:800;color:#00274C;margin-bottom:4px\">CME Application Content</div>"
-    + "<div style=\"font-size:12px;color:#5a7a9a\">Generated " + date + "</div>"
-    + "<hr style=\"border:none;border-top:2.5px solid #FFCB05;margin:10px 0 18px\">"
-    + "<div style=\"background:#00274C;color:#fff;border-radius:8px;padding:14px 18px;margin-bottom:20px\">"
-    + "<div style=\"font-size:9px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:5px\">Activity</div>"
-    + "<div style=\"font-size:13px;margin-bottom:3px\"><strong>Topic:</strong> " + escHtml(topic) + "</div>"
-    + "<div style=\"font-size:13px;margin-bottom:3px\"><strong>Audience:</strong> " + escHtml(audience.join(", ")) + "</div>"
-    + "<div style=\"font-size:13px\"><strong>Format:</strong> " + escHtml(formats.join(", ") || "Not specified") + "</div></div>"
-    + ph("Why this activity is needed", "practice gap", "Gap and Needs \u2192 Practice Gap") + pp(s.practiceGapText)
-    + ph("What learners are missing", "educational need", "Gap and Needs \u2192 Educational Needs")
-    + (s.needsReasoning ? "<div style=\"font-size:12px;font-style:italic;color:#4a6785;background:#f0f4f9;border-left:3px solid #2F65A7;border-radius:0 5px 5px 0;padding:7px 11px;margin-bottom:8px\">\ud83d\udca1 " + escHtml(s.needsReasoning) + "</div>" : "")
-    + subh((s.needsPrimaryType || "Knowledge") + " need (primary) \u2014 CloudCME: " + ({ "Knowledge": "Knowledge", "Competence": "Skill / Strategy", "Performance": "Performance" }[s.needsPrimaryType] || s.needsPrimaryType))
-    + pp(s.needsPrimaryText)
-    + (s.needsSecondaryText && s.needsSecondaryType ? subh(s.needsSecondaryType + " need (secondary)") + pp(s.needsSecondaryText) : "")
-    + ph("What will change after this activity", "expected results", "Gap and Needs \u2192 Expected Results") + pp(s.expectedResults)
-    + ph("Why this format works", "educational format justification", "Gap and Needs \u2192 Educational Format") + pp(s.formatJustification)
-    + ph("What learners will be able to do", "learning objectives", "Learning Outcomes &amp; Competencies \u2192 Learning Objectives")
-    + "<p style=\"font-size:12px;color:#4a6785;font-style:italic;margin-bottom:8px\">At the conclusion of this activity, participants will be able to:</p>"
-    + "<ol style=\"margin-left:18px;display:flex;flex-direction:column;gap:5px\">" + checkedObjs.map(function(o) { return "<li style=\"font-size:13.5px;color:#1a3a5c;line-height:1.55\">" + escHtml(o.text) + "</li>"; }).join("") + "</ol>";
+  var actBox = "<div class=\"activity-box\"><div class=\"ab-label\">Activity</div>"
+    + "<div class=\"ab-row\"><strong>Topic:</strong> " + e(topic) + "</div>"
+    + "<div class=\"ab-row\"><strong>Audience:</strong> " + e(audience.join(", ")) + "</div>"
+    + "<div class=\"ab-row\"><strong>Format:</strong> " + e(formats.join(", ") || "Not specified") + "</div>"
+    + "</div><div style=\"height:22px\"></div>";
+
+  var body = actBox
+    + sec(ph("Why this activity is needed", "practice gap", "Gap and Needs &rarr; Practice Gap"), pp(s.practiceGapText))
+    + "<div class=\"sec\">" + ph("What learners are missing", "educational need", "Gap and Needs &rarr; Educational Needs")
+      + (s.needsReasoning ? "<div class=\"reasoning\">&#128161; " + e(s.needsReasoning) + "</div>" : "")
+      + sublbl((s.needsPrimaryType || "Knowledge") + " need (primary) &mdash; CloudCME: " + (typeMap[s.needsPrimaryType] || s.needsPrimaryType))
+      + pp(s.needsPrimaryText)
+      + (s.needsSecondaryText && s.needsSecondaryType ? sublbl(s.needsSecondaryType + " need (secondary)") + pp(s.needsSecondaryText) : "")
+    + "</div>"
+    + sec(ph("What will change after this activity", "expected results", "Gap and Needs &rarr; Expected Results"), pp(s.expectedResults))
+    + sec(ph("Why this format works", "educational format justification", "Gap and Needs &rarr; Educational Format"), pp(s.formatJustification))
+    + "<div class=\"sec\">" + ph("What learners will be able to do", "learning objectives", "Learning Outcomes &amp; Competencies &rarr; Learning Objectives")
+      + "<div class=\"obj-intro\">At the conclusion of this activity, participants will be able to:</div>"
+      + "<ol class=\"obj-ol\">" + checkedObjs.map(function(o) { return "<li>" + e(o.text) + "</li>"; }).join("") + "</ol>"
+    + "</div>";
 
   if (s.competencies) {
-    body += ph("Competency frameworks addressed", "ACGME/ABMS \u00b7 IOM \u00b7 IPEC", "Learning Outcomes \u2192 Competencies");
-    [{ key: "acgme", label: "ACGME / ABMS", color: "#2F65A7" }, { key: "iom", label: "IOM", color: "#15803d" }, { key: "ipec", label: "IPEC", color: "#6d28d9" }].forEach(function(cd) {
-      var items = s.competencies[cd.key] || [];
-      if (!items.length) return;
-      body += subh(cd.label, cd.color) + "<div style=\"display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px\">" + items.map(function(item) { return "<span style=\"font-size:11px;font-weight:700;background:#eef2f7;border:1px solid #a8bdd4;border-radius:4px;padding:2px 8px;color:#2F65A7\">\u2713 " + escHtml(item) + "</span>"; }).join("") + "</div>";
-    });
+    var compDefs = [{ key: "acgme", label: "ACGME / ABMS", color: "#2F65A7" }, { key: "iom", label: "IOM", color: "#15803d" }, { key: "ipec", label: "IPEC", color: "#6d28d9" }];
+    var hasComps = compDefs.some(function(cd) { return (s.competencies[cd.key] || []).length; });
+    if (hasComps) {
+      body += "<div class=\"sec\">" + ph("Competency frameworks addressed", "ACGME/ABMS &middot; IOM &middot; IPEC", "Learning Outcomes &rarr; Competencies");
+      compDefs.forEach(function(cd) {
+        var items = s.competencies[cd.key] || [];
+        if (!items.length) return;
+        body += "<div class=\"cg\"><div class=\"cg-lbl\" style=\"color:" + cd.color + "\">" + cd.label + "</div>"
+          + "<div class=\"chips\">" + items.map(function(item) { return "<span class=\"chip\">&check; " + e(item) + "</span>"; }).join("") + "</div></div>";
+      });
+      body += "</div>";
+    }
   }
 
+  body += sec(ph("One-paragraph summary", "needs assessment summary", "Gap and Needs &rarr; Needs Assessment &rarr; Summary of findings"), pp(s.summaryText));
 
-  body += ph("One-paragraph summary", "needs assessment summary", "Gap and Needs \u2192 Needs Assessment \u2192 Summary of findings") + pp(s.summaryText);
-
-  // Eligibility in print
   if (s.eligibility) {
-    body += ph("What else this activity qualifies for", "eligibility review", "");
     var el = s.eligibility;
-    if (Array.isArray(el.moc) && el.moc.length) {
-      body += subh("Board Certification Credit (MOC)", "#2F65A7");
-      el.moc.filter(function(m) { return m.applies; }).forEach(function(m) {
-        body += "<div style=\"margin-bottom:8px;padding:8px 12px;background:#eef2f7;border-radius:6px\"><strong style=\"font-size:13px;color:#00274C\">" + escHtml(m.board) + "</strong><br><span style=\"font-size:12px;color:#4a6785\">" + escHtml(m.rationale) + "</span>" + (m.flag ? "<br><span style=\"font-size:12px;color:#2F65A7;font-weight:600\">Flag to OCME&amp;LL: " + escHtml(m.flag) + "</span>" : "") + "</div>";
+    var eligBody = "";
+    if (Array.isArray(el.moc) && el.moc.filter(function(m){return m.applies;}).length) {
+      eligBody += "<div class=\"eg\"><div class=\"eg-lbl\" style=\"color:#2F65A7\">Board Certification Credit (MOC)</div>";
+      el.moc.filter(function(m){return m.applies;}).forEach(function(m) {
+        eligBody += "<div class=\"ei\" style=\"background:#eef2f7\"><div class=\"ei-title\">" + e(m.board) + "</div>"
+          + "<div class=\"ei-body\">" + e(m.rationale) + "</div>"
+          + (m.flag ? "<div class=\"ei-flag\" style=\"color:#2F65A7\">Flag to OCME&amp;LL: " + e(m.flag) + "</div>" : "")
+          + "</div>";
       });
+      eligBody += "</div>";
     }
-    if (Array.isArray(el.michiganTopics) && el.michiganTopics.length) {
-      body += subh("Michigan Mandatory Licensing Topics", "#0e7490");
-      el.michiganTopics.filter(function(m) { return m.applies; }).forEach(function(m) {
-        body += "<div style=\"margin-bottom:8px;padding:8px 12px;background:#ecfeff;border-radius:6px\"><strong style=\"font-size:13px;color:#00274C\">" + escHtml(m.topic) + "</strong><br><span style=\"font-size:12px;color:#4a6785\">" + escHtml(m.requirement) + "</span>" + (m.flag ? "<br><span style=\"font-size:12px;color:#0e7490;font-weight:600\">Flag to OCME&amp;LL: " + escHtml(m.flag) + "</span>" : "") + "</div>";
+    if (Array.isArray(el.michiganTopics) && el.michiganTopics.filter(function(m){return m.applies;}).length) {
+      eligBody += "<div class=\"eg\"><div class=\"eg-lbl\" style=\"color:#0e7490\">Michigan Mandatory Licensing Topics</div>";
+      el.michiganTopics.filter(function(m){return m.applies;}).forEach(function(m) {
+        eligBody += "<div class=\"ei\" style=\"background:#ecfeff\"><div class=\"ei-title\">" + e(m.topic) + "</div>"
+          + "<div class=\"ei-body\">" + e(m.requirement) + "</div>"
+          + (m.flag ? "<div class=\"ei-flag\" style=\"color:#0e7490\">Flag to OCME&amp;LL: " + e(m.flag) + "</div>" : "")
+          + "</div>";
       });
+      eligBody += "</div>";
+    }
+    if (el.ipce && el.ipce.applies) {
+      eligBody += "<div class=\"eg\"><div class=\"eg-lbl\" style=\"color:#6d28d9\">Interprofessional Continuing Education (IPCE)</div>"
+        + "<div class=\"ei\" style=\"background:#f5f3ff\"><div class=\"ei-body\">" + e(el.ipce.rationale) + "</div></div></div>";
     }
     if (Array.isArray(el.commendation) && el.commendation.length) {
-      body += subh("ACCME Commendation Criteria", "#be123c");
+      eligBody += "<div class=\"eg\"><div class=\"eg-lbl\" style=\"color:#be123c\">ACCME Commendation Criteria</div>";
       el.commendation.forEach(function(c) {
-        body += "<div style=\"margin-bottom:8px;padding:8px 12px;background:#fff1f2;border-radius:6px\"><strong style=\"font-size:13px;color:#00274C\">" + escHtml(c.code + " \u00b7 " + c.title) + "</strong><br><span style=\"font-size:12px;color:#4a6785\">" + escHtml(c.rationale) + "</span></div>";
+        eligBody += "<div class=\"ei\" style=\"background:#fff1f2\"><div class=\"ei-title\">" + e(c.code + " &middot; " + c.title) + "</div>"
+          + "<div class=\"ei-body\">" + e(c.rationale) + "</div></div>";
       });
+      eligBody += "</div>";
     }
+    if (Array.isArray(el.otherCredits) && el.otherCredits.filter(function(c){return c.applies;}).length) {
+      eligBody += "<div class=\"eg\"><div class=\"eg-lbl\" style=\"color:#15803d\">Additional Credit Types</div>";
+      el.otherCredits.filter(function(c){return c.applies;}).forEach(function(c) {
+        eligBody += "<div class=\"ei\" style=\"background:#f0fdf4\"><div class=\"ei-title\">" + e(c.name) + "</div>"
+          + "<div class=\"ei-body\">" + e(c.rationale) + "</div></div>";
+      });
+      eligBody += "</div>";
+    }
+    if (eligBody) body += "<div class=\"sec\">" + ph("What else this activity qualifies for", "eligibility review", "") + eligBody + "</div>";
   }
-
-  body += "<div style=\"margin-top:26px;padding:9px 13px;border-radius:6px;background:#f8f9fb;border:1px solid #e4eaf2;font-size:10.5px;color:#8a9bb0;font-style:italic;line-height:1.5\">Generated by CME Content Helper \u00b7 Michigan Medicine OCME&amp;LL \u00b7 Review and edit before submitting to MiCME.</div>";
 
   printDocument("CME Application Content", body);
 }
 
 function printDocument(title, bodyHtml) {
-  var fullHtml = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>" + title + "</title>"
+  var date = new Date().toLocaleDateString("en-US", { year:"numeric", month:"long", day:"numeric" });
+  var css = [
+    "*{box-sizing:border-box;margin:0;padding:0}",
+    "body{font-family:'Nunito Sans',Arial,sans-serif;color:#1a2a3a;background:#e8ecf0;font-size:14px;line-height:1.65}",
+    "html{-webkit-print-color-adjust:exact;print-color-adjust:exact}",
+    ".pb{background:#00274C;padding:11px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px;position:sticky;top:0;z-index:100}",
+    ".pb .lft{display:flex;align-items:center;gap:12px}",
+    ".pb .ptl{font-size:13px;font-weight:700;color:#fff;opacity:0.85}",
+    ".pb .pht{font-size:12px;color:rgba(255,255,255,0.45)}",
+    ".bpr{background:#FFCB05;color:#00274C;padding:8px 20px;border-radius:8px;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;border:none;transition:background 0.12s}",
+    ".bpr:hover{background:#f0bc00}",
+    ".bcl{background:transparent;color:rgba(255,255,255,0.6);padding:8px 14px;border-radius:7px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,0.18)}",
+    ".bcl:hover{background:rgba(255,255,255,0.1);color:#fff}",
+    ".pw{max-width:700px;margin:28px auto 52px;background:#fff;border-radius:12px;box-shadow:0 2px 18px rgba(0,0,0,0.13);overflow:hidden}",
+    ".ds{background:#FFCB05;height:5px}",
+    ".dh{background:#00274C;padding:22px 36px 18px}",
+    ".dey{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,0.45);margin-bottom:5px}",
+    ".dtl{font-size:23px;font-weight:800;color:#fff;margin-bottom:3px}",
+    ".dmt{font-size:12px;color:rgba(255,255,255,0.5)}",
+    ".activity-box{margin:22px 36px 0;padding:13px 16px;background:#f0f4f9;border-radius:8px;border-left:4px solid #2F65A7}",
+    ".ab-label{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#2F65A7;margin-bottom:5px}",
+    ".ab-row{font-size:13px;color:#1a3a5c;line-height:1.5;margin-bottom:1px}",
+    ".ab-row strong{color:#00274C}",
+    ".page-body{padding:18px 36px 32px}",
+    ".sec{margin-bottom:22px;page-break-inside:avoid}",
+    ".sec-hd{margin-bottom:7px;padding-bottom:5px;border-bottom:2.5px solid #FFCB05}",
+    ".sec-title{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:#00274C}",
+    ".sec-accme{font-size:9.5px;font-weight:400;font-style:italic;color:#7a96b0;margin-left:5px;text-transform:none;letter-spacing:0}",
+    ".sec-cmc{font-size:9.5px;font-weight:500;color:#9ab0c4;margin-left:7px;text-transform:none;letter-spacing:0}",
+    ".sec-body{font-size:13.5px;color:#1a3a5c;line-height:1.7;white-space:pre-wrap}",
+    ".need-lbl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;margin:8px 0 3px}",
+    ".reasoning{font-size:12px;font-style:italic;color:#4a6785;background:#f0f4f9;border-left:3px solid #2F65A7;border-radius:0 5px 5px 0;padding:7px 11px;margin-bottom:8px;line-height:1.5}",
+    ".obj-intro{font-size:12px;color:#4a6785;font-style:italic;margin-bottom:8px}",
+    ".obj-ol{margin-left:0;list-style:none;display:flex;flex-direction:column;gap:5px;counter-reset:obj}",
+    ".obj-ol li{font-size:13.5px;color:#1a3a5c;line-height:1.55;padding-left:22px;position:relative;counter-increment:obj}",
+    ".obj-ol li::before{content:counter(obj) '.';position:absolute;left:0;font-weight:700;color:#2F65A7}",
+    ".cg{margin-bottom:8px}.cg-lbl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}",
+    ".chips{display:flex;flex-wrap:wrap;gap:4px}.chip{font-size:11px;font-weight:700;background:#eef2f7;border:1px solid #a8bdd4;border-radius:4px;padding:2px 8px;color:#2F65A7}",
+    ".eg{margin-bottom:14px}.eg-lbl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #e4eaf2}",
+    ".ei{margin-bottom:7px;padding:9px 12px;border-radius:6px}",
+    ".ei-title{font-size:13px;font-weight:700;color:#00274C;margin-bottom:2px}",
+    ".ei-body{font-size:12px;color:#4a6785;line-height:1.45}",
+    ".ei-flag{font-size:12px;font-weight:600;margin-top:3px;line-height:1.4}",
+    ".doc-footer{margin:0 36px 28px;padding:10px 14px;border-radius:6px;background:#f8f9fb;border:1px solid #e4eaf2;font-size:10.5px;color:#8a9bb0;font-style:italic;line-height:1.5}",
+    "@media print{",
+    "body{background:#fff}",
+    ".pb{display:none!important}",
+    ".pw{margin:0;border-radius:0;box-shadow:none;max-width:100%}",
+    ".page-body{padding:14px 28px 24px}",
+    ".activity-box{margin:14px 28px 0}",
+    "}"
+  ].join("");
+
+  var fullHtml = "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\"><title>" + title + "</title>"
     + "<link href=\"https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap\" rel=\"stylesheet\">"
-    + "<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Nunito Sans',Arial,sans-serif;color:#1a2a3a;background:#fff;font-size:13.5px;line-height:1.6}.page{max-width:640px;margin:0 auto;padding:32px 40px}html{-webkit-print-color-adjust:exact;print-color-adjust:exact}.nb{display:flex;gap:10px;justify-content:flex-end;padding:14px 40px 0;max-width:640px;margin:0 auto}.bp{background:#00274C;color:#fff;padding:7px 18px;border-radius:7px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;border:none}.bc{background:#f0f2f5;color:#00274C;padding:7px 18px;border-radius:7px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;border:1.5px solid #d0d9e3}@media print{.nb{display:none!important}.page{padding:20px 28px}}</style>"
-    + "</head><body><div class=\"nb\"><button class=\"bc\" onclick=\"window.close()\">\u2715 Close</button><button class=\"bp\" onclick=\"window.print()\">\ud83d\udda8 Print / Save as PDF</button></div>"
-    + "<div class=\"page\">" + bodyHtml + "</div>"
-    + "<script>window.onload=function(){window.print();}<\/script></body></html>";
-  var win = window.open("", "_blank", "width=820,height=920,scrollbars=yes");
+    + "<style>" + css + "</style>"
+    + "</head><body>"
+    + "<div class=\"pb\"><div class=\"lft\"><span class=\"ptl\">Print preview</span><span class=\"pht\">Review your document, then print or save as PDF</span></div>"
+    + "<div style=\"display:flex;gap:10px;align-items:center\"><button class=\"bcl\" onclick=\"window.close()\">&#10005; Close</button>"
+    + "<button class=\"bpr\" onclick=\"window.print()\">&#128424; Print / Save as PDF</button></div></div>"
+    + "<div class=\"pw\"><div class=\"ds\"></div>"
+    + "<div class=\"dh\"><div class=\"dey\">Michigan Medicine &middot; Office of CME &amp; Lifelong Learning</div>"
+    + "<div class=\"dtl\">CME Application Content</div>"
+    + "<div class=\"dmt\">Generated " + date + " &middot; Review and edit before submitting to MiCME</div></div>"
+    + "<div class=\"page-body\">" + bodyHtml + "</div>"
+    + "<div class=\"doc-footer\">Generated by CME Content Helper &middot; Michigan Medicine OCME&amp;LL &middot; All AI-generated content should be reviewed and edited to accurately reflect your planned activity before submission.</div>"
+    + "</div></body></html>";
+
+  var win = window.open("", "_blank", "width=860,height=960,scrollbars=yes");
   if (win) { win.document.open(); win.document.write(fullHtml); win.document.close(); return; }
   try {
     var blob = new Blob([fullHtml], { type: "text/html" });
@@ -1225,12 +1317,13 @@ function printDocument(title, bodyHtml) {
     var a = document.createElement("a"); a.href = url; a.target = "_blank"; a.rel = "noopener";
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(function() { URL.revokeObjectURL(url); }, 10000);
-  } catch(e) { alert("Print blocked by browser. Please allow pop-ups for this page and try again."); }
+  } catch(e2) { alert("Print blocked by browser. Please allow pop-ups for this page and try again."); }
 }
+
 
 function escHtml(str) {
   if (!str) return "";
-  return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
 
 renderOutput();
