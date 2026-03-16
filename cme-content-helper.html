@@ -314,17 +314,25 @@ textarea{resize:vertical}
         </div>
       </div>
 
-      <!-- CloudCME map -->
+      <!-- How to use -->
       <div class="card-tight" style="border-left:3px solid var(--michigan-maize)">
-        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--arboretum-blue);margin-bottom:8px">Where each section pastes in CloudCME</div>
-        <div style="display:flex;flex-direction:column;gap:5px">
-          <div style="font-size:12px;color:var(--text-secondary);display:flex;gap:8px"><span style="color:var(--arboretum-blue);font-weight:700;min-width:110px;flex-shrink:0">Practice gap</span><span>Gap and Needs &#8594; Practice Gap</span></div>
-          <div style="font-size:12px;color:var(--text-secondary);display:flex;gap:8px"><span style="color:var(--arboretum-blue);font-weight:700;min-width:110px;flex-shrink:0">Ed. need</span><span>Gap and Needs &#8594; Educational Needs</span></div>
-          <div style="font-size:12px;color:var(--text-secondary);display:flex;gap:8px"><span style="color:var(--arboretum-blue);font-weight:700;min-width:110px;flex-shrink:0">Results</span><span>Gap and Needs &#8594; Expected Results</span></div>
-          <div style="font-size:12px;color:var(--text-secondary);display:flex;gap:8px"><span style="color:var(--arboretum-blue);font-weight:700;min-width:110px;flex-shrink:0">Why this format</span><span>Gap and Needs &#8594; Educational Format</span></div>
-          <div style="font-size:12px;color:var(--text-secondary);display:flex;gap:8px"><span style="color:var(--arboretum-blue);font-weight:700;min-width:110px;flex-shrink:0">Objectives</span><span>Learning Outcomes &amp; Competencies</span></div>
-          <div style="font-size:12px;color:var(--text-secondary);display:flex;gap:8px"><span style="color:var(--arboretum-blue);font-weight:700;min-width:110px;flex-shrink:0">Competencies</span><span>Learning Outcomes &#8594; Competencies</span></div>
-          <div style="font-size:12px;color:var(--text-secondary);display:flex;gap:8px"><span style="color:var(--arboretum-blue);font-weight:700;min-width:110px;flex-shrink:0">Needs summary</span><span>Gap and Needs &#8594; Needs Assessment</span></div>
+        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--arboretum-blue);margin-bottom:10px">How to use this tool</div>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <div style="display:flex;gap:10px;align-items:flex-start">
+            <span style="font-size:12px;font-weight:800;color:var(--michigan-blue);background:var(--michigan-maize);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1">1</span>
+            <span style="font-size:12px;color:var(--text-secondary);line-height:1.45">Fill in the topic, content, and audience — then click <strong style="color:var(--text-primary)">Generate</strong>. The AI drafts all seven application sections at once.</span>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start">
+            <span style="font-size:12px;font-weight:800;color:var(--michigan-blue);background:var(--michigan-maize);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1">2</span>
+            <span style="font-size:12px;color:var(--text-secondary);line-height:1.45">Review every section — all text boxes are editable. Select which practice gap version fits best (A, B, or C) and tick the learning objectives you want to keep.</span>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start">
+            <span style="font-size:12px;font-weight:800;color:var(--michigan-blue);background:var(--michigan-maize);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1">3</span>
+            <span style="font-size:12px;color:var(--text-secondary);line-height:1.45">Use <strong style="color:var(--text-primary)">Copy all sections</strong> or <strong style="color:var(--text-primary)">Print / Save PDF</strong> — each section is labelled with exactly where to paste it in your MiCME/CloudCME application.</span>
+          </div>
+          <div style="margin-top:2px;padding-top:8px;border-top:1px solid var(--border-light);font-size:11px;color:var(--text-muted);line-height:1.5">
+            Not sure which credit types or application type to use? Run the <strong style="color:var(--arboretum-blue)">CME Credit Application Navigator</strong> first.
+          </div>
         </div>
       </div>
     </div>
@@ -1239,7 +1247,7 @@ function handlePrint() {
     if (Array.isArray(el.commendation) && el.commendation.length) {
       eligBody += "<div class=\"eg\"><div class=\"eg-lbl\" style=\"color:#be123c\">ACCME Commendation Criteria</div>";
       el.commendation.forEach(function(c) {
-        eligBody += "<div class=\"ei\" style=\"background:#fff1f2\"><div class=\"ei-title\">" + e(c.code + " &middot; " + c.title) + "</div>"
+        eligBody += "<div class=\"ei\" style=\"background:#fff1f2\"><div class=\"ei-title\">" + e(c.code) + " &middot; " + e(c.title) + "</div>"
           + "<div class=\"ei-body\">" + e(c.rationale) + "</div></div>";
       });
       eligBody += "</div>";
