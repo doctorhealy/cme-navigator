@@ -168,27 +168,7 @@ textarea{resize:vertical}
 .copy-btn.copied{opacity:1;background:#dcfce7;border-color:#86efac;color:#15803d}
 .copy-btn svg{width:13px;height:13px;flex-shrink:0}
 
-/* API KEY MODAL */
-.apikey-overlay{position:fixed;inset:0;background:rgba(0,20,40,0.55);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px}
-.apikey-modal{background:#fff;border-radius:16px;padding:28px 28px 24px;max-width:460px;width:100%;box-shadow:0 16px 48px rgba(0,0,0,0.25)}
-.apikey-modal-header{display:flex;align-items:center;gap:10px;margin-bottom:6px}
-.apikey-modal-title{font-size:17px;font-weight:800;color:var(--michigan-blue)}
-.apikey-modal-sub{font-size:13px;color:var(--text-secondary);line-height:1.55;margin-bottom:18px}
-.apikey-input-wrap{position:relative;margin-bottom:8px}
-.apikey-input{width:100%;border:1.5px solid var(--border-mid);border-radius:8px;padding:11px 42px 11px 13px;font-size:13px;font-family:inherit;color:var(--text-primary);letter-spacing:0.02em;transition:border-color 0.15s}
-.apikey-input:focus{outline:none;border-color:var(--arboretum-blue);box-shadow:0 0 0 3px rgba(47,101,167,0.1)}
-.apikey-toggle{position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:15px;padding:2px;line-height:1}
-.apikey-hint{font-size:11px;color:var(--text-muted);line-height:1.5;margin-bottom:18px}
-.apikey-hint a{color:var(--arboretum-blue);text-decoration:none}
-.apikey-hint a:hover{text-decoration:underline}
-.apikey-actions{display:flex;gap:10px;justify-content:flex-end}
-.apikey-btn-primary{padding:10px 22px;background:var(--michigan-blue);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;transition:background 0.15s}
-.apikey-btn-primary:hover{background:#1a3a5c}
-.apikey-btn-primary:disabled{opacity:0.5;cursor:not-allowed}
-.apikey-error{font-size:12px;color:#c53030;margin-bottom:10px;display:none}
-.apikey-status-bar{position:fixed;bottom:16px;right:16px;background:var(--michigan-blue);color:#fff;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 4px 14px rgba(0,0,0,0.2);z-index:9999;cursor:pointer;transition:background 0.15s}
-.apikey-status-bar:hover{background:#1a3a5c}
-.apikey-dot{width:7px;height:7px;border-radius:50%;background:#FFCB05;flex-shrink:0}
+
 </style>
 </head>
 <body>
@@ -371,37 +351,6 @@ textarea{resize:vertical}
   </div>
 </div>
 
-<!-- ── API KEY MODAL ── -->
-<div class="apikey-overlay" id="apikeyOverlay">
-  <div class="apikey-modal">
-    <div class="apikey-modal-header">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00274C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="3"/><path d="M11 15h9M17 12v6"/><path d="M11 12V9a4 4 0 0 1 8 0"/></svg>
-      <span class="apikey-modal-title">Anthropic API Key Required</span>
-    </div>
-    <div class="apikey-modal-sub">
-      This tool uses the Anthropic Claude API to generate CME application content. Enter your API key below — it is stored in memory for this session only and never sent anywhere except the Anthropic API.
-    </div>
-    <div class="apikey-input-wrap">
-      <input class="apikey-input" type="password" id="apikeyInput" placeholder="sk-ant-api03-..." autocomplete="off" spellcheck="false"/>
-      <button class="apikey-toggle" id="apikeyToggle" onclick="toggleKeyVisibility()" title="Show / hide key">👁</button>
-    </div>
-    <div class="apikey-error" id="apikeyError">Please enter a valid API key (starts with sk-ant-).</div>
-    <div class="apikey-hint">
-      Your key is used only for API calls to <strong>api.anthropic.com</strong>. It is not stored, logged, or shared.<br>
-      Get a key at <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a>.
-    </div>
-    <div class="apikey-actions">
-      <button class="apikey-btn-primary" id="apikeySubmit" onclick="submitApiKey()">Continue →</button>
-    </div>
-  </div>
-</div>
-
-<!-- ── API KEY STATUS BAR ── -->
-<div class="apikey-status-bar" id="apikeyStatusBar" style="display:none" onclick="resetApiKey()" title="Click to change API key">
-  <span class="apikey-dot"></span>
-  <span>API key active · Click to change</span>
-</div>
-
 <script>
 // ── STATE ──
 var state = {
@@ -418,61 +367,7 @@ var state = {
   errorMessage: null
 };
 
-// ── API KEY MANAGEMENT ──
-// To hard-code a key for your team, replace null with your key string:
-// var HARD_CODED_API_KEY = "sk-ant-api03-YOUR-KEY-HERE";
-var HARD_CODED_API_KEY = null;
 
-var sessionApiKey = HARD_CODED_API_KEY || null;
-
-function getApiKey() { return sessionApiKey; }
-
-function initApiKeyModal() {
-  if (HARD_CODED_API_KEY) {
-    // Hard-coded key — skip modal entirely
-    document.getElementById("apikeyOverlay").style.display = "none";
-    document.getElementById("apikeyStatusBar").style.display = "flex";
-    return;
-  }
-  document.getElementById("apikeyOverlay").style.display = "flex";
-  document.getElementById("apikeyStatusBar").style.display = "none";
-  setTimeout(function() { document.getElementById("apikeyInput").focus(); }, 100);
-}
-
-function submitApiKey() {
-  var val = document.getElementById("apikeyInput").value.trim();
-  var errEl = document.getElementById("apikeyError");
-  if (!val || !val.startsWith("sk-ant-")) {
-    errEl.style.display = "block"; return;
-  }
-  errEl.style.display = "none";
-  sessionApiKey = val;
-  document.getElementById("apikeyOverlay").style.display = "none";
-  document.getElementById("apikeyStatusBar").style.display = "flex";
-}
-
-function resetApiKey() {
-  sessionApiKey = HARD_CODED_API_KEY || null;
-  document.getElementById("apikeyInput").value = "";
-  document.getElementById("apikeyError").style.display = "none";
-  if (!HARD_CODED_API_KEY) {
-    document.getElementById("apikeyOverlay").style.display = "flex";
-    document.getElementById("apikeyStatusBar").style.display = "none";
-    setTimeout(function() { document.getElementById("apikeyInput").focus(); }, 100);
-  }
-}
-
-function toggleKeyVisibility() {
-  var inp = document.getElementById("apikeyInput");
-  inp.type = inp.type === "password" ? "text" : "password";
-}
-
-// Allow Enter key to submit
-document.addEventListener("DOMContentLoaded", function() {
-  var inp = document.getElementById("apikeyInput");
-  if (inp) inp.addEventListener("keydown", function(e) { if (e.key === "Enter") submitApiKey(); });
-  initApiKeyModal();
-});
 
 // ── SYSTEM PROMPT ──
 var SYSTEM_PROMPT = [
@@ -675,23 +570,11 @@ async function handleGenerate() {
   var btn = document.getElementById("generateBtn");
   if (btn) { btn.disabled = true; document.getElementById("btnText").textContent = "Generating\u2026"; }
 
-  var apiKey = getApiKey();
-  if (!apiKey) {
-    state.status = "idle";
-    if (btn) { btn.disabled = false; document.getElementById("btnText").textContent = "Generate Application Content \u2192"; }
-    renderOutput();
-    initApiKeyModal();
-    return;
-  }
-
   try {
-    var resp = await fetch("https://api.anthropic.com/v1/messages", {
+    var resp = await fetch("https://anthropic-proxy.doctorhealy.workers.dev", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-        "anthropic-dangerous-direct-browser-calls": "true"
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 3500, system: SYSTEM_PROMPT, messages: [{ role: "user", content: buildUserPrompt() }] })
     });
