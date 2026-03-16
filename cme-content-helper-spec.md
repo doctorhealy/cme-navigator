@@ -361,7 +361,10 @@ Two tiers with distinct planner guidance:
 **Cloudflare Worker proxy:** `https://anthropic-proxy.doctorhealy.workers.dev`  
 The Content Helper calls this endpoint directly. The Worker holds the Anthropic API key server-side — no key is embedded in the HTML. This makes the HTML files safe to publish to GitHub and deploy anywhere.
 
-**Future (Track B):** Full standalone hosting. The `window.open()` print preview and full functionality work correctly in a hosted environment outside the Claude.ai sandbox.
+**GitHub Pages (live):** `https://doctorhealy.github.io/cme-navigator/`  
+Both tools are hosted here. Open the URL in any browser — no login, no install.
+
+**Future (Track B):** Full standalone hosting with institutional domain. The `window.open()` print preview and full functionality work correctly in a hosted environment outside the Claude.ai sandbox.
 
 ### 7c. Content Helper — key function list
 
