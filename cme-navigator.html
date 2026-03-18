@@ -633,11 +633,17 @@ function renderResults(){
   if(summaryParts.length>0){
     hdr.appendChild(el("p",{style:{fontSize:"12px",opacity:"0.7",marginBottom:"10px",lineHeight:"1.4"}},[summaryParts.join(" · ")]));
   }
-  hdr.appendChild(el("p",{style:{fontSize:"13px",opacity:"0.85",marginBottom:"12px"}},[
-    res.application.some(function(i){return i.isCommercialSupport||i.isJoint;})
-    ? "⚠️ Action required — see Application tab first."
-    : "Review each tab, then use Generate Docs to produce documents for your OCME&LL representative."
-  ]));
+  var guidePara=el("p",{style:{fontSize:"13px",opacity:"0.85",marginBottom:"12px"}});
+  if(res.application.some(function(i){return i.isCommercialSupport||i.isJoint;})){
+    guidePara.appendChild(document.createTextNode("⚠️ Action required — see Application tab first."));
+  } else {
+    guidePara.appendChild(document.createTextNode("Review each tab, then "));
+    var genDocsBtn=el("button",{style:{background:"none",border:"none",color:"#FFCB05",fontWeight:"800",cursor:"pointer",fontSize:"inherit",fontFamily:"inherit",padding:"0",textDecoration:"underline",textUnderlineOffset:"2px"}},["open Generate Docs"]);
+    genDocsBtn.onclick=function(){state.activeTab="export";state.docPlannerOpen=true;render();scrollToTop();};
+    guidePara.appendChild(genDocsBtn);
+    guidePara.appendChild(document.createTextNode(" to produce documents for your OCME&LL representative."));
+  }
+  hdr.appendChild(guidePara);
   var btnRow=el("div",{style:{display:"flex",gap:"8px",flexWrap:"wrap",alignItems:"center"}});
   // "Edit Answers" is the primary recovery action — prominent border style
   var editBtn=el("button",{style:{padding:"7px 14px",borderRadius:"8px",border:"2px solid rgba(255,255,255,0.55)",background:"transparent",color:"#fff",fontSize:"12px",fontWeight:"700",cursor:"pointer"},onclick:function(){state.done=false;render();scrollToTop();}},["✏ Edit Answers"]);
@@ -666,7 +672,11 @@ function renderResults(){
     if(!t.always && !t.show) return;
     var active=state.activeTab===t.id;
     var label = t.label + (t.count>1?" ("+t.count+")":"");
-    var tb=el("button",{style:{padding:"8px 14px",borderRadius:"8px",fontSize:"13px",fontWeight:"600",border:"none",background:active?"#2F65A7":"#fff",color:active?"#fff":"#1a3a5c",boxShadow:active?"0 2px 8px rgba(0,39,76,0.3)":"0 1px 3px rgba(0,0,0,0.08)",cursor:"pointer",transition:"all 0.15s",whiteSpace:"nowrap",flexShrink:"0"},onclick:function(){state.activeTab=t.id;render();}},[label]);
+    var tb=el("button",{style:{padding:"8px 14px",borderRadius:"8px",fontSize:"13px",fontWeight:"600",border:"none",background:active?"#2F65A7":"#fff",color:active?"#fff":"#1a3a5c",boxShadow:active?"0 2px 8px rgba(0,39,76,0.3)":"0 1px 3px rgba(0,0,0,0.08)",cursor:"pointer",transition:"all 0.15s",whiteSpace:"nowrap",flexShrink:"0"},onclick:function(){
+      state.activeTab=t.id;
+      if(t.id==="export"&&!state.docPlannerOpen&&!state.docStaffOpen) state.docPlannerOpen=true;
+      render();
+    }},[label]);
     tabBar.appendChild(tb);
   });
   wrap.appendChild(tabBar);
@@ -1495,6 +1505,12 @@ function renderExportTab(res, answers) {
     + 'The <strong>MiCME Activity Build Brief</strong> is for your OCME&amp;LL representative — everything needed to build the activity correctly in CloudCME.';
   wrap.appendChild(intro);
 
+  // Hint — above the panels so it's the first thing users read
+  wrap.appendChild(el("div",{style:{
+    fontSize:"12px",color:"#4a6785",background:"#eef2f7",border:"1px solid #a8bdd4",
+    borderRadius:"8px",padding:"8px 13px",marginBottom:"14px",lineHeight:"1.5"
+  }},["👆 Click a document to expand it, then use Print / Save PDF to produce a clean copy. Only items relevant to your specific activity are included."]));
+
   // Doc 1 — Planner Preparation Guide
   wrap.appendChild(renderDocPanel({
     stateKey: "docPlannerOpen",
@@ -1525,9 +1541,6 @@ function renderExportTab(res, answers) {
     generateFn: function(){ return generateStaffBrief(res, answers); }
   }));
 
-  wrap.appendChild(el("div",{style:{
-    fontSize:"12px",color:"#7a96b0",textAlign:"center",marginTop:"10px",lineHeight:"1.5"
-  }},["Click either document to expand it. Use Print / Save PDF to produce a clean copy to share or file. Only items relevant to your specific activity are included."]));
 
   return wrap;
 }

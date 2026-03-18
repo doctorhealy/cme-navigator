@@ -83,6 +83,8 @@ textarea{resize:vertical}
 .btn-generate{width:100%;padding:14px;background:var(--michigan-blue);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:800;box-shadow:0 4px 14px rgba(0,39,76,0.3);transition:all 0.15s;display:flex;align-items:center;justify-content:center;gap:8px}
 .btn-generate:hover:not(:disabled){background:#1a3a5c;transform:translateY(-1px)}
 .btn-generate:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+@keyframes btnReady{0%,100%{box-shadow:0 4px 14px rgba(0,39,76,0.3)}50%{box-shadow:0 4px 28px rgba(0,39,76,0.55),0 0 0 6px rgba(47,101,167,0.15)}}
+.btn-generate.ready{animation:btnReady 1.4s ease-in-out 3}
 .btn-regen{padding:9px 16px;background:#fff;color:var(--arboretum-blue);border:1.5px solid var(--border-mid);border-radius:8px;font-size:13px;font-weight:700;transition:all 0.15s}
 .btn-regen:hover{background:var(--bg-blue-tint);border-color:var(--arboretum-blue)}
 .btn-print{padding:9px 18px;background:var(--michigan-blue);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;transition:all 0.15s;display:flex;align-items:center;gap:6px}
@@ -217,6 +219,29 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
   <div class="main-layout">
     <!-- ── INPUT PANEL ── -->
     <div class="input-panel">
+
+      <!-- How to use — shown first so new users see it before the form -->
+      <div class="card-tight" style="border-left:3px solid var(--michigan-maize)">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--arboretum-blue);margin-bottom:10px">How to use this tool</div>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <div style="display:flex;gap:10px;align-items:flex-start">
+            <span style="font-size:12px;font-weight:800;color:var(--michigan-blue);background:var(--michigan-maize);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1">1</span>
+            <span style="font-size:12px;color:var(--text-secondary);line-height:1.45">Fill in the topic, content, and audience — then click <strong style="color:var(--text-primary)">Generate</strong>. The AI drafts all seven application sections at once.</span>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start">
+            <span style="font-size:12px;font-weight:800;color:var(--michigan-blue);background:var(--michigan-maize);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1">2</span>
+            <span style="font-size:12px;color:var(--text-secondary);line-height:1.45">Review every section — all text boxes are editable. Select which practice gap version fits best (A, B, or C) and tick the learning objectives you want to keep.</span>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start">
+            <span style="font-size:12px;font-weight:800;color:var(--michigan-blue);background:var(--michigan-maize);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1">3</span>
+            <span style="font-size:12px;color:var(--text-secondary);line-height:1.45">Use <strong style="color:var(--text-primary)">Copy all sections</strong> or <strong style="color:var(--text-primary)">Print / Save PDF</strong> — each section is labelled with exactly where to paste it in your MiCME/CloudCME application.</span>
+          </div>
+          <div style="margin-top:2px;padding-top:8px;border-top:1px solid var(--border-light);font-size:11px;color:var(--text-muted);line-height:1.5">
+            Not sure which credit types or application type to use? Run the <strong style="color:var(--arboretum-blue)">CME Credit Application Navigator</strong> first — it identifies MOC board credits, commendation criteria, Michigan licensing topics, commercial support requirements, and Joint Accreditation opportunities for your activity.
+          </div>
+        </div>
+      </div>
+
       <div class="card">
         <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;line-height:1.5">
           Answer three questions and the AI will suggest application content and identify everything your activity may qualify for.
@@ -350,27 +375,6 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
         </div>
       </div>
 
-      <!-- How to use -->
-      <div class="card-tight" style="border-left:3px solid var(--michigan-maize)">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--arboretum-blue);margin-bottom:10px">How to use this tool</div>
-        <div style="display:flex;flex-direction:column;gap:9px">
-          <div style="display:flex;gap:10px;align-items:flex-start">
-            <span style="font-size:12px;font-weight:800;color:var(--michigan-blue);background:var(--michigan-maize);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1">1</span>
-            <span style="font-size:12px;color:var(--text-secondary);line-height:1.45">Fill in the topic, content, and audience — then click <strong style="color:var(--text-primary)">Generate</strong>. The AI drafts all seven application sections at once.</span>
-          </div>
-          <div style="display:flex;gap:10px;align-items:flex-start">
-            <span style="font-size:12px;font-weight:800;color:var(--michigan-blue);background:var(--michigan-maize);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1">2</span>
-            <span style="font-size:12px;color:var(--text-secondary);line-height:1.45">Review every section — all text boxes are editable. Select which practice gap version fits best (A, B, or C) and tick the learning objectives you want to keep.</span>
-          </div>
-          <div style="display:flex;gap:10px;align-items:flex-start">
-            <span style="font-size:12px;font-weight:800;color:var(--michigan-blue);background:var(--michigan-maize);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1">3</span>
-            <span style="font-size:12px;color:var(--text-secondary);line-height:1.45">Use <strong style="color:var(--text-primary)">Copy all sections</strong> or <strong style="color:var(--text-primary)">Print / Save PDF</strong> — each section is labelled with exactly where to paste it in your MiCME/CloudCME application.</span>
-          </div>
-          <div style="margin-top:2px;padding-top:8px;border-top:1px solid var(--border-light);font-size:11px;color:var(--text-muted);line-height:1.5">
-            Not sure which credit types or application type to use? Run the <strong style="color:var(--arboretum-blue)">CME Credit Application Navigator</strong> first — it identifies MOC board credits, commendation criteria, Michigan licensing topics, commercial support requirements, and Joint Accreditation opportunities for your activity.
-          </div>
-        </div>
-      </div>
     </div>
 
     <!-- ── OUTPUT PANEL ── -->
@@ -1439,6 +1443,43 @@ function escHtml(str) {
 }
 
 renderOutput();
+
+// ── GENERATE BUTTON PULSE ──
+// Adds a 3-cycle glow animation to the generate button once all required fields are filled,
+// signalling to new users that the tool is ready. Removed on first click or after generation.
+(function(){
+  function isReady(){
+    var topic=(document.getElementById("topic")||{}).value||"";
+    var content=(document.getElementById("content")||{}).value||"";
+    var profs=getProfs(), specs=getSpecs();
+    var other=(document.getElementById("audienceOther")||{}).value||"";
+    return topic.trim()&&content.trim()&&(profs.length||specs.length||other.trim());
+  }
+  function updatePulse(){
+    var btn=document.getElementById("generateBtn");
+    if(!btn||state.status==="done"||state.status==="loading") return;
+    if(isReady()){ btn.classList.add("ready"); }
+    else { btn.classList.remove("ready"); }
+  }
+  // Remove pulse permanently on click (user has seen it)
+  document.addEventListener("click",function(e){
+    if(e.target&&e.target.id==="generateBtn"){
+      var btn=document.getElementById("generateBtn");
+      if(btn) btn.classList.remove("ready");
+    }
+  });
+  // Watch all three required fields
+  ["topic","content"].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el) el.addEventListener("input",updatePulse);
+  });
+  // Profession/specialty checkboxes use change events
+  document.addEventListener("change",function(e){
+    if(e.target&&(e.target.closest("#profGrid")||e.target.closest("#specGrid")||e.target.id==="audienceOther")) updatePulse();
+  });
+  var other=document.getElementById("audienceOther");
+  if(other) other.addEventListener("input",updatePulse);
+})();
 
 // Warn immediately if opened as a local file
 if (location.protocol === "file:") {
