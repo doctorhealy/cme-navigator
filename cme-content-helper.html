@@ -320,7 +320,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
           <div class="field-group">
             <div class="field-label">Is the planning committee interprofessional?
               <span class="tip-wrap">
-                <button class="tip-btn" onclick="toggleTip('tip-ipce',event)" aria-label="More information">i</button>
+                <button class="tip-btn" onclick="toggleTip('tip-ipce',event,this)" aria-label="More information">i</button>
                 <div class="tip-pop below" id="tip-ipce"><div class="tip-arrow"></div>
                   <strong>IPCE requires all three of the following:</strong><br><br>
                   <strong>Co-planned:</strong> two or more health professions are on the planning committee<br><br>
@@ -342,7 +342,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
             <div class="field-label">How was the gap identified?
               <span style="font-size:12px;font-weight:400;color:var(--text-muted)"> (optional — improves output)</span>
               <span class="tip-wrap">
-                <button class="tip-btn" onclick="toggleTip('tip-gap-src',event)" aria-label="More information">i</button>
+                <button class="tip-btn" onclick="toggleTip('tip-gap-src',event,this)" aria-label="More information">i</button>
                 <div class="tip-pop below" id="tip-gap-src"><div class="tip-arrow"></div>
                   <strong>Why this matters:</strong> ACCME requires CME to be based on a genuine, identified need. Describing how the gap was found strengthens your application and is required in the needs assessment.<br><br>
                   <strong>Quality / registry data</strong> — audit results, bundle compliance rates, quality metrics<br>
@@ -940,19 +940,19 @@ function hideTip(id) {
   var pop = document.getElementById(id);
   if (pop) { pop.classList.remove("show"); if (activeTip === id) activeTip = null; }
 }
-function toggleTip(id, event) {
+function toggleTip(id, event, btnEl) {
   event.stopPropagation();
   var pop = document.getElementById(id);
   if (!pop) return;
   if (pop.classList.contains("show")) { hideTip(id); return; }
   if (activeTip) hideTip(activeTip);
 
+  // Get button rect BEFORE moving popup (moving is out-of-flow so won't affect it, but be explicit)
+  var btn = btnEl || event.currentTarget;
+  var rect = btn.getBoundingClientRect();
+
   // Move popup to document.body to escape any stacking context on animated ancestors
   if (pop.parentNode !== document.body) document.body.appendChild(pop);
-
-  // Position fixed: calculate from button viewport coords
-  var btn = event.currentTarget;
-  var rect = btn.getBoundingClientRect();
   var popW = 280;
   var spaceBelow = window.innerHeight - rect.bottom;
   var spaceAbove = rect.top;
@@ -998,7 +998,7 @@ document.addEventListener("scroll", function() { if (activeTip) hideTip(activeTi
 function tip(id, html, position) {
   var pos = position || "below";
   return "<span class=\"tip-wrap\">"
-    + "<button class=\"tip-btn\" onclick=\"toggleTip('" + id + "',event)\" aria-label=\"More information\">i</button>"
+    + "<button class=\"tip-btn\" onclick=\"toggleTip('" + id + "',event,this)\" aria-label=\"More information\">i</button>"
     + "<div class=\"tip-pop " + pos + "\" id=\"" + id + "\" data-dyn=\"1\">"
     + "<div class=\"tip-arrow\"></div>"
     + html
@@ -1026,7 +1026,7 @@ function renderOutput() {
     return;
   }
   if (state.status === "loading") {
-    panel.innerHTML = '<div class="card"><div class="loading-state"><div class="spinner"></div><div class="loading-text" id="loadStage">Analyzing your practice gap\u2026</div><div class="loading-progress-wrap"><div class="loading-progress-bar" id="loadBar"></div></div><div class="loading-meta"><span id="loadElapsed">0s</span>\u2002\u00b7\u2002Usually 20\u201330 seconds</div></div></div>';
+    panel.innerHTML = '<div class="card"><div class="loading-state"><div class="spinner"></div><div class="loading-text" id="loadStage">Analyzing your practice gap\u2026</div><div class="loading-progress-wrap"><div class="loading-progress-bar" id="loadBar"></div></div><div class="loading-meta"><span id="loadElapsed">0s</span>\u2002\u00b7\u2002Usually 40\u201350 seconds</div></div></div>';
     startLoadTimer();
     return;
   }
