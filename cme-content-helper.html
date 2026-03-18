@@ -147,7 +147,8 @@ textarea{resize:vertical}
 
 /* TOOLTIPS */
 .tip-wrap{position:relative;display:inline-flex;align-items:center;vertical-align:middle}
-.tip-btn{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:var(--arboretum-blue);color:#fff;font-size:9px;font-weight:800;cursor:pointer;flex-shrink:0;border:none;line-height:1;margin-left:5px;user-select:none;transition:background 0.12s;padding:6px;margin:-6px;box-sizing:content-box}
+.tip-btn{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:var(--arboretum-blue);color:#fff;font-size:9px;font-weight:800;cursor:pointer;flex-shrink:0;border:none;line-height:1;margin-left:5px;user-select:none;transition:background 0.12s;position:relative}
+.tip-btn::after{content:'';position:absolute;inset:-8px}
 .tip-btn:hover{background:#1a4f8a}
 .tip-pop{position:fixed;z-index:99999;width:280px;background:#1e293b;color:#f0f2f5;border-radius:10px;padding:13px 15px;font-size:12px;line-height:1.6;box-shadow:0 8px 24px rgba(0,0,0,0.3);pointer-events:none;opacity:0;transition:opacity 0.15s}
 .tip-pop.show{opacity:1;pointer-events:auto}

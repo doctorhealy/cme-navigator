@@ -12,6 +12,7 @@
 body{background:#f0f2f5;font-family:'Nunito Sans',Arial,sans-serif;color:#00274C;line-height:1.6;min-height:100vh}
 button{font-family:inherit;cursor:pointer}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.tip-hit{position:relative}.tip-hit::after{content:'';position:absolute;inset:-8px}
 .fade-up{animation:fadeUp 0.2s ease both}
 @media print{.no-print{display:none!important}body{background:#fff}}
 </style>
@@ -428,7 +429,7 @@ function card(extra,children){
 function renderTooltip(text,id){
   var isOpen=state.openTooltip===id;
   var wrap=el("span",{style:{position:"relative",display:"inline-flex",alignItems:"center",verticalAlign:"middle"}});
-  var btn=el("span",{style:{cursor:"pointer",padding:"6px",margin:"-6px",boxSizing:"content-box",color:isOpen?"#2F65A7":"#7a96b0",fontSize:"13px",userSelect:"none",lineHeight:"1",display:"inline-flex",alignItems:"center"},role:"button",tabindex:"0"},["ⓘ"]);
+  var btn=el("span",{className:"tip-hit",style:{cursor:"pointer",color:isOpen?"#2F65A7":"#7a96b0",fontSize:"13px",userSelect:"none",lineHeight:"1",display:"inline-flex",alignItems:"center"},role:"button",tabindex:"0"},["ⓘ"]);
   btn.onclick=function(e){e.stopPropagation();var next=isOpen?null:id;if(state.openTooltip===next)return;state.openTooltip=next;render();};
   btn.onkeydown=function(e){if(e.key==="Enter"||e.key===" "){e.stopPropagation();var next=isOpen?null:id;if(state.openTooltip===next)return;state.openTooltip=next;render();}};
   wrap.appendChild(btn);
