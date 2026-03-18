@@ -1589,11 +1589,11 @@ function render(){
   // Close tooltip on outside click or scroll — single persistent listeners
   if (!window._navTooltipListenerAdded) {
     window._navTooltipListenerAdded = true;
-    document.addEventListener("click", function() {
-      if (state.openTooltip) { state.openTooltip = null; render(); }
+    document.addEventListener("click", function(e) {
+      if (state.openTooltip && !e.target.closest('.nav-tip-pop') && !e.target.closest('.nav-tip-btn')) { state.openTooltip = null; render(); }
     });
-    document.addEventListener("scroll", function() {
-      if (state.openTooltip) { state.openTooltip = null; render(); }
+    document.addEventListener("scroll", function(e) {
+      if (state.openTooltip && !e.target.closest('.nav-tip-pop')) { state.openTooltip = null; render(); }
     }, true);
   }
 }
