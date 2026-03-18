@@ -97,10 +97,12 @@ textarea{resize:vertical}
 .empty-icon{font-size:48px;opacity:0.35}
 .empty-title{font-size:16px;font-weight:700;color:var(--text-secondary)}
 .empty-sub{font-size:13px;max-width:300px;line-height:1.5}
-.loading-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:14px}
-.spinner{width:36px;height:36px;border:3px solid var(--border-light);border-top-color:var(--arboretum-blue);border-radius:50%;animation:spin 0.8s linear infinite}
-.loading-text{font-size:14px;font-weight:600;color:var(--text-secondary)}
-.loading-sub{font-size:12px;color:var(--text-muted);text-align:center;max-width:320px;line-height:1.5}
+.loading-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:10px}
+.spinner{width:36px;height:36px;border:3px solid var(--border-light);border-top-color:var(--arboretum-blue);border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:4px}
+.loading-text{font-size:14px;font-weight:600;color:var(--text-secondary);min-height:1.4em;transition:opacity 0.3s}
+.loading-progress-wrap{width:100%;max-width:280px;height:3px;background:var(--border-light);border-radius:2px;overflow:hidden}
+.loading-progress-bar{height:100%;background:var(--arboretum-blue);border-radius:2px;width:0%;transition:width 1s ease-out}
+.loading-meta{font-size:12px;color:var(--text-muted)}
 .error-box{background:#fff5f5;border:1.5px solid #feb2b2;border-radius:10px;padding:16px;color:#c53030;font-size:14px;display:flex;align-items:flex-start;gap:10px}
 
 /* OUTPUT SECTIONS */
@@ -385,6 +387,34 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 
 <script>
 // ── STATE ──
+var _loadTimer = null, _loadStart = 0;
+var LOAD_STAGES = [
+  "Analyzing your practice gap\u2026",
+  "Diagnosing the educational need\u2026",
+  "Drafting expected results & format justification\u2026",
+  "Writing learning objectives\u2026",
+  "Mapping ACGME/ABMS competencies\u2026",
+  "Reviewing MOC & IPCE eligibility\u2026",
+  "Finalizing needs assessment summary\u2026"
+];
+function stopLoadTimer() { if (_loadTimer) { clearInterval(_loadTimer); _loadTimer = null; } }
+function startLoadTimer() {
+  stopLoadTimer();
+  _loadStart = Date.now();
+  var stageIdx = 0;
+  _loadTimer = setInterval(function() {
+    var stageEl = document.getElementById("loadStage");
+    var barEl   = document.getElementById("loadBar");
+    var etEl    = document.getElementById("loadElapsed");
+    if (!stageEl) { stopLoadTimer(); return; }
+    var secs = Math.floor((Date.now() - _loadStart) / 1000);
+    if (etEl)    etEl.textContent = secs + "s";
+    if (barEl)   barEl.style.width = (88 * (1 - Math.exp(-secs / 18))) + "%";
+    var ni = Math.min(Math.floor(secs / 4), LOAD_STAGES.length - 1);
+    if (ni !== stageIdx) { stageIdx = ni; stageEl.textContent = LOAD_STAGES[stageIdx]; }
+  }, 1000);
+}
+
 var state = {
   status: "idle",
   results: null,
@@ -1005,6 +1035,7 @@ function showToast(msg) {
 
 // ── RENDER OUTPUT ──
 function renderOutput() {
+  if (state.status !== "loading") stopLoadTimer();
   var panel = document.getElementById("outputPanel");
   panel.innerHTML = "";
 
@@ -1013,7 +1044,8 @@ function renderOutput() {
     return;
   }
   if (state.status === "loading") {
-    panel.innerHTML = "<div class=\"card\"><div class=\"loading-state\"><div class=\"spinner\"></div><div class=\"loading-text\">Writing your application content\u2026</div><div class=\"loading-sub\">Generating practice gap, educational need, expected results, format justification, objectives, competencies, needs assessment summary, and full eligibility review.</div></div></div>";
+    panel.innerHTML = '<div class="card"><div class="loading-state"><div class="spinner"></div><div class="loading-text" id="loadStage">Analyzing your practice gap\u2026</div><div class="loading-progress-wrap"><div class="loading-progress-bar" id="loadBar"></div></div><div class="loading-meta"><span id="loadElapsed">0s</span>\u2002\u00b7\u2002Usually 20\u201330 seconds</div></div></div>';
+    startLoadTimer();
     return;
   }
   if (state.status === "error") {
