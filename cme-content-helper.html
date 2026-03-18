@@ -54,17 +54,25 @@ textarea{resize:vertical}
 
 /* CHECK TILES — audience professions and physician specialties */
 .check-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:4px}
-.check-tile{display:flex;align-items:center;gap:7px;padding:7px 10px;border:1.5px solid var(--border-light);border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text-secondary);transition:background-color 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;user-select:none;border-left:3px solid var(--border-light)}
-.check-tile:hover{border-color:var(--border-mid);border-left-color:var(--border-mid);background:var(--bg-blue-tint)}
-.check-tile.checked{border-color:var(--arboretum-blue);border-left:4px solid var(--michigan-maize);background:var(--bg-blue-tint);color:var(--arboretum-blue)}
+/* Padding increased to meet 44px touch-target minimum on mobile */
+.check-tile{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1.5px solid var(--border-light);border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text-secondary);transition:background-color 0.12s ease, border-color 0.12s ease;user-select:none;min-height:44px}
+.check-tile:hover{border-color:var(--border-mid);background:var(--bg-blue-tint)}
+/* Checked: top-border accent instead of left-border (avoids content shift from border-width change) */
+.check-tile.checked{border-color:var(--arboretum-blue);border-top:2.5px solid var(--michigan-maize);background:var(--bg-blue-tint);color:var(--arboretum-blue)}
 .check-tile input{accent-color:var(--arboretum-blue);width:13px;height:13px;flex-shrink:0;pointer-events:none}
 
 /* FORMAT CHIPS */
 .chip-grid{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
-.chip{display:flex;align-items:center;gap:5px;padding:5px 10px;border:1.5px solid var(--border-light);border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text-secondary);transition:background-color 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;user-select:none}
+.chip{display:flex;align-items:center;gap:5px;padding:6px 11px;border:1.5px solid var(--border-light);border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text-secondary);transition:background-color 0.12s ease, border-color 0.12s ease;user-select:none}
 .chip:hover{border-color:var(--border-mid);background:var(--bg-blue-tint)}
-.chip.checked{border-color:var(--arboretum-blue);border-left:3px solid var(--michigan-maize);background:var(--bg-blue-tint);color:var(--arboretum-blue)}
+/* Checked: use bottom-border accent — consistent width, no layout shift */
+.chip.checked{border-color:var(--arboretum-blue);border-bottom:2.5px solid var(--michigan-maize);background:var(--bg-blue-tint);color:var(--arboretum-blue)}
 .chip input{accent-color:var(--arboretum-blue);width:12px;height:12px;flex-shrink:0;pointer-events:none}
+/* Radio chips (IPCE yes/no) — pill style signals mutual exclusivity */
+.radio-chip{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1.5px solid var(--border-light);border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text-secondary);transition:background-color 0.12s ease, border-color 0.12s ease;user-select:none;flex:1;justify-content:center}
+.radio-chip:hover{border-color:var(--border-mid);background:var(--bg-blue-tint)}
+.radio-chip.checked{border-color:var(--arboretum-blue);background:var(--arboretum-blue);color:#fff;box-shadow:0 2px 8px rgba(47,101,167,0.25)}
+.radio-chip input{position:absolute;opacity:0;pointer-events:none}
 
 /* SECTION DIVIDER inside input card */
 .input-divider{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);padding:4px 0 2px;border-top:1px solid var(--border-light);margin-top:4px}
@@ -81,7 +89,8 @@ textarea{resize:vertical}
 .btn-copy-all{padding:9px 16px;background:#fff;color:var(--arboretum-blue);border:1.5px solid var(--border-mid);border-radius:8px;font-size:13px;font-weight:700;transition:all 0.15s;display:flex;align-items:center;gap:6px;cursor:pointer}
 .btn-copy-all:hover{background:var(--bg-blue-tint)}
 .btn-copy-all.copied{background:#dcfce7;border-color:#86efac;color:#15803d}
-.action-bar{display:flex;gap:8px;justify-content:flex-end;flex-wrap:nowrap;align-items:center}
+/* Action bar: wraps on narrow viewports, stays flush on desktop */
+.action-bar{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;align-items:center;row-gap:6px}
 
 /* EMPTY / LOADING / ERROR */
 .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center;gap:12px;color:var(--text-muted)}
@@ -142,7 +151,6 @@ textarea{resize:vertical}
 .elig-steps li{font-size:13px;color:#1a3a5c;line-height:1.55}
 .elig-note{font-size:12px;font-style:italic;color:var(--text-secondary);background:var(--bg-blue-tint);border-left:3px solid var(--arboretum-blue);border-radius:0 6px 6px 0;padding:7px 11px;margin-top:8px;line-height:1.5}
 
-.action-bar{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
 @media print{.no-print{display:none!important}body{background:#fff}}
 
 /* TOOLTIPS */
@@ -178,6 +186,11 @@ textarea{resize:vertical}
 #copy-toast.show {
   opacity: 1; transform: translateY(0);
 }
+/* FOCUS VISIBLE — keyboard navigation */
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--michigan-maize);outline-offset:2px}
+/* Validation error inline — replaces alert() */
+.validation-error{background:#fff5f5;border:1.5px solid #feb2b2;border-radius:8px;padding:10px 13px;font-size:13px;color:#c53030;font-weight:600;line-height:1.5;display:none}
+.validation-error.show{display:block}
 </style>
 </head>
 <body>
@@ -185,9 +198,12 @@ textarea{resize:vertical}
   <div>
     <div class="header-stripe"><span>Michigan Medicine · University of Michigan</span></div>
     <div class="header-main" style="flex-wrap:wrap;gap:4px 12px;padding:12px 20px">
-      <div style="display:flex;align-items:center;width:100%;justify-content:space-between">
+      <div style="display:flex;align-items:center;width:100%;justify-content:space-between;gap:8px">
         <span class="header-title">CME Content Helper</span>
-        <span class="header-badge">OCME&amp;LL</span>
+        <div style="display:flex;align-items:center;gap:12px;flex-shrink:0">
+          <a href="cme-navigator.html" style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.75);text-decoration:none;white-space:nowrap;border-bottom:1px solid rgba(255,255,255,0.3);padding-bottom:1px" onmouseover="this.style.color='#fff';this.style.borderBottomColor='rgba(255,255,255,0.7)'" onmouseout="this.style.color='rgba(255,255,255,0.75)';this.style.borderBottomColor='rgba(255,255,255,0.3)'">&#8592; Navigator</a>
+          <span class="header-badge">OCME&amp;LL</span>
+        </div>
       </div>
       <div style="font-size:12px;color:rgba(255,255,255,0.72);line-height:1.5;width:100%;font-weight:400;letter-spacing:0.1px">
         Generates compliant CME application content, identifies every credit type your activity qualifies for, and flags opportunities that contribute to Michigan Medicine&rsquo;s ACCME Accreditation with Commendation.
@@ -287,9 +303,9 @@ textarea{resize:vertical}
               </span>
             </div>
             <div class="field-hint" style="margin-bottom:6px">The AI cannot infer this from the content — it determines eligibility for interprofessional education recognition.</div>
-            <div class="chip-grid">
-              <label class="chip" id="ipYesChip"><input type="radio" name="ipce" value="yes" onchange="document.getElementById('ipNoChip').classList.remove('checked');this.closest('label').classList.add('checked')"> ✓ Yes</label>
-              <label class="chip" id="ipNoChip"><input type="radio" name="ipce" value="no" onchange="document.getElementById('ipYesChip').classList.remove('checked');this.closest('label').classList.add('checked')"> ✗ No / not sure</label>
+            <div style="display:flex;gap:8px">
+              <label class="radio-chip" id="ipYesChip"><input type="radio" name="ipce" value="yes" onchange="document.getElementById('ipNoChip').classList.remove('checked');this.closest('label').classList.add('checked')"> ✓ Yes</label>
+              <label class="radio-chip" id="ipNoChip"><input type="radio" name="ipce" value="no" onchange="document.getElementById('ipYesChip').classList.remove('checked');this.closest('label').classList.add('checked')"> ✗ No / not sure</label>
             </div>
           </div>
 
@@ -324,6 +340,7 @@ textarea{resize:vertical}
             <strong>&#9888; AI-generated content requires review.</strong> All text is a starting point only. Educational planners must review, verify, and edit all sections before submission to reflect the actual planned activity and the genuine needs of your learners. OCME&amp;LL staff will review all applications on submission.
           </div>
 
+          <div class="validation-error" id="validationError" role="alert"></div>
           <button class="btn-generate" id="generateBtn" onclick="handleGenerate()">
             <span id="btnIcon">&#10022;</span><span id="btnText">Generate Application Content &#8594;</span>
           </button>
@@ -606,9 +623,14 @@ async function handleGenerate() {
   var content = document.getElementById("content").value.trim();
   var profs = getProfs();
   var specs = getSpecs();
+  var errEl = document.getElementById("validationError");
   if (!topic || !content || (!profs.length && !specs.length && !document.getElementById("audienceOther").value.trim())) {
-    alert("Please fill in the topic, content, and at least one audience group."); return;
+    errEl.textContent = "Please fill in the topic, content, and at least one audience group before generating.";
+    errEl.classList.add("show");
+    errEl.scrollIntoView({behavior:"smooth",block:"nearest"});
+    return;
   }
+  errEl.classList.remove("show");
   state.status = "loading"; renderOutput();
   var btn = document.getElementById("generateBtn");
   if (btn) { btn.disabled = true; document.getElementById("btnText").textContent = "Generating\u2026"; }

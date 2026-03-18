@@ -10,10 +10,45 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{background:#f0f2f5;font-family:'Nunito Sans',Arial,sans-serif;color:#00274C;line-height:1.6;min-height:100vh}
-button{font-family:inherit;cursor:pointer}
+button{font-family:inherit;cursor:pointer}a{font-family:inherit;text-decoration:none}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.tip-hit{position:relative}.tip-hit::after{content:'';position:absolute;inset:-8px}
 .fade-up{animation:fadeUp 0.2s ease both}
+
+/* ── Focus rings ── */
+button:focus-visible,a:focus-visible{outline:3px solid #FFCB05;outline-offset:2px}
+input[type="checkbox"]:focus-visible{outline:3px solid #2F65A7;outline-offset:2px}
+
+/* ── Scrollable tab bar (hides scrollbar, touch-scroll on mobile) ── */
+.tab-scroll{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:16px;
+  scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.tab-scroll::-webkit-scrollbar{display:none}
+
+/* ── Option button hover (active handled inline) ── */
+.opt-btn:hover:not([data-active="true"]){border-color:#a8bdd4 !important;background:#f7f9fb !important}
+
+/* ── Tooltip button ── */
+.nav-tip-btn{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;
+  border-radius:50%;background:rgba(47,101,167,0.12);border:none;font-size:10px;font-weight:800;
+  color:#2F65A7;cursor:pointer;flex-shrink:0;vertical-align:middle;margin-left:4px;
+  transition:background 0.12s,color 0.12s;line-height:1}
+.nav-tip-btn:hover,.nav-tip-btn[data-open="true"]{background:#2F65A7;color:#fff}
+
+/* ── Fixed tooltip popup (body-appended, no clipping) ── */
+.nav-tip-pop{position:fixed;background:#1e293b;color:#f0f2f5;border-radius:10px;padding:12px 14px;
+  font-size:13px;line-height:1.6;width:280px;z-index:9999;
+  box-shadow:0 8px 24px rgba(0,0,0,0.28);white-space:pre-wrap;pointer-events:none;
+  transition:opacity 0.12s}
+
+/* ── Question hint text (distinct from option sublabels) ── */
+.q-hint{font-size:13px;color:#5a7a9a;margin-bottom:20px;line-height:1.5;font-style:italic;
+  padding:8px 12px 8px 10px;background:#fffef5;border-left:3px solid #FFCB05;border-radius:0 6px 6px 0}
+
+/* ── Section divider inside option list ── */
+.opt-divider{display:flex;align-items:center;gap:10px;padding:12px 4px 6px}
+.opt-divider-line{flex:1;height:1px;background:#e8ecf2}
+.opt-divider-label{font-size:10px;font-weight:800;color:#b0bfd0;letter-spacing:0.6px;
+  text-transform:uppercase;white-space:nowrap}
+
 @media print{.no-print{display:none!important}body{background:#fff}}
 </style>
 </head>
@@ -426,18 +461,47 @@ function card(extra,children){
 }
 
 // ─── TOOLTIP ──────────────────────────────────────────────────────────────────
+// Uses position:fixed on a body-appended element — no clipping from parent overflow.
 function renderTooltip(text,id){
   var isOpen=state.openTooltip===id;
-  var wrap=el("span",{style:{position:"relative",display:"inline-flex",alignItems:"center",verticalAlign:"middle"}});
-  var btn=el("span",{className:"tip-hit",style:{cursor:"pointer",color:isOpen?"#2F65A7":"#7a96b0",fontSize:"13px",userSelect:"none",lineHeight:"1",display:"inline-flex",alignItems:"center"},role:"button",tabindex:"0"},["ⓘ"]);
-  btn.onclick=function(e){e.stopPropagation();var next=isOpen?null:id;if(state.openTooltip===next)return;state.openTooltip=next;render();};
-  btn.onkeydown=function(e){if(e.key==="Enter"||e.key===" "){e.stopPropagation();var next=isOpen?null:id;if(state.openTooltip===next)return;state.openTooltip=next;render();}};
+  var wrap=el("span",{style:{display:"inline-flex",alignItems:"center",verticalAlign:"middle"}});
+  var btn=el("button",{className:"nav-tip-btn","aria-label":"More information","aria-expanded":isOpen?"true":"false"});
+  btn.setAttribute("data-tip-id",id);
+  if(isOpen) btn.setAttribute("data-open","true");
+  btn.appendChild(document.createTextNode("i"));
+  btn.onclick=function(e){
+    e.stopPropagation();
+    var next=isOpen?null:id;
+    state.openTooltip=next;
+    render();
+    if(next){
+      requestAnimationFrame(function(){
+        var tipEl=document.querySelector(".nav-tip-pop[data-tip-id='"+id+"']");
+        var btnEl=document.querySelector("button[data-tip-id='"+id+"']");
+        if(!tipEl||!btnEl) return;
+        var r=btnEl.getBoundingClientRect();
+        var popW=280;
+        var leftPos=r.left+(r.width/2)-(popW/2);
+        leftPos=Math.max(8,Math.min(leftPos,window.innerWidth-popW-8));
+        var spaceBelow=window.innerHeight-r.bottom;
+        if(spaceBelow<200&&r.top>spaceBelow){
+          tipEl.style.top="auto";
+          tipEl.style.bottom=(window.innerHeight-r.top+8)+"px";
+        } else {
+          tipEl.style.top=(r.bottom+8)+"px";
+          tipEl.style.bottom="auto";
+        }
+        tipEl.style.left=leftPos+"px";
+      });
+    }
+  };
+  btn.onkeydown=function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();btn.onclick(e);}};
   wrap.appendChild(btn);
   if(isOpen){
-    var pop=el("div",{style:{position:"absolute",left:"50%",bottom:"calc(100% + 8px)",transform:"translateX(-50%)",background:"#1e293b",color:"#f0f2f5",borderRadius:"10px",padding:"12px 14px",fontSize:"13px",lineHeight:"1.6",width:"280px",zIndex:"999",boxShadow:"0 8px 24px rgba(0,0,0,0.25)",whiteSpace:"pre-wrap"}},[text]);
-    var arrow=el("div",{style:{position:"absolute",bottom:"-6px",left:"50%",transform:"translateX(-50%)",width:"0",height:"0",borderLeft:"6px solid transparent",borderRight:"6px solid transparent",borderTop:"6px solid #1e293b"}});
-    pop.appendChild(arrow);
-    wrap.appendChild(pop);
+    var pop=el("div",{className:"nav-tip-pop",style:{top:"0",left:"-9999px"}});
+    pop.setAttribute("data-tip-id",id);
+    pop.appendChild(document.createTextNode(text));
+    document.body.appendChild(pop);
   }
   return wrap;
 }
@@ -449,7 +513,8 @@ function renderOptionBtn(q,opt){
   var active=isMulti?(val||[]).includes(opt.value):val===opt.value;
   var brand="#2F65A7";
 
-  var btn=el("button",{style:{display:"flex",alignItems:"center",gap:"14px",padding:"14px 16px",width:"100%",borderRadius:"10px",textAlign:"left",background:active?"#eef2f7":"#fff",border:"2px solid "+(active?brand:"#d0d9e3"),borderLeft:active?"4px solid #FFCB05":"2px solid #d0d9e3",boxShadow:active?"0 0 0 3px rgba(29,78,216,0.12)":"none",transition:"background-color 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease",marginBottom:"8px",cursor:"pointer"},onclick:function(){toggle(q.id,opt.value,q.type);}});
+  var btn=el("button",{className:"opt-btn",style:{display:"flex",alignItems:"center",gap:"14px",padding:"14px 16px",width:"100%",borderRadius:"10px",textAlign:"left",background:active?"#eef2f7":"#fff",border:"2px solid "+(active?brand:"#d0d9e3"),borderLeft:active?"4px solid #FFCB05":"2px solid #d0d9e3",transition:"background-color 0.12s ease, border-color 0.12s ease",marginBottom:"8px",cursor:"pointer"},onclick:function(){toggle(q.id,opt.value,q.type);}});
+  if(active) btn.setAttribute("data-active","true");
 
   // checkbox/radio indicator
   var chk=el("div",{style:{width:"20px",height:"20px",flexShrink:"0",borderRadius:isMulti?"5px":"50%",border:"2px solid "+(active?brand:"#7a96b0"),background:active?brand:"transparent",display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.15s"}});
@@ -475,27 +540,30 @@ function renderQuestion(){
   var qs=getVisibleQuestions(), q=qs[state.step], total=qs.length;
   var wrap=el("div",{style:{maxWidth:"680px",margin:"0 auto",padding:"20px 16px"}});
 
-  // Progress bar
-  var maxQ = 11; // total questions including conditionals — use fixed max so counter never shifts
-  var pct=Math.round(((state.step+1)/maxQ)*100);
+  // Progress bar — uses actual visible question count so the bar always fills correctly
+  var pct=Math.round(((state.step+1)/total)*100);
   var pbWrap=el("div",{style:{marginBottom:"24px"}});
   var pbBg=el("div",{style:{height:"3px",background:"#d0d9e3",borderRadius:"99px",marginBottom:"8px"}});
   var pbFill=el("div",{style:{height:"100%",width:pct+"%",background:"#FFCB05",borderRadius:"99px",transition:"width 0.3s ease"}});
   pbBg.appendChild(pbFill);
   pbWrap.appendChild(pbBg);
-  pbWrap.appendChild(el("div",{style:{fontSize:"12px",color:"#4a6785",textAlign:"right"}},["Question "+(state.step+1)+" of "+maxQ]));
+  pbWrap.appendChild(el("div",{style:{fontSize:"12px",color:"#7a96b0",textAlign:"right"}},["Step "+(state.step+1)+" of "+total]));
   wrap.appendChild(pbWrap);
 
   // Card
   var c=el("div",{style:{background:"#fff",borderRadius:"16px",padding:"28px 24px",boxShadow:"0 2px 8px rgba(0,0,0,0.08)"},className:"fade-up"});
   c.appendChild(el("h2",{style:{fontSize:"20px",fontWeight:"700",color:"#00274C",marginBottom:"6px",lineHeight:"1.3"}},[q.question]));
-  if(q.hint)c.appendChild(el("p",{style:{fontSize:"14px",color:"#4a6785",marginBottom:"20px",lineHeight:"1.5"}},[q.hint]));
+  if(q.hint)c.appendChild(el("p",{className:"q-hint"},[q.hint]));
   if(q.type==="multi")c.appendChild(el("p",{style:{fontSize:"12px",color:"#7a96b0",marginBottom:"14px"}},["Select all that apply"]));
 
   var opts=el("div",{style:{display:"flex",flexDirection:"column"}});
   q.options.forEach(function(opt){
     if(opt.divider){
-      opts.appendChild(el("div",{style:{fontSize:"11px",fontWeight:"700",color:"#7a96b0",letterSpacing:"0.5px",textTransform:"uppercase",padding:"10px 4px 4px"}},["— "+opt.divider]));
+      var dvr=el("div",{className:"opt-divider"});
+      dvr.appendChild(el("div",{className:"opt-divider-line"}));
+      dvr.appendChild(el("span",{className:"opt-divider-label"},[opt.divider]));
+      dvr.appendChild(el("div",{className:"opt-divider-line"}));
+      opts.appendChild(dvr);
       return;
     }
     opts.appendChild(renderOptionBtn(q,opt));
@@ -551,11 +619,13 @@ function renderResults(){
     ? "⚠️ Action required — see Application tab first."
     : "Review each tab, then use Generate Docs to produce documents for your OCME&LL representative."
   ]));
-  var btnRow=el("div",{style:{display:"flex",gap:"8px",flexWrap:"wrap"}});
-  var rsBtn=el("button",{style:{padding:"7px 14px",borderRadius:"8px",border:"2px solid rgba(255,255,255,0.4)",background:"transparent",color:"#fff",fontSize:"12px",fontWeight:"600",cursor:"pointer"},onclick:restart},["← Start Over"]);
-  var editBtn=el("button",{style:{padding:"7px 14px",borderRadius:"8px",border:"2px solid rgba(255,255,255,0.4)",background:"transparent",color:"#fff",fontSize:"12px",fontWeight:"600",cursor:"pointer"},onclick:function(){state.done=false;render();scrollToTop();}},["✏ Edit answers"]);
-  btnRow.appendChild(rsBtn);
+  var btnRow=el("div",{style:{display:"flex",gap:"8px",flexWrap:"wrap",alignItems:"center"}});
+  // "Edit Answers" is the primary recovery action — prominent border style
+  var editBtn=el("button",{style:{padding:"7px 14px",borderRadius:"8px",border:"2px solid rgba(255,255,255,0.55)",background:"transparent",color:"#fff",fontSize:"12px",fontWeight:"700",cursor:"pointer"},onclick:function(){state.done=false;render();scrollToTop();}},["✏ Edit Answers"]);
+  // "Start Over" is destructive — subdued, visually lighter
+  var rsBtn=el("button",{style:{padding:"5px 10px",borderRadius:"6px",border:"none",background:"rgba(255,255,255,0.1)",color:"rgba(255,255,255,0.6)",fontSize:"11px",fontWeight:"600",cursor:"pointer"},onclick:restart},["← Start Over"]);
   btnRow.appendChild(editBtn);
+  btnRow.appendChild(rsBtn);
   hdr.appendChild(btnRow);
   wrap.appendChild(hdr);
 
@@ -572,12 +642,12 @@ function renderResults(){
   // If active tab is now hidden, reset to application
   var visibleTabIds = tabDefs.filter(function(t){return t.always||t.show;}).map(function(t){return t.id;});
   if(visibleTabIds.indexOf(state.activeTab)===-1) state.activeTab="application";
-  var tabBar=el("div",{style:{display:"flex",gap:"6px",marginBottom:"16px",flexWrap:"wrap"}});
+  var tabBar=el("div",{className:"tab-scroll"});
   tabDefs.forEach(function(t){
-    if(!t.always && !t.show) return; // hide empty tabs
+    if(!t.always && !t.show) return;
     var active=state.activeTab===t.id;
     var label = t.label + (t.count>1?" ("+t.count+")":"");
-    var tb=el("button",{style:{padding:"8px 14px",borderRadius:"8px",fontSize:"13px",fontWeight:"600",border:"none",background:active?"#2F65A7":"#fff",color:active?"#fff":"#1a3a5c",boxShadow:active?"0 2px 8px rgba(0,39,76,0.3)":"0 1px 3px rgba(0,0,0,0.08)",cursor:"pointer",transition:"all 0.15s"},onclick:function(){state.activeTab=t.id;render();}},[label]);
+    var tb=el("button",{style:{padding:"8px 14px",borderRadius:"8px",fontSize:"13px",fontWeight:"600",border:"none",background:active?"#2F65A7":"#fff",color:active?"#fff":"#1a3a5c",boxShadow:active?"0 2px 8px rgba(0,39,76,0.3)":"0 1px 3px rgba(0,0,0,0.08)",cursor:"pointer",transition:"all 0.15s",whiteSpace:"nowrap",flexShrink:"0"},onclick:function(){state.activeTab=t.id;render();}},[label]);
     tabBar.appendChild(tb);
   });
   wrap.appendChild(tabBar);
@@ -637,10 +707,14 @@ function renderResults(){
     }
     var cl=card();
     cl.appendChild(el("div",{style:{fontWeight:"700",color:"#00274C",marginBottom:"12px"}},["📝 Application Checklist"]));
+    var clIdx=0;
     ["Faculty disclosure forms completed for all presenters","Educational objectives clearly stated (what will learners be able to do?)","Needs assessment or gap documentation attached","Evaluation plan described","Session agenda and credit hours calculated","Any commercial support or sponsorship disclosed"].forEach(function(item){
+      var cid="cln"+(clIdx++);
       var row=el("div",{style:{display:"flex",gap:"10px",alignItems:"flex-start",marginBottom:"8px"}});
-      row.appendChild(el("div",{style:{width:"18px",height:"18px",border:"2px solid #d0d9e3",borderRadius:"4px",flexShrink:"0",marginTop:"2px"}}));
-      row.appendChild(el("span",{style:{fontSize:"14px",color:"#1a3a5c"}},[item]));
+      var cb=el("input",{type:"checkbox",id:cid,style:{width:"17px",height:"17px",flexShrink:"0",marginTop:"3px",accentColor:"#2F65A7",cursor:"pointer"}});
+      var lbl=el("label",{"for":cid,style:{fontSize:"14px",color:"#1a3a5c",cursor:"pointer",lineHeight:"1.5",userSelect:"none"}},[item]);
+      row.appendChild(cb);
+      row.appendChild(lbl);
       cl.appendChild(row);
     });
     content.appendChild(cl);
@@ -1441,26 +1515,41 @@ function renderExportTab(res, answers) {
 
 
 function render(){
+  // Clean up any body-appended tooltip popups from previous render
+  document.querySelectorAll('.nav-tip-pop').forEach(function(p){p.remove();});
+
   var app=document.getElementById("app");
   app.innerHTML="";
+
+  // ── Header ──
   var nav=el("div",{style:{background:"#00274C",padding:"0",display:"flex",flexDirection:"column"}});
   var navStripe=el("div",{style:{background:"#FFCB05",padding:"3px 20px",textAlign:"right"}});
-  navStripe.appendChild(el("span",{style:{fontSize:"11px",fontWeight:"700",color:"#00274C",letterSpacing:"0.4px"}},["​Michigan Medicine · University of Michigan"]));
+  navStripe.appendChild(el("span",{style:{fontSize:"11px",fontWeight:"700",color:"#00274C",letterSpacing:"0.4px"}},["Michigan Medicine · University of Michigan"]));
   nav.appendChild(navStripe);
-  var navMain=el("div",{style:{padding:"14px 20px",display:"flex",alignItems:"center",gap:"12px"}});
-  navMain.appendChild(el("span",{style:{fontSize:"15px",fontWeight:"800",color:"#fff",letterSpacing:"0.2px"}},["​CME Credit Application Navigator"]));
-  navMain.appendChild(el("span",{style:{color:"#FFCB05",fontSize:"12px",fontWeight:"700",marginLeft:"auto",letterSpacing:"0.3px"}},["​OCME&LL"]));
+
+  var navMain=el("div",{style:{padding:"13px 20px",display:"flex",alignItems:"center",gap:"12px"}});
+  // h1 for accessibility — styled to match the visual header
+  navMain.appendChild(el("h1",{style:{fontSize:"15px",fontWeight:"800",color:"#fff",letterSpacing:"0.2px",margin:"0",lineHeight:"1.2"}},["CME Credit Application Navigator"]));
+
+  // Right side: cross-tool link + badge
+  var navRight=el("div",{style:{marginLeft:"auto",display:"flex",alignItems:"center",gap:"10px"}});
+  navRight.appendChild(el("a",{href:"cme-content-helper.html",style:{fontSize:"11px",fontWeight:"700",color:"rgba(255,255,255,0.75)",border:"1px solid rgba(255,255,255,0.28)",padding:"4px 10px",borderRadius:"5px",whiteSpace:"nowrap",letterSpacing:"0.1px",display:"inline-block"}},["Content Helper →"]));
+  navRight.appendChild(el("span",{style:{color:"#FFCB05",fontSize:"12px",fontWeight:"700",letterSpacing:"0.3px"}},["OCME&LL"]));
+  navMain.appendChild(navRight);
   nav.appendChild(navMain);
   app.appendChild(nav);
+
   app.appendChild(state.done?renderResults():renderQuestion());
-  // Cross-tool wayfinding footer
-  var footer=el("div",{style:{maxWidth:"720px",margin:"0 auto",padding:"0 16px 24px",textAlign:"center"}});
-  footer.appendChild(el("p",{style:{fontSize:"12px",color:"#7a96b0",lineHeight:"1.5"}},
-    ["Need to write your application content? The ",
-     (function(){var a=el("span",{style:{color:"#2F65A7",fontWeight:"600",cursor:"default"}},["CME Content Helper"]);return a;})(),
-     " generates practice gap statements, educational needs, learning objectives, and eligibility analysis from a brief activity description."]));
+
+  // ── Cross-tool footer ──
+  var footer=el("div",{style:{maxWidth:"720px",margin:"0 auto",padding:"16px 16px 28px"}});
+  var footerInner=el("div",{style:{display:"flex",alignItems:"center",justifyContent:"center",gap:"14px",flexWrap:"wrap",padding:"12px 16px",background:"#fff",borderRadius:"10px",boxShadow:"0 1px 3px rgba(0,39,76,0.06)"}});
+  footerInner.appendChild(el("span",{style:{fontSize:"12px",color:"#7a96b0",lineHeight:"1.4"}},"Need to draft application content?"));
+  footerInner.appendChild(el("a",{href:"cme-content-helper.html",style:{fontSize:"12px",fontWeight:"700",color:"#2F65A7",display:"inline-flex",alignItems:"center",gap:"5px",padding:"6px 14px",border:"1.5px solid #a8bdd4",borderRadius:"7px",background:"#f7f9fb",transition:"background 0.12s,border-color 0.12s"}},["✦ Open CME Content Helper →"]));
+  footer.appendChild(footerInner);
   app.appendChild(footer);
-  // close tooltip on outside click
+
+  // Close tooltip on outside click
   setTimeout(function(){
     document.addEventListener("click",function closeTooltip(){
       if(state.openTooltip){state.openTooltip=null;render();}

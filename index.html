@@ -1,230 +1,193 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CME Helper Apps · Michigan Medicine</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>CME Application Tools · Michigan Medicine OCME&LL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#f0f2f5;font-family:'Nunito Sans',Arial,sans-serif;color:#00274C;line-height:1.6;min-height:100vh}
+a{font-family:inherit;text-decoration:none}
+button:focus-visible,a:focus-visible{outline:3px solid #FFCB05;outline-offset:2px}
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background: #f5f6f8;
-      color: #1a1a2e;
-      min-height: 100vh;
-    }
+/* ── Layout ── */
+.app{display:flex;flex-direction:column;min-height:100vh}
+.stripe{background:#FFCB05;padding:3px 24px;text-align:right}
+.stripe span{font-size:11px;font-weight:700;color:#00274C;letter-spacing:0.4px}
 
-    /* ── Header ── */
-    header {
-      background: #00274C;
-      color: #fff;
-      padding: 0 2rem;
-    }
-    .header-inner {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 2rem 0 1.75rem;
-    }
-    .wordmark {
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: #FFCB05;
-      margin-bottom: 0.5rem;
-    }
-    header h1 {
-      font-size: 2rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      line-height: 1.2;
-    }
-    header p.tagline {
-      margin-top: 0.6rem;
-      font-size: 0.95rem;
-      color: #c8d8e8;
-      max-width: 600px;
-      line-height: 1.6;
-    }
+/* ── Header ── */
+.header{background:#00274C;padding:32px 24px 40px}
+.header-inner{max-width:920px;margin:0 auto}
+.header-kicker{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#FFCB05;margin-bottom:12px}
+.header h1{font-size:28px;font-weight:800;color:#fff;line-height:1.2;margin-bottom:10px}
+.header p{font-size:14px;color:rgba(255,255,255,0.75);line-height:1.65;max-width:580px}
 
-    /* ── Main ── */
-    main {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 2.5rem 2rem 4rem;
-    }
+/* ── Main ── */
+.main{max-width:920px;margin:0 auto;padding:36px 20px 56px;flex:1}
+.section-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:#a8bbd0;margin-bottom:18px}
 
-    .section-label {
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: #7a8499;
-      margin-bottom: 1.25rem;
-    }
+/* ── Tool grid ── */
+.tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:640px){.tool-grid{grid-template-columns:1fr}}
 
-    /* ── App Cards ── */
-    .cards {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
-    }
-    @media (max-width: 620px) {
-      .cards { grid-template-columns: 1fr; }
-    }
+/* ── Tool cards ── */
+.tool-card{background:#fff;border-radius:16px;padding:28px 24px 24px;box-shadow:0 1px 3px rgba(0,39,76,0.06),0 2px 10px rgba(0,39,76,0.05);display:flex;flex-direction:column;gap:18px;position:relative;overflow:hidden;transition:box-shadow 0.18s,transform 0.18s}
+.tool-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px}
+.tool-card.nav::before{background:linear-gradient(90deg,#00274C,#2F65A7)}
+.tool-card.helper::before{background:linear-gradient(90deg,#FFCB05,#f0bc00)}
+.tool-card:hover{box-shadow:0 6px 24px rgba(0,39,76,0.12);transform:translateY(-2px)}
 
-    .card {
-      background: #fff;
-      border-radius: 12px;
-      border: 1px solid #e2e6ed;
-      padding: 1.75rem 1.75rem 1.5rem;
-      display: flex;
-      flex-direction: column;
-      transition: box-shadow 0.2s ease, transform 0.2s ease;
-    }
-    .card:hover {
-      box-shadow: 0 8px 28px rgba(0,39,76,0.10);
-      transform: translateY(-2px);
-    }
+.tool-head{display:flex;align-items:flex-start;gap:14px}
+.tool-icon{font-size:28px;line-height:1;flex-shrink:0;margin-top:2px}
+.tool-meta{flex:1}
+.tool-step{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#a8bbd0;margin-bottom:3px}
+.tool-name{font-size:19px;font-weight:800;color:#00274C;line-height:1.2}
 
-    .card-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.4rem;
-      margin-bottom: 1rem;
-    }
-    .icon-blue  { background: #e8f0fb; }
-    .icon-teal  { background: #e6f4f1; }
+.tool-desc{font-size:14px;color:#4a6785;line-height:1.65}
 
-    .card h2 {
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: #1a1a2e;
-      margin-bottom: 0.5rem;
-      line-height: 1.3;
-    }
-    .card p {
-      font-size: 0.875rem;
-      color: #556070;
-      line-height: 1.65;
-      flex-grow: 1;
-      margin-bottom: 1.4rem;
-    }
+.tool-produces{background:#f7f8fb;border-radius:10px;padding:13px 15px}
+.tool-produces-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:#a8bbd0;margin-bottom:8px}
+.tool-produces ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:5px}
+.tool-produces li{font-size:13px;color:#4a6785;display:flex;align-items:flex-start;gap:7px;line-height:1.4}
+.tool-produces li::before{content:'✓';font-weight:800;flex-shrink:0;margin-top:1px}
+.tool-card.nav .tool-produces li::before{color:#2F65A7}
+.tool-card.helper .tool-produces li::before{color:#b45309}
 
-    .feature-list {
-      list-style: none;
-      margin-bottom: 1.4rem;
-    }
-    .feature-list li {
-      font-size: 0.8rem;
-      color: #6b7a90;
-      padding: 0.25rem 0;
-      padding-left: 1.1rem;
-      position: relative;
-      line-height: 1.5;
-    }
-    .feature-list li::before {
-      content: "›";
-      position: absolute;
-      left: 0;
-      color: #00274C;
-      font-weight: 700;
-    }
+.tool-link{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-radius:10px;font-size:14px;font-weight:800;margin-top:auto;transition:background 0.15s,transform 0.12s,box-shadow 0.15s}
+.tool-link:hover{transform:translateX(3px)}
+.tool-link.nav{background:#00274C;color:#fff;box-shadow:0 3px 10px rgba(0,39,76,0.25)}
+.tool-link.nav:hover{background:#1a3a5c;box-shadow:0 4px 14px rgba(0,39,76,0.35)}
+.tool-link.helper{background:#FFCB05;color:#00274C;box-shadow:0 3px 10px rgba(255,203,5,0.35)}
+.tool-link.helper:hover{background:#f0bc00;box-shadow:0 4px 14px rgba(255,203,5,0.45)}
 
-    .btn {
-      display: inline-block;
-      text-decoration: none;
-      padding: 0.65rem 1.25rem;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      text-align: center;
-      transition: background 0.15s ease;
-    }
-    .btn-primary {
-      background: #00274C;
-      color: #fff;
-    }
-    .btn-primary:hover { background: #003d73; }
+/* ── Workflow section ── */
+.workflow-section{margin-top:40px}
+.workflow-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
+@media(max-width:640px){.workflow-grid{grid-template-columns:1fr}}
 
-    /* ── Footer ── */
-    footer {
-      text-align: center;
-      padding: 2rem;
-      font-size: 0.78rem;
-      color: #9aa5b4;
-      border-top: 1px solid #e2e6ed;
-    }
-    footer a { color: #9aa5b4; text-decoration: none; }
-    footer a:hover { text-decoration: underline; }
-  </style>
+.workflow-card{background:#fff;border-radius:12px;padding:20px 18px;box-shadow:0 1px 3px rgba(0,39,76,0.06)}
+.workflow-num{width:28px;height:28px;border-radius:50%;background:#00274C;color:#FFCB05;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-bottom:12px;flex-shrink:0}
+.workflow-title{font-size:14px;font-weight:700;color:#00274C;margin-bottom:5px}
+.workflow-desc{font-size:13px;color:#4a6785;line-height:1.55}
+
+/* ── Note banner ── */
+.note-banner{margin-top:28px;background:#fff;border-radius:10px;padding:14px 18px;box-shadow:0 1px 3px rgba(0,39,76,0.06);border-left:4px solid #FFCB05;display:flex;align-items:flex-start;gap:12px}
+.note-banner p{font-size:13px;color:#4a6785;line-height:1.55}
+.note-banner strong{color:#00274C}
+
+/* ── Footer ── */
+.footer{background:#fff;border-top:1px solid #e4eaf2;padding:16px 24px;text-align:center}
+.footer p{font-size:12px;color:#a8bbd0;line-height:1.5}
+</style>
 </head>
 <body>
+<div class="app">
 
-  <header>
+  <div class="stripe"><span>Michigan Medicine · University of Michigan</span></div>
+
+  <div class="header">
     <div class="header-inner">
-      <div class="wordmark">Michigan Medicine &middot; OCME&amp;LL</div>
-      <h1>CME Helper Apps</h1>
-      <p class="tagline">
-        Tools for CME planners and educational coordinators at Michigan Medicine &mdash;
-        from application planning to content generation.
-      </p>
+      <div class="header-kicker">Office of CME &amp; Lifelong Learning</div>
+      <h1>CME Application Tools</h1>
+      <p>Two tools to help educational planners navigate ACCME requirements, identify every credit opportunity, and produce compliant application content — designed for Michigan Medicine OCME&amp;LL.</p>
     </div>
-  </header>
+  </div>
 
-  <main>
+  <div class="main">
+
     <div class="section-label">Available Tools</div>
+    <div class="tool-grid">
 
-    <div class="cards">
-
-      <!-- CME Credit Application Navigator -->
-      <div class="card">
-        <div class="card-icon icon-blue">&#x1F9ED;</div>
-        <h2>CME Credit Application Navigator</h2>
-        <p>
-          A guided questionnaire that walks planners through the CME application
-          process step by step &mdash; helping you identify the right application type,
-          eligible credit designations, MOC opportunities, and ACCME commendation criteria.
-        </p>
-        <ul class="feature-list">
-          <li>10-question adaptive workflow</li>
-          <li>Application type &amp; credit type recommendations</li>
-          <li>Specialty MOC eligibility (9 boards)</li>
-          <li>Generates planner checklist &amp; staff build brief</li>
-        </ul>
-        <a href="cme-navigator.html" class="btn btn-primary">Open Navigator &rarr;</a>
+      <!-- ── Navigator ── -->
+      <div class="tool-card nav">
+        <div class="tool-head">
+          <div class="tool-icon">🗺️</div>
+          <div class="tool-meta">
+            <div class="tool-step">Step 1 — Plan your application</div>
+            <div class="tool-name">CME Credit Application Navigator</div>
+          </div>
+        </div>
+        <p class="tool-desc">Answer 9–11 questions about your activity and get a complete picture of which application type to use, which credit types you qualify for, commercial support requirements, and what to flag to OCME&amp;LL.</p>
+        <div class="tool-produces">
+          <div class="tool-produces-label">Produces</div>
+          <ul>
+            <li>Application type determination (Live, Hybrid, RSS, Enduring)</li>
+            <li>MOC board credit eligibility — PARS &amp; self-report boards</li>
+            <li>ACCME Commendation criteria matched to your activity</li>
+            <li>Michigan mandatory topic designations</li>
+            <li>Planner checklist &amp; OCME staff build brief (PDF)</li>
+          </ul>
+        </div>
+        <a href="cme-navigator.html" class="tool-link nav">
+          <span>Open Navigator</span>
+          <span>→</span>
+        </a>
       </div>
 
-      <!-- CME Content Helper -->
-      <div class="card">
-        <div class="card-icon icon-teal">&#x270D;&#xFE0F;</div>
-        <h2>CME Content Helper</h2>
-        <p>
-          AI-powered content generation for CME application submissions &mdash; produces
-          compliant practice gap framings, educational need analyses, learning objectives,
-          and competency mappings, while flagging all eligible credit types.
-        </p>
-        <ul class="feature-list">
-          <li>Practice gap &amp; educational need generation</li>
-          <li>Learning objectives &amp; competency mapping</li>
-          <li>MOC, IPCE, nursing, pharmacy &amp; PA eligibility</li>
-          <li>ACCME Commendation criteria analysis</li>
-        </ul>
-        <a href="cme-content-helper.html" class="btn btn-primary">Open Content Helper &rarr;</a>
+      <!-- ── Content Helper ── -->
+      <div class="tool-card helper">
+        <div class="tool-head">
+          <div class="tool-icon">✦</div>
+          <div class="tool-meta">
+            <div class="tool-step">Step 2 — Draft application content</div>
+            <div class="tool-name">CME Content Helper</div>
+          </div>
+        </div>
+        <p class="tool-desc">Describe your topic, audience, and format. The AI drafts all seven ACCME-required narrative sections — practice gap, educational need, learning objectives, and more — ready to paste directly into MiCME.</p>
+        <div class="tool-produces">
+          <div class="tool-produces-label">Generates</div>
+          <ul>
+            <li>Practice gap statement — 3 versions to choose from</li>
+            <li>Educational need diagnosis with root-cause reasoning</li>
+            <li>Expected results &amp; educational format justification</li>
+            <li>Learning objectives aligned to Bloom's taxonomy</li>
+            <li>Competency mapping &amp; full eligibility review</li>
+          </ul>
+        </div>
+        <a href="cme-content-helper.html" class="tool-link helper">
+          <span>Open Content Helper</span>
+          <span>→</span>
+        </a>
       </div>
 
     </div>
-  </main>
 
-  <footer>
-    Office of Continuing Medical Education &amp; Lifelong Learning &nbsp;&middot;&nbsp;
-    Michigan Medicine, University of Michigan &nbsp;&middot;&nbsp;
-    <a href="mailto:doctorhealy@gmail.com">Contact</a>
-  </footer>
+    <!-- ── Recommended workflow ── -->
+    <div class="workflow-section">
+      <div class="section-label">Recommended workflow</div>
+      <div class="workflow-grid">
+        <div class="workflow-card">
+          <div class="workflow-num">1</div>
+          <div class="workflow-title">Run the Navigator first</div>
+          <div class="workflow-desc">The Navigator identifies your application type, credit types, and commendation criteria — all information you need before writing application content.</div>
+        </div>
+        <div class="workflow-card">
+          <div class="workflow-num">2</div>
+          <div class="workflow-title">Draft content with the AI Helper</div>
+          <div class="workflow-desc">Describe your activity and the Content Helper writes all seven required narrative sections. Every field is editable — treat it as a starting draft, not a final document.</div>
+        </div>
+        <div class="workflow-card">
+          <div class="workflow-num">3</div>
+          <div class="workflow-title">Submit to OCME&amp;LL</div>
+          <div class="workflow-desc">Print or save PDF supporting documents from either tool to share with your OCME&amp;LL representative when you submit your MiCME application.</div>
+        </div>
+      </div>
+    </div>
 
+    <div class="note-banner">
+      <span style="font-size:20px;flex-shrink:0;margin-top:1px">ℹ️</span>
+      <p><strong>These tools support application preparation.</strong> All AI-generated content should be reviewed and edited to accurately reflect your planned activity. OCME&amp;LL staff review all applications on submission and will guide you through any questions.</p>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <p>Michigan Medicine · Office of Continuing Medical Education &amp; Lifelong Learning · Questions? Contact your OCME&amp;LL representative.</p>
+  </div>
+
+</div>
 </body>
 </html>
