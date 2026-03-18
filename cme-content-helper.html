@@ -227,14 +227,16 @@ textarea{resize:vertical}
             <div class="input-divider" style="margin-top:8px">Physician specialties <span style="font-size:10px;font-weight:400;text-transform:none;letter-spacing:0">(select all — each may qualify for MOC credit)</span></div>
             <div class="check-grid" id="specGrid">
               <label class="check-tile"><input type="checkbox" value="internal_med" onchange="this.closest('label').classList.toggle('checked',this.checked)"> Internal Medicine</label>
-              <label class="check-tile"><input type="checkbox" value="family_med" onchange="this.closest('label').classList.toggle('checked',this.checked)"> Family Medicine</label>
+              <label class="check-tile"><input type="checkbox" value="anesthesiology" onchange="this.closest('label').classList.toggle('checked',this.checked)"> Anesthesiology</label>
               <label class="check-tile"><input type="checkbox" value="pediatrics" onchange="this.closest('label').classList.toggle('checked',this.checked)"> Pediatrics</label>
               <label class="check-tile"><input type="checkbox" value="emergency_med" onchange="this.closest('label').classList.toggle('checked',this.checked)"> Emergency Medicine</label>
-              <label class="check-tile"><input type="checkbox" value="anesthesiology" onchange="this.closest('label').classList.toggle('checked',this.checked)"> Anesthesiology</label>
               <label class="check-tile"><input type="checkbox" value="surgery" onchange="this.closest('label').classList.toggle('checked',this.checked)"> Surgery</label>
               <label class="check-tile"><input type="checkbox" value="psychiatry_neuro" onchange="this.closest('label').classList.toggle('checked',this.checked)"> Psychiatry / Neurology</label>
-              <label class="check-tile"><input type="checkbox" value="ob_gyn" onchange="this.closest('label').classList.toggle('checked',this.checked)"> Ob/Gyn</label>
+              <label class="check-tile"><input type="checkbox" value="ob_gyn" onchange="this.closest('label').classList.toggle('checked',this.checked)"> Obstetrics & Gynecology</label>
               <label class="check-tile"><input type="checkbox" value="radiology" onchange="this.closest('label').classList.toggle('checked',this.checked)"> Radiology</label>
+              <label class="check-tile"><input type="checkbox" value="family_med" onchange="this.closest('label').classList.toggle('checked',this.checked)"> Family Medicine</label>
+              <label class="check-tile"><input type="checkbox" value="ent" onchange="this.closest('label').classList.toggle('checked',this.checked)"> Otolaryngology (ENT)</label>
+              <label class="check-tile"><input type="checkbox" value="pathology" onchange="this.closest('label').classList.toggle('checked',this.checked)"> Pathology</label>
               <label class="check-tile"><input type="checkbox" value="other_spec" onchange="this.closest('label').classList.toggle('checked',this.checked)"> Other specialty</label>
             </div>
 
@@ -331,7 +333,7 @@ textarea{resize:vertical}
             <span style="font-size:12px;color:var(--text-secondary);line-height:1.45">Use <strong style="color:var(--text-primary)">Copy all sections</strong> or <strong style="color:var(--text-primary)">Print / Save PDF</strong> — each section is labelled with exactly where to paste it in your MiCME/CloudCME application.</span>
           </div>
           <div style="margin-top:2px;padding-top:8px;border-top:1px solid var(--border-light);font-size:11px;color:var(--text-muted);line-height:1.5">
-            Not sure which credit types or application type to use? Run the <strong style="color:var(--arboretum-blue)">CME Credit Application Navigator</strong> first.
+            Not sure which credit types or application type to use? Run the <strong style="color:var(--arboretum-blue)">CME Credit Application Navigator</strong> first — it identifies MOC board credits, commendation criteria, Michigan licensing topics, commercial support requirements, and Joint Accreditation opportunities for your activity.
           </div>
         </div>
       </div>
@@ -404,7 +406,7 @@ var SYSTEM_PROMPT = [
   '    "michiganTopics": [',
   '      {',
   '        "topic": "Plain English topic name",',
-  '        "code": "mi_ethics or mi_pain or mi_implicit_bias or mi_opioid or mi_human_trafficking",',
+  '        "code": "ethics or pain_management or implicit_bias or opioid_prescribing or human_trafficking",',
   '        "applies": true,',
   '        "rationale": "One sentence why this topic applies",',
   '        "requirement": "The Michigan licensing requirement this satisfies",',
@@ -467,7 +469,7 @@ var SYSTEM_PROMPT = [
   "PARS-REPORTABLE BOARDS (OCME&LL reports on behalf of physicians):",
   "- ABA (Anesthesiology): MOCA 2.0 Lifelong Learning. Standard accredited CME — NO pre/post test required. Activity must be tagged to ABA content outline area. Flag: Tell OCME&LL to tag the appropriate ABA content area in PARS.",
   "- ABIM (Internal Medicine & subspecialties): Medical Knowledge credit requires evaluation WITH learner feedback — activity must inform learners of participation threshold and provide feedback on whether they met it. Flag: OCME&LL will register in PARS; activity must include a feedback-based evaluation component.",
-  "- ABOHNS (Otolaryngology): Self-Assessment credit requires evaluation with feedback. Patient Safety credit available if activity covers patient safety content. Flag: Tell OCME&LL to register in PARS.",
+  "- ABOHNS (Otolaryngology / ENT): Self-Assessment credit requires evaluation with feedback. Patient Safety credit available if activity covers patient safety content. Flag: Tell OCME&LL to register in PARS.",
   "- ABPath (Pathology): Lifelong Learning — standard accredited CME, no evaluation with feedback required. Improvement in Health and Healthcare credit available for QI activities. Flag: Tell OCME&LL to register in PARS.",
   "- ABP (Pediatrics): Lifelong Learning and Self-Assessment credit requires evaluation with feedback. Flag: Tell OCME&LL to register in PARS; learner completion data submitted by December 1 each year.",
   "- ABS (Surgery): Standard Accredited CME accepted. Self-Assessment credit requires evaluation with feedback. Flag: Tell OCME&LL to register in PARS.",
@@ -483,11 +485,11 @@ var SYSTEM_PROMPT = [
   "Leave moc as empty array if no physician specialties are in the audience.",
   "",
   "MICHIGAN MANDATORY TOPICS: Analyse the topic and content carefully for the following Michigan physician licensing requirements. Only include a topic if the activity content GENUINELY covers it substantively:",
-  "- mi_ethics: Medical ethics content (Michigan requires min 1 hour per 3-year cycle)",
-  "- mi_pain: Pain management or symptom management (Michigan requires min 3 hours per cycle including 1 hour on controlled substances)",
-  "- mi_implicit_bias: Implicit bias training content (Michigan requires 1 hour per year of license cycle)",
-  "- mi_opioid: Opioid / controlled substance prescribing content (required every renewal for prescribers)",
-  "- mi_human_trafficking: Human trafficking identification content (one-time requirement for Michigan physicians)",
+  "- ethics: Medical ethics content (Michigan requires min 1 hour per 3-year cycle)",
+  "- pain_management: Pain management or symptom management (Michigan requires min 3 hours per cycle including 1 hour on controlled substances)",
+  "- implicit_bias: Implicit bias training content (Michigan requires 1 hour per year of license cycle)",
+  "- opioid_prescribing: Opioid / controlled substance prescribing content (required every renewal for prescribers)",
+  "- human_trafficking: Human trafficking identification content (one-time requirement for Michigan physicians)",
   "Do NOT include a topic just because it is tangentially related. Pain management content must be the explicit focus of at least part of the activity. Leave michiganTopics as empty array if none genuinely apply.",
   "",
   "COMMENDATION: Analyse the full activity description and identify which ACCME commendation criteria (C23-C38) genuinely apply. For each:",
@@ -568,16 +570,18 @@ function buildUserPrompt() {
 
 function specLabel(v) {
   var map = {
-    internal_med: "Internal Medicine / subspecialties",
-    family_med: "Family Medicine",
-    pediatrics: "Pediatrics",
-    emergency_med: "Emergency Medicine",
-    anesthesiology: "Anesthesiology / Pain / Critical Care",
-    surgery: "Surgery",
-    psychiatry_neuro: "Psychiatry / Neurology",
-    ob_gyn: "Obstetrics and Gynecology",
-    radiology: "Radiology / Radiation Oncology",
-    other_spec: "Other physician specialty"
+    internal_med:    "Internal Medicine or subspecialties",
+    anesthesiology:  "Anesthesiology, Pain Medicine, or Critical Care",
+    pediatrics:      "Pediatrics",
+    emergency_med:   "Emergency Medicine",
+    surgery:         "Surgery — General, Orthopaedic, Thoracic, or Vascular",
+    psychiatry_neuro:"Psychiatry or Neurology",
+    ob_gyn:          "Obstetrics & Gynecology",
+    radiology:       "Radiology or Radiation Oncology",
+    family_med:      "Family Medicine",
+    ent:             "Otolaryngology / Head & Neck Surgery (ENT)",
+    pathology:       "Pathology",
+    other_spec:      "Other physician specialty"
   };
   return map[v] || v;
 }
@@ -638,6 +642,12 @@ async function handleGenerate() {
 }
 
 async function handleRegenerate() {
+  // Confirm if user has edited the gap textarea
+  if (state.status === "done") {
+    var gapTA = document.getElementById("gapTextarea");
+    var hasEdits = gapTA && gapTA.value && state.results && gapTA.value !== (state.results.practiceGap||[])[state.selected.practiceGapOption||0];
+    if (hasEdits && !confirm("Generate a new AI draft? Your edits to the current version will be replaced.")) return;
+  }
   // Preserve all user form inputs — only refresh AI-generated output fields.
   state.status = "loading"; renderOutput();
   var btn = document.getElementById("generateBtn");
@@ -1089,6 +1099,17 @@ function renderEligibility(el) {
     h += eligItem("IPCE Recognition", el.ipce.rationale, [], el.ipce.steps || [], "#6d28d9", "#f5f3ff", "#ddd6fe", "high", "Applicable");
     h += "<div style=\"font-size:12px;color:#6d28d9;font-style:italic;padding:0 2px 10px;line-height:1.5\">The formal IPCE Credit Mark on certificates requires Joint Accreditation, which OCME&amp;LL is actively pursuing. In the meantime, this activity will be tracked as interprofessional and contributes to the Joint Accreditation portfolio.</div>";
     h += "</div>";
+  } else if (el.ipce && !el.ipce.applies) {
+    // IPCE doesn't apply — but check if audience is multi-profession (opportunity to unlock)
+    var profs = getProfs();
+    var nonPhys = profs.filter(function(p){ return ["nurses","pharmacists","pas","psychologists","social_workers","other_hcp"].includes(p); });
+    if (nonPhys.length >= 1) {
+      hasContent = true;
+      h += "<div style=\"margin-bottom:16px;padding:14px 16px;background:#fffbeb;border:1.5px solid #fde68a;border-left:4px solid #f59e0b;border-radius:10px\">"
+        + "<div style=\"font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:#b45309;margin-bottom:6px\">\ud83c\udfaf IPCE Opportunity</div>"
+        + "<div style=\"font-size:13px;color:#78350f;line-height:1.55\">Your audience includes " + nonPhys.length + " non-physician profession" + (nonPhys.length > 1 ? "s" : "") + ". Adding an interprofessional planning committee member and faculty presenter would unlock IPCE recognition and contribute directly to Michigan Medicine's Joint Accreditation goal (25% of activities must be interprofessional). <strong>Contact your OCME&amp;LL representative</strong> — they can connect you with willing colleagues from other professions.</div>"
+        + "</div>";
+    }
   }
 
   // Commendation

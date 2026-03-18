@@ -20,18 +20,19 @@ button{font-family:inherit;cursor:pointer}
 <script>
 const SPECIALTY_MOC = {
   // PARS-REPORTABLE: OCME&LL reports these directly through ACCME PARS
-  internal_med:    {boards:"ABIM — Medical Knowledge (PARS-reported)",flag:"ABIM credit is reported by OCME&LL directly to ABIM through ACCME PARS — physicians do not need to self-report. This requires evaluation with learner feedback (not just a satisfaction survey). Flag to OCME&LL and confirm the activity includes a feedback-based evaluation component informing learners whether they met the participation threshold."},
-  anesthesiology:  {boards:"ABA — MOCA 2.0® Lifelong Learning (PARS-reported)",flag:"ABA credit is reported by OCME&LL directly through ACCME PARS. Standard accredited CME qualifies — no pre/post test is required. The activity must be tagged to at least one ABA content outline area. If the activity covers patient safety topics, Patient Safety CME credit may also be available. Flag both to OCME&LL at submission."},
-  pediatrics:      {boards:"ABP — Lifelong Learning & Self-Assessment (PARS-reported)",flag:"ABP credit is reported by OCME&LL directly through ACCME PARS — physicians do not need to self-report. This requires evaluation with learner feedback. Learner completion data must be submitted to PARS by December 1 each year. Flag to OCME&LL at submission."},
-  surgery:         {boards:"ABS / ABOS / ABTS — varies by subspecialty (PARS-reported)",flag:"All three surgical boards are reported by OCME&LL directly through ACCME PARS. ABS and ABTS accept standard accredited CME. ABOS Self-Assessment credit requires pre-approval from ABOS — flag this to OCME&LL early. Mention all surgical subspecialties represented in your audience so the correct boards are registered."},
+  internal_med:    {boards:"ABIM — Medical Knowledge",pars:true,flag:"ABIM credit is reported by OCME&LL directly through ACCME PARS — physicians do not need to self-report. This requires evaluation with learner feedback (not just a satisfaction survey). Confirm the activity includes a feedback-based evaluation component informing learners whether they met the participation threshold."},
+  anesthesiology:  {boards:"ABA — MOCA 2.0® Lifelong Learning",pars:true,flag:"ABA credit is reported by OCME&LL directly through ACCME PARS. Standard accredited CME qualifies — no pre/post test required. The activity must be tagged to at least one ABA content outline area. If the activity covers patient safety topics, Patient Safety CME credit may also be available — flag both to OCME&LL at submission."},
+  pediatrics:      {boards:"ABP — Lifelong Learning & Self-Assessment",pars:true,flag:"ABP credit is reported by OCME&LL directly through ACCME PARS. Requires evaluation with learner feedback. Learner completion data must be submitted to PARS by December 1 each year."},
+  surgery:         {boards:"ABS / ABOS / ABTS — varies by subspecialty",pars:true,flag:"All three surgical boards are reported by OCME&LL directly through ACCME PARS. ABS and ABTS accept standard accredited CME. ABOS Self-Assessment credit requires pre-approval from ABOS — flag this to OCME&LL early. Specify all surgical subspecialties in your audience so the correct boards are registered."},
+  ent:             {boards:"ABOHNS — Continuing Certification",pars:true,flag:"ABOHNS credit is reported by OCME&LL directly through ACCME PARS. Self-Assessment credit requires evaluation with learner feedback. Patient Safety CME credit is also available if the activity includes patient safety content — flag both to OCME&LL at submission."},
+  pathology:       {boards:"ABPath — Continuing Certification (Lifelong Learning)",pars:true,flag:"ABPath credit is reported by OCME&LL directly through ACCME PARS. Standard accredited CME qualifies for Lifelong Learning credit — no evaluation with feedback required. If the activity includes a quality improvement component, Improvement in Health and Healthcare credit may also be available."},
   // NON-PARS: Physicians must self-report directly to their board
-  family_med:      {boards:"ABFM Continuing Certification (physician self-reports)",flag:"ABFM is NOT in the ACCME PARS reporting system. OCME&LL cannot report credits directly to ABFM on behalf of physicians. Family medicine physicians must self-report their CME credits directly to ABFM. Advise your physician attendees of this and provide them with their certificate of completion so they can submit it themselves."},
-  psychiatry_neuro:{boards:"ABPN Continuing Certification (physician self-reports)",flag:"ABPN is NOT in the ACCME PARS reporting system. OCME&LL cannot report credits directly to ABPN. Psychiatrists and neurologists must self-report to ABPN directly. Ensure physician attendees receive their certificate of completion for self-submission."},
-  ob_gyn:          {boards:"ABOG Continuing Certification (physician self-reports)",flag:"ABOG is NOT in the ACCME PARS reporting system. OCME&LL cannot report credits directly to ABOG. OB/GYN physicians must self-report to ABOG directly. Ensure physician attendees receive their certificate of completion for self-submission."},
-  radiology:       {boards:"ABR Continuing Certification (physician self-reports)",flag:"ABR is NOT in the ACCME PARS reporting system. OCME&LL cannot report credits directly to ABR. Radiologists and radiation oncologists must self-report to ABR directly. Ensure physician attendees receive their certificate of completion for self-submission."},
-  emergency_med:   {boards:"ABEM Continuing Certification (physician self-reports)",flag:"ABEM is NOT in the ACCME PARS reporting system. OCME&LL cannot report credits directly to ABEM. Emergency medicine physicians must self-report to ABEM directly. Ensure physician attendees receive their certificate of completion for self-submission."},
-  multi_specialty: {boards:"Multiple boards — some PARS-reported, some self-report",flag:"With a multi-specialty audience, the reporting pathway varies by board. OCME&LL can report directly for: ABIM, ABA, ABP, ABS, ABOS, ABTS, ABOHNS, ABPath. Physicians certified by ABFM, ABPN, ABOG, ABR, or ABEM must self-report to their own boards. Let OCME&LL know all specialties represented so they can advise on each pathway."},
-  other_specialty: {boards:null,flag:null},
+  family_med:      {boards:"ABFM Continuing Certification",pars:false,flag:"ABFM is NOT in the ACCME PARS reporting system. OCME&LL cannot report credits directly to ABFM. Family medicine physicians must self-report to ABFM directly using their certificate of completion."},
+  psychiatry_neuro:{boards:"ABPN Continuing Certification",pars:false,flag:"ABPN is NOT in the ACCME PARS reporting system. OCME&LL cannot report credits directly to ABPN. Psychiatrists and neurologists must self-report to ABPN directly using their certificate of completion."},
+  ob_gyn:          {boards:"ABOG Continuing Certification",pars:false,flag:"ABOG is NOT in the ACCME PARS reporting system. OCME&LL cannot report credits directly to ABOG. OB/GYN physicians must self-report to ABOG directly using their certificate of completion."},
+  radiology:       {boards:"ABR Continuing Certification",pars:false,flag:"ABR is NOT in the ACCME PARS reporting system. OCME&LL cannot report credits directly to ABR. Radiologists and radiation oncologists must self-report to ABR directly using their certificate of completion."},
+  emergency_med:   {boards:"ABEM Continuing Certification",pars:false,flag:"ABEM is NOT in the ACCME PARS reporting system. OCME&LL cannot report credits directly to ABEM. Emergency medicine physicians must self-report to ABEM directly using their certificate of completion."},
+  other_spec:      {boards:null,flag:null},
 };
 
 const COMMENDATION = [
@@ -45,7 +46,7 @@ const COMMENDATION = [
   {category:"Public Health & Community Impact",color:"#0e7490",colorLight:"#ecfeff",colorBorder:"#a5f3fc",icon:"🌍",
    whyItMatters:"Activities addressing population health, health equity, or cross-organizational collaboration are highly valued.",
    criteria:[
-     {code:"C26",label:"Addresses population health or health equity",triggers:["population_health","sdoh"]},
+     {code:"C26",label:"Addresses population health or health equity",triggers:["population_health","sdoh","implicit_bias","human_trafficking"]},
      {code:"C27",label:"Collaboration with another organization",triggers:["multi_org"]},
      {code:"C28",label:"Activity was designed using real data",triggers:["data_driven","qi_activity"]},
   ]},
@@ -107,21 +108,6 @@ const QUESTIONS = [
     {value:"performance_improvement",icon:"📈",label:"Performance improvement or quality improvement activity",sublabel:"Learners engage with real practice data and commit to specific changes — often linked to a PI CME or QI framework"},
     {value:"self_assessment_learning",icon:"✅",label:"Structured self-assessment or reflective practice",sublabel:"Learners assess their own knowledge gaps, review performance data, or complete a guided self-evaluation before or during the activity"},
   ]},
-  {id:"target_specialty",question:"What is the primary physician specialty for this activity?",
-   hint:"Choose the specialty that best describes your main audience. If physicians from several specialties will attend, choose 'Mixed or multi-specialty.' MOC credit is always tied to the primary audience.",
-   type:"single",options:[
-    {value:"internal_med",label:"Internal Medicine or subspecialties (cardiology, GI, rheumatology, etc.)"},
-    {value:"anesthesiology",label:"Anesthesiology, Pain Medicine, or Critical Care"},
-    {value:"family_med",label:"Family Medicine"},
-    {value:"pediatrics",label:"Pediatrics"},
-    {value:"psychiatry_neuro",label:"Psychiatry or Neurology"},
-    {value:"surgery",label:"Surgery — General, Orthopaedic, Thoracic, or Vascular"},
-    {value:"ob_gyn",label:"Obstetrics & Gynecology"},
-    {value:"radiology",label:"Radiology or Radiation Oncology"},
-    {value:"emergency_med",label:"Emergency Medicine"},
-    {value:"multi_specialty",label:"Mixed or multi-specialty audience"},
-    {value:"other_specialty",label:"Another specialty"},
-  ]},
   {id:"audience_professions",question:"Which professional groups will attend? Select all that apply.",
    hint:"If nurses, pharmacists, or other healthcare professionals attend, additional credit types may be available beyond standard physician CME.",
    type:"multi",options:[
@@ -134,13 +120,28 @@ const QUESTIONS = [
     {value:"residents_fellows",label:"Residents or Fellows"},
     {value:"students",label:"Health professions students"},
     {value:"other_hcp",label:"Other healthcare professionals"},
+  ]},  {id:"physician_specialties",question:"Which physician specialties will attend? Select all that apply.",
+   hint:"All selected specialties will be checked for MOC board credit eligibility. Activities can be registered for multiple boards simultaneously through PARS.",
+   type:"multi",options:[
+    {value:"internal_med",label:"Internal Medicine or subspecialties (cardiology, GI, rheumatology, etc.)"},
+    {value:"anesthesiology",label:"Anesthesiology, Pain Medicine, or Critical Care"},
+    {value:"pediatrics",label:"Pediatrics"},
+    {value:"emergency_med",label:"Emergency Medicine"},
+    {value:"surgery",label:"Surgery — General, Orthopaedic, Thoracic, or Vascular"},
+    {value:"psychiatry_neuro",label:"Psychiatry or Neurology"},
+    {value:"ob_gyn",label:"Obstetrics & Gynecology"},
+    {value:"radiology",label:"Radiology or Radiation Oncology"},
+    {value:"family_med",label:"Family Medicine"},
+    {value:"ent",label:"Otolaryngology / Head & Neck Surgery (ENT)"},
+    {value:"pathology",label:"Pathology"},
+    {value:"other_spec",label:"Another physician specialty"},
   ]},
   {id:"content_focus",question:"What will this activity cover? Select all that apply.",
    hint:"Be generous — select everything that fits. The more you flag now, the more credit opportunities your OCME&LL representative can identify.",
    type:"multi",options:[
     {value:"clinical_knowledge",label:"🧬 Clinical knowledge update — new evidence, guidelines, or treatments"},
     {value:"procedural",label:"🔧 A specific procedure, technique, or clinical skill"},
-    {divider:"High-value designations — unlock additional credit types"},
+    {divider:"High-value — unlock additional credit types"},
     {value:"patient_safety",label:"🛡️ Patient safety or preventing medical errors"},
     {value:"qi_activity",label:"📊 Quality improvement or reducing variation in care"},
     {divider:"Audience & communication focus"},
@@ -149,9 +150,12 @@ const QUESTIONS = [
     {divider:"Population health & equity"},
     {value:"population_health",label:"🌍 Population health, public health, or community health"},
     {value:"sdoh",label:"⚖️ Health equity, disparities, or social determinants of health"},
-    {divider:"Specialty topics — also satisfy Michigan mandatory requirements"},
-    {value:"pain_management",label:"💊 Pain management, symptom management, or opioid prescribing"},
-    {value:"ethics",label:"⚕️ Medical ethics"},
+    {divider:"Michigan mandatory licensing topics — flag these and they satisfy physician CE requirements"},
+    {value:"ethics",label:"⚕️ Medical ethics",tag:"Michigan: 1hr/cycle"},
+    {value:"pain_management",label:"💊 Pain management or symptom management — including controlled substances",tag:"Michigan: 3hrs/cycle"},
+    {value:"opioid_prescribing",label:"🚨 Opioid prescribing or controlled substance awareness for prescribers",tag:"Michigan: every renewal"},
+    {value:"implicit_bias",label:"🤝 Implicit bias, health equity in practice, or cultural humility",tag:"Michigan: 1hr/year"},
+    {value:"human_trafficking",label:"🔴 Human trafficking identification or response",tag:"Michigan: one-time"},
     {divider:"Other"},
     {value:"research",label:"🔬 Research methods, evidence-based practice, or scholarly work"},
     {value:"technology",label:"💡 Health technology, AI, or innovative care delivery"},
@@ -170,7 +174,7 @@ const QUESTIONS = [
    type:"multi",options:[
     {value:"multi_prof",label:"The planning committee includes people from more than one health profession",
      badge:"🏅 Interprofessional",
-     tooltip:"When both the planning committee and faculty presenters represent two or more professions, this activity qualifies as Interprofessional Continuing Education (IPCE) — one of the most valued designations in CME.\n\nNote: the formal IPCE Credit Mark on certificates requires Joint Accreditation, which our office is working toward. Until then, these activities are tracked internally and count toward our Joint Accreditation portfolio. Flag this to your OCME&LL representative."},
+     tooltip:"Selecting this qualifies the activity as Interprofessional Continuing Education (IPCE) — one of the most impactful designations in CME.\n\nIPCE requires that healthcare professionals from two or more professions are involved in both planning and presenting. Michigan Medicine is working toward Joint Accreditation, which requires 25% of activities to be interprofessional. Every activity you designate here directly builds that portfolio.\n\nFlag this to your OCME&LL representative — they can help identify a planning committee member from another profession if needed."},
     {value:"patient_engagement",label:"A patient, family member, or community representative was involved in planning",
      tooltip:"Patient and community involvement in planning is an ACCME commendation criterion. Document who was involved and how their input shaped the activity."},
     {value:"students_involved",label:"Health professions students are involved in planning or presenting",
@@ -186,6 +190,25 @@ const QUESTIONS = [
      tooltip:"A documented needs assessment — survey, chart review, focus group, or structured gap analysis — strengthens your application and supports multiple commendation criteria. Attach the documentation."},
     {value:"solo_planner",label:"One person or department planned this independently"},
   ]},
+  {id:"funding",question:"Does this activity involve commercial support or associated promotion?",
+   hint:"These are two separate things with different rules. Commercial support is subject to ACCME accreditation standards. Associated promotion sits outside the CME framework but must comply with Michigan Medicine policy.",
+   type:"multi",options:[
+    {value:"no_external",label:"Neither — the activity has no commercial support and no associated promotion"},
+    {divider:"Commercial support — governed by ACCME Standard 4, requires a signed Letter of Agreement"},
+    {value:"commercial_support_money",label:"💰 Commercial support — a company is providing money to help pay for this activity",
+     badge:"📄 LOA required",
+     tooltip:"Commercial support is financial or in-kind support from an ineligible company (pharmaceutical, device, or healthcare product company) used to pay costs of the CME activity.\n\nThis is an ACCME-governed relationship with strict rules:\n\n\u2022 A written Letter of Agreement (LOA) must be signed by both the company AND OCME&LL before the activity starts — the department or planner cannot sign on behalf of Michigan Medicine\n\u2022 OCME&LL — not the sponsoring company — decides how the money is spent\n\u2022 The company cannot direct, influence, or control any educational content, speaker selection, objectives, or evaluation\n\u2022 The company cannot pay speakers, faculty, or learners directly\n\u2022 You must disclose the company's name to learners before the activity begins — not their logo, just their name\n\nExample: A pharmaceutical company provides $5,000 toward the symposium catering costs."},
+    {value:"commercial_support_inkind",label:"🎁 Commercial support — a company is providing equipment, food, materials, or other in-kind support",
+     badge:"📄 LOA required",
+     tooltip:"In-kind commercial support follows exactly the same ACCME rules as financial support — a signed Letter of Agreement is required.\n\nCommon examples: a device company lending simulation equipment for the session, a company providing catering, a sponsor covering AV or venue costs.\n\nAdditional rules for in-kind support:\n\u2022 Company logos must be obscured on any equipment used during the CME activity\n\u2022 Company employees may only participate as technicians demonstrating the safe use of their own equipment — they cannot present educational content, make clinical recommendations, or influence learning objectives"},
+    {divider:"Associated promotion — outside the CME framework, governed by Michigan Medicine policy"},
+    {value:"exhibits",label:"🏪 Associated promotion — companies will have exhibit booths or display tables at the event",
+     badge:"MM policy",
+     tooltip:"Associated promotion (exhibits, display tables) is completely separate from CME and is NOT governed by ACCME accreditation standards. Monies paid for exhibit space are not commercial support.\n\nHowever, Michigan Medicine policy and ACCME Standard 5 require clear separation:\n\n\u2022 Exhibit arrangements must not influence educational planning, content, or speaker selection in any way\n\u2022 Providing exhibit space cannot be offered as a condition of — or tied to — commercial support for the CME\n\u2022 Vendors cannot engage in sales or product promotion in the educational space during or immediately before or after CME sessions\n\u2022 Exhibits must be physically separated (different room) or held at a different time (30+ minutes) from the accredited education\n\u2022 Promotional materials cannot be distributed in the educational space\n\u2022 Exhibitors may be acknowledged in the programme, but their logos, trade names, or product messages cannot appear in any educational material (slides, handouts, evaluation forms)\n\nThink of it this way: the exhibit hall is the company's space. The classroom is learners' space. They do not overlap."},
+    {value:"advertising",label:"📣 Associated promotion — companies are paying for advertising in programme materials or signage",
+     badge:"MM policy",
+     tooltip:"Advertising associated with the event (programme books, apps, signage, banners) is associated promotion — not commercial support and not part of the CME activity itself.\n\nMichigan Medicine policy and ACCME Standard 5 requirements:\n\n\u2022 Advertising cannot appear in educational materials — slides, handouts, evaluation forms, or disclosure information are off-limits\n\u2022 Advertising and educational content must not be interleaved — ads appear before or after educational content, not within it\n\u2022 Corporate logos, trade names, and product-group messages cannot appear anywhere in educational materials\n\u2022 Supporters may be acknowledged by name only — not by logo or product branding\n\nThe principle: learners must be able to clearly distinguish between accredited education and associated promotion at all times."},
+  ]},
   {id:"follow_up",question:"Will there be anything after the activity itself? Select all that apply.",
    hint:"Post-activity plans — even simple ones — can unlock important commendation criteria. Don't overlook these.",
    type:"multi",options:[
@@ -195,16 +218,7 @@ const QUESTIONS = [
     {value:"individualized",label:"Attendees receive a personalized learning plan or individual feedback"},
     {value:"community_impact",label:"There is a community outreach component connected to this activity"},
   ]},
-  {id:"michigan_topics",question:"Does this activity cover any of these Michigan-required topics?",
-   hint:"Michigan physicians must complete specific hours in these topics each licensure cycle. Flag any that apply.",
-   type:"multi",options:[
-    {value:"mi_ethics",label:"⚕️ Medical Ethics — Michigan requires at least 1 hour per cycle"},
-    {value:"mi_pain",label:"💊 Pain & Symptom Management — at least 3 hours per cycle (including 1 hour on controlled substances)"},
-    {value:"mi_implicit_bias",label:"🤝 Implicit Bias Training — 1 hour per year of the license cycle"},
-    {value:"mi_opioid",label:"🚨 Opioid / Controlled Substance Awareness — required for prescribers every renewal period"},
-    {value:"mi_human_trafficking",label:"🔴 Human Trafficking Identification — one-time requirement for Michigan physicians"},
-    {value:"mi_none",label:"None of these"},
-  ]},
+
 ];
 
 // ─── LOGIC ────────────────────────────────────────────────────────────────────
@@ -260,26 +274,69 @@ function deriveResults(answers) {
   var hasInterprofPlanning=planning.includes("multi_prof");
   if (nonPhysProfs.length>=1 && hasInterprofPlanning) {
     res.additionalCredits.push({icon:"🏅",label:"Interprofessional Continuing Education (IPCE)",who:"For all professions attending and planning together",why:"This activity meets the definition of IPCE — members of two or more professions learning with, from, and about each other. Important: the formal IPCE Credit Mark on certificates requires Joint Accreditation, which our office does not yet hold. However, this activity will be tracked internally as an interprofessional activity and builds the evidence portfolio required to achieve Joint Accreditation.",flag:"Flag this to your OCME&LL representative so it can be recorded as an interprofessional activity. Document both the interprofessional planning committee and faculty presenters — this documentation is essential for our Joint Accreditation application.",priority:"high"});
+  } else if (nonPhysProfs.length>=1 && planning.includes("solo_planner")) {
+    res.additionalCredits.push({icon:"🏅",label:"IPCE Opportunity — One Step Away",who:"Your audience already spans multiple professions",why:"This activity has a multi-profession audience but was planned by a single person or department. Adding one healthcare professional from another profession to the planning committee — a nurse, pharmacist, PA, or other colleague — would qualify this as IPCE and directly contribute to Michigan Medicine's Joint Accreditation goal (25% of activities must be interprofessional).",flag:"Contact your OCME&LL representative — they maintain a roster of professionals willing to serve on planning committees and can make an introduction. This is a low-effort change with high institutional value.",priority:"opportunity"});
   } else if (nonPhysProfs.length>=1 && !hasInterprofPlanning) {
-    res.flags.push("Multiple professions are attending, but the planning committee appears to be single-profession. If you can involve a nurse, pharmacist, or other professional in the planning process — and have a faculty presenter from another profession — this activity would qualify as interprofessional and contribute to our Joint Accreditation portfolio. Mention this to your OCME&LL representative.");
+    res.additionalCredits.push({icon:"🏅",label:"IPCE Opportunity — One Step Away",who:"Your audience already spans multiple professions",why:"This activity has a multi-profession audience. If the planning committee includes a member from another health profession — such as a nurse, pharmacist, or PA — it would qualify as Interprofessional Continuing Education (IPCE) and count toward Michigan Medicine's Joint Accreditation goal.",flag:"Contact your OCME&LL representative before finalising your planning committee — they can help identify a willing colleague from another profession. This is one of the most impactful things you can do for this activity.",priority:"opportunity"});
   }
 
-  if (a.target_specialty==="anesthesiology" && hasPatientSafety) {
-    res.additionalCredits.push({icon:"🛡️",label:"ABA MOCA 2.0® Patient Safety CME Credit",who:"For anesthesiology audiences",why:"For anesthesiology activities that include cross-disciplinary patient safety content, there is a separate ABA Patient Safety CME designation available in addition to standard MOCA 2.0® credit. Anesthesiologists self-report this credit using their 8-digit ABA ID.",flag:"Flag this to your OCME&LL representative and make sure the patient safety content is clearly described in your application.",priority:"high"});
+  if ((a.physician_specialties||[]).includes("anesthesiology") && hasPatientSafety) {
+    res.additionalCredits.push({icon:"🛡️",label:"ABA MOCA 2.0® Patient Safety CME Credit",who:"For anesthesiology audiences — reported through PARS",why:"Anesthesiology activities that include patient safety content qualify for a separate ABA Patient Safety CME designation in addition to standard MOCA 2.0® Lifelong Learning credit. OCME&LL reports both designations directly to ABA through ACCME PARS — anesthesiologists do not need to self-report.",flag:"Flag this to your OCME&LL representative at submission and make sure the patient safety content is clearly described in your application. OCME&LL will register both the Lifelong Learning and Patient Safety designations in PARS.",priority:"high"});
   }
   if (planning.includes("multi_org")) {
-    res.additionalCredits.push({icon:"📋",label:"Joint Providership Agreement Required",who:"Any activity co-organized with a non-accredited partner",why:"Your partner organization is not itself ACCME-accredited. Under ACCME rules, this makes your activity a formal Joint Providership. A written Joint Providership Agreement must be executed before the activity. The accreditation statement on all materials must name both organizations.",flag:"Contact your OCME&LL representative as early as possible — ideally before submitting your application. Do not proceed with planning materials or announcements until this agreement is in place.",priority:"high"});
+    res.application.push({
+      isProvidership: true,
+      isJoint: true,
+      appType: "Jointly Provided Activity",
+      appNote: "Your co-organising partner is not itself ACCME-accredited. Under ACCME rules this makes your activity a formal Joint Providership — a distinct application setup. A written Joint Providership Agreement must be executed by OCME&LL before the activity begins. The accreditation statement on all materials must name both organisations.",
+      appAction: "Contact your OCME&LL representative before doing anything else — before planning materials, announcements, or save-the-dates. The Joint Providership Agreement must be in place first. This requires additional lead time."
+    });
   }
   if (planning.includes("multi_org_accredited")) {
-    res.additionalCredits.push({icon:"🤝",label:"Co-Organization with Another Accredited Institution",who:"Activities co-organized with a partner that holds its own ACCME accreditation",why:"When two ACCME-accredited organizations collaborate, this is not Joint Providership — no special agreement is required. One institution takes the accreditation lead and issues the credit; the other's involvement is simply acknowledged.",flag:"Confirm with your OCME&LL representative which institution will be the accreditation lead. If your partner is issuing the credit, you may not need to submit an application through our office at all.",priority:"medium"});
+    res.application.push({
+      isProvidership: true,
+      isJoint: false,
+      appType: "Co-Organisation with an Accredited Institution",
+      appNote: "Your partner already holds its own ACCME accreditation. This is NOT Joint Providership — no special agreement is required. One institution takes the accreditation lead and issues the credit; the other's involvement is acknowledged in the application.",
+      appAction: "Confirm with your OCME&LL representative which institution will be the accreditation lead. If your partner is issuing the credit, you may not need a Michigan Medicine application at all."
+    });
   }
 
-  var mocInfo=SPECIALTY_MOC[a.target_specialty];
-  if (mocInfo && mocInfo.boards) {
-    var needsRobustEval=a.target_specialty==="internal_med";
-    var hasRobustEval=["pre_post","performance_outcome","patient_outcome","self_assessment_format"].includes(evalMethod);
-    res.boardCredit={boards:mocInfo.boards,flag:mocInfo.flag,evalWarning:needsRobustEval&&!hasRobustEval?"Important: for ABIM MOC credit specifically, a satisfaction survey alone is not sufficient. A pre/post knowledge assessment or outcomes measurement is required. Ask your OCME&LL representative about adding this to your evaluation plan.":null};
+  // Commercial support and exhibits
+  var funding = a.funding || [];
+  var hasCommercialSupport = funding.includes("commercial_support_money") || funding.includes("commercial_support_inkind");
+  var hasExhibits = funding.includes("exhibits");
+  var hasAdvertising = funding.includes("advertising");
+  if (hasCommercialSupport) {
+    var isInKind = funding.includes("commercial_support_inkind") && !funding.includes("commercial_support_money");
+    res.application.push({
+      isCommercialSupport: true,
+      isInKind: isInKind,
+      appType: isInKind ? "In-Kind Commercial Support" : "Commercial Support",
+      appNote: "This activity receives " + (isInKind ? "in-kind" : "financial") + " support from an ineligible company (pharmaceutical, device, or healthcare product company). Under ACCME Standard 4 and Michigan Medicine policy, a Letter of Agreement (LOA) must be in place before the activity begins. OCME&LL — not the department and not the planner — must be the signatory on behalf of Michigan Medicine. The supporting company cannot control, direct, or influence any element of the educational content, speaker selection, or learning objectives.",
+      appAction: "Contact OCME&LL immediately to initiate the Letter of Agreement process. Do not proceed with planning, announcements, or speaker contracts that involve the company's funds until the LOA is signed by both parties. Disclose the company name to learners before the activity begins."
+    });
   }
+  if (hasExhibits || hasAdvertising) {
+    var promo = [];
+    if (hasExhibits) promo.push("exhibit booths");
+    if (hasAdvertising) promo.push("advertising");
+    res.flags.push("This activity includes associated promotion (" + promo.join(" and ") + "). Associated promotion sits outside the CME accreditation framework but must comply with Michigan Medicine policy and ACCME Standard 5. Promotional activities must be physically or temporally separated from accredited education — a separate room, or at least 30 minutes apart. Promotional materials and company branding cannot appear in educational materials. Notify OCME&LL so this is recorded correctly on the application.");
+  }
+
+  // Board credit — loop over all selected specialties, generate a card for each
+  var specs = a.physician_specialties || [];
+  var hasRobustEval = ["pre_post","performance_outcome","patient_outcome","self_assessment_format"].includes(evalMethod);
+  var boardCredits = [];
+  specs.forEach(function(sp) {
+    var mocInfo = SPECIALTY_MOC[sp];
+    if (!mocInfo || !mocInfo.boards) return;
+    var evalWarning = (sp === "internal_med" && !hasRobustEval)
+      ? "ABIM requires evaluation with learner feedback — a satisfaction survey alone is not sufficient. Confirm the activity includes a feedback-based evaluation component."
+      : null;
+    boardCredits.push({ specialty: sp, boards: mocInfo.boards, pars: mocInfo.pars, flag: mocInfo.flag, evalWarning: evalWarning });
+  });
+  if (boardCredits.length > 0) res.boardCredit = boardCredits;
 
   var allTriggers=content.concat(planning).concat(followUp).concat(learnEnv).concat([fmt,evalMethod]).filter(Boolean);
   COMMENDATION.forEach(function(cat){
@@ -287,15 +344,15 @@ function deriveResults(answers) {
     if (matched.length>0) res.commendation.push(Object.assign({},cat,{matched:matched}));
   });
 
-  var mi=a.michigan_topics||[];
-  if (mi.includes("mi_ethics"))           res.michigan.push({icon:"⚕️",label:"Medical Ethics",req:"At least 1 hour required per 3-year cycle",note:"Designate this on your application and mention it to your OCME&LL representative so it is flagged correctly in the system."});
-  if (mi.includes("mi_pain"))             res.michigan.push({icon:"💊",label:"Pain & Symptom Management",req:"At least 3 hours required per cycle (including at least 1 hour on controlled substances)",note:"Make sure your application clearly describes the controlled substance content."});
-  if (mi.includes("mi_implicit_bias"))    res.michigan.push({icon:"🤝",label:"Implicit Bias Training",req:"1 hour per year of the license cycle (required since June 2021)",note:"Designate this on your application. Your OCME&LL representative will ensure it is correctly coded."});
-  if (mi.includes("mi_opioid"))           res.michigan.push({icon:"🚨",label:"Opioid / Controlled Substance Awareness",req:"Required every renewal period for prescribers and dispensers (since May 2024)",note:"Flag this explicitly on your application. This is a prescriber requirement and must be clearly designated."});
-  if (mi.includes("mi_human_trafficking")) res.michigan.push({icon:"🔴",label:"Human Trafficking Identification",req:"One-time requirement for Michigan physicians",note:"Flag this on your application. Physicians who have not yet completed this one-time requirement can use your activity to fulfill it."});
+  // Michigan mandatory topics — derived directly from content_focus selections
+  if (content.includes("ethics"))           res.michigan.push({icon:"⚕️",label:"Medical Ethics",req:"At least 1 hour required per 3-year licensure cycle",note:"Designate this on your application and mention it to your OCME&LL representative so it is flagged correctly in the system."});
+  if (content.includes("pain_management"))  res.michigan.push({icon:"💊",label:"Pain & Symptom Management",req:"At least 3 hours required per cycle (including at least 1 hour on controlled substances)",note:"Make sure your application clearly describes the controlled substance content — the 1-hour controlled substance component must be documented separately."});
+  if (content.includes("opioid_prescribing")) res.michigan.push({icon:"🚨",label:"Opioid / Controlled Substance Awareness",req:"Required every renewal period for all prescribers and dispensers (since May 2024)",note:"Flag this explicitly on your application. This is a prescriber-specific requirement and must be clearly designated separately from general pain management content."});
+  if (content.includes("implicit_bias"))    res.michigan.push({icon:"🤝",label:"Implicit Bias Training",req:"1 hour per year of the licensure cycle (required since June 2021)",note:"Designate this on your application. Your OCME&LL representative will ensure it is correctly coded in the system."});
+  if (content.includes("human_trafficking")) res.michigan.push({icon:"🔴",label:"Human Trafficking Identification",req:"One-time requirement for Michigan physicians",note:"Flag this on your application. Physicians who have not yet completed this one-time requirement can use your activity to fulfil it."});
 
   if (planning.includes("needs_assessment")) res.flags.push("You conducted a formal needs assessment — include this documentation with your application. It strengthens your application and supports several commendation criteria.");
-  if (evalMethod==="survey_only"&&(hasQI||hasPatientSafety)) res.flags.push("Your activity includes quality improvement or patient safety content. If an outcomes measure or pre/post assessment is feasible, mention this to OCME&amp;LL — it may support additional commendation criteria. A satisfaction survey alone is perfectly valid.");
+  if (evalMethod==="survey_only"&&(hasQI||hasPatientSafety)) res.flags.push("Your activity includes quality improvement or patient safety content. If an outcomes measure or pre/post assessment is feasible, mention this to OCME&LL — it may support additional commendation criteria. A satisfaction survey alone is perfectly valid.");
   if (isRepeated) res.flags.push("Remember: each run of this course needs its own separate application, even if the content is identical. Plan your application timeline accordingly.");
   if (isRSS&&isHybrid&&hasPublicRecording) res.flags.push("For your RSS: each time a session recording is publicly released, a separate Enduring Material application is needed for that recording. Discuss the workflow for this with your OCME&LL representative upfront.");
 
@@ -318,7 +375,22 @@ function canProceed(){
 }
 function toggle(qid,value,type){
   if(type==="single"){state.answers[qid]=value;}
-  else{var cur=state.answers[qid]||[];if(cur.includes(value))state.answers[qid]=cur.filter(function(v){return v!==value;});else state.answers[qid]=cur.concat([value]);}
+  else{
+    var cur=state.answers[qid]||[];
+    // Mutual exclusion: 'no_external' clears everything else; selecting anything else clears 'no_external'
+    if(value==="no_external"){
+      state.answers[qid]=cur.includes("no_external")?[]:[value];
+    } else if(cur.includes("none")){
+      // 'none' type values on other questions also clear when something real is selected
+      state.answers[qid]=cur.filter(function(v){return v!=="none";}).concat([value]);
+    } else {
+      var filtered=cur.filter(function(v){return v!=="no_external";});
+      if(cur.includes(value)) state.answers[qid]=filtered.filter(function(v){return v!==value;});
+      else state.answers[qid]=filtered.concat([value]);
+    }
+  }
+  // Clear cached documents whenever answers change so docs always reflect current state
+  state.docPlannerHtml=null;state.docStaffHtml=null;
   render();
 }
 function goNext(){var qs=getVisibleQuestions();if(state.step<qs.length-1){state.step++;render();scrollToTop();}else{state.done=true;render();scrollToTop();}}
@@ -401,13 +473,14 @@ function renderQuestion(){
   var wrap=el("div",{style:{maxWidth:"680px",margin:"0 auto",padding:"20px 16px"}});
 
   // Progress bar
-  var pct=Math.round((state.step/total)*100);
+  var maxQ = 11; // total questions including conditionals — use fixed max so counter never shifts
+  var pct=Math.round(((state.step+1)/maxQ)*100);
   var pbWrap=el("div",{style:{marginBottom:"24px"}});
   var pbBg=el("div",{style:{height:"6px",background:"#d0d9e3",borderRadius:"99px",marginBottom:"8px"}});
   var pbFill=el("div",{style:{height:"100%",width:pct+"%",background:"linear-gradient(90deg,#00274C,#2F65A7)",borderRadius:"99px",transition:"width 0.3s"}});
   pbBg.appendChild(pbFill);
   pbWrap.appendChild(pbBg);
-  pbWrap.appendChild(el("div",{style:{fontSize:"12px",color:"#4a6785",textAlign:"right"}},["Question "+(state.step+1)+" of "+total]));
+  pbWrap.appendChild(el("div",{style:{fontSize:"12px",color:"#4a6785",textAlign:"right"}},["Question "+(state.step+1)+" of "+maxQ]));
   wrap.appendChild(pbWrap);
 
   // Card
@@ -434,6 +507,12 @@ function renderQuestion(){
   var ok=canProceed();
   var nextBtn=el("button",{style:{flex:"1",padding:"11px 28px",borderRadius:"8px",border:"none",fontSize:"15px",fontWeight:"700",background:ok?"#00274C":"#d0d9e3",color:ok?"#fff":"#7a96b0",cursor:ok?"pointer":"not-allowed",boxShadow:ok?"0 4px 12px rgba(29,78,216,0.3)":"none",transition:"all 0.15s"},onclick:function(){if(canProceed())goNext();}},[state.step===total-1?"See My Results →":"Next →"]);
   nav.appendChild(nextBtn);
+  if(!ok){
+    var hint=el("p",{style:{fontSize:"12px",color:"#7a96b0",textAlign:"center",marginTop:"8px"}},[
+      q.type==="single"?"Select one option to continue":"Select at least one option to continue"
+    ]);
+    c.appendChild(hint);
+  }
   c.appendChild(nav);
   wrap.appendChild(c);
   return wrap;
@@ -446,19 +525,56 @@ function renderResults(){
 
   // Header
   var hdr=el("div",{style:{background:"#00274C",borderRadius:"16px",padding:"24px",marginBottom:"20px",color:"#fff"}});
-  hdr.appendChild(el("div",{style:{fontSize:"24px",marginBottom:"6px"}},["✅"]));
-  hdr.appendChild(el("h1",{style:{fontSize:"22px",fontWeight:"800",marginBottom:"4px"}},["Your CME Navigator Results"]));
-  hdr.appendChild(el("p",{style:{fontSize:"14px",opacity:"0.85"}},["Review each section below, then use the Generate Docs tab to produce supporting documents for your planner and OCME&LL representative — to help build your MiCME application correctly first time."]));
-  var rsBtn=el("button",{style:{marginTop:"14px",padding:"8px 16px",borderRadius:"8px",border:"2px solid rgba(255,255,255,0.4)",background:"transparent",color:"#fff",fontSize:"13px",fontWeight:"600",cursor:"pointer"},onclick:restart},["← Start Over"]);
-  hdr.appendChild(rsBtn);
+  hdr.appendChild(el("h1",{style:{fontSize:"20px",fontWeight:"800",marginBottom:"4px"}},["CME Navigator Results"]));
+  // Compact activity summary
+  var a=state.answers;
+  var fmtLabels={live:"In person",livestream:"Virtual",hybrid:"Hybrid",enduring:"On-demand"};
+  var summaryParts=[];
+  if(a.activity_structure==="rss") summaryParts.push("RSS");
+  else if(a.activity_structure==="repeated") summaryParts.push("Repeated course");
+  if(a.delivery_format) summaryParts.push(fmtLabels[a.delivery_format]||a.delivery_format);
+  var specLabels={internal_med:"Internal Medicine",anesthesiology:"Anesthesiology",pediatrics:"Pediatrics",emergency_med:"Emergency Medicine",surgery:"Surgery",psychiatry_neuro:"Psychiatry/Neurology",ob_gyn:"Ob/Gyn",radiology:"Radiology",family_med:"Family Medicine",ent:"ENT",pathology:"Pathology"};
+  var specs=(a.physician_specialties||[]).filter(function(s){return s!=="other_spec";}).map(function(s){return specLabels[s]||s;});
+  if(specs.length) summaryParts.push(specs.join(", "));
+  if((a.physician_specialties||[]).includes("other_spec")) summaryParts.push("other specialty");
+  var profLabels={nurses:"Nurses",pharmacists:"Pharmacists",pas:"PAs",psychologists:"Psychologists",social_workers:"Social Workers",other_hcp:"Other HCPs"};
+  var profs=(a.audience_professions||[]).filter(function(p){return !["physicians","residents_fellows","students"].includes(p);}).map(function(p){return profLabels[p]||p;});
+  if(profs.length) summaryParts.push(profs.join(", "));
+  if(summaryParts.length>0){
+    hdr.appendChild(el("p",{style:{fontSize:"12px",opacity:"0.7",marginBottom:"10px",lineHeight:"1.4"}},[summaryParts.join(" · ")]));
+  }
+  hdr.appendChild(el("p",{style:{fontSize:"13px",opacity:"0.85",marginBottom:"12px"}},[
+    res.application.some(function(i){return i.isCommercialSupport||i.isJoint;})
+    ? "⚠️ Action required — see Application tab first."
+    : "Review each tab, then use Generate Docs to produce documents for your OCME&LL representative."
+  ]));
+  var btnRow=el("div",{style:{display:"flex",gap:"8px",flexWrap:"wrap"}});
+  var rsBtn=el("button",{style:{padding:"7px 14px",borderRadius:"8px",border:"2px solid rgba(255,255,255,0.4)",background:"transparent",color:"#fff",fontSize:"12px",fontWeight:"600",cursor:"pointer"},onclick:restart},["← Start Over"]);
+  var editBtn=el("button",{style:{padding:"7px 14px",borderRadius:"8px",border:"2px solid rgba(255,255,255,0.4)",background:"transparent",color:"#fff",fontSize:"12px",fontWeight:"600",cursor:"pointer"},onclick:function(){state.done=false;render();scrollToTop();}},["✏ Edit answers"]);
+  btnRow.appendChild(rsBtn);
+  btnRow.appendChild(editBtn);
+  hdr.appendChild(btnRow);
   wrap.appendChild(hdr);
 
   // Tabs
-  var tabDefs=[{id:"application",label:"📋 Application"},{id:"credits",label:"➕ Credits"},{id:"board",label:"🏥 Board Credit"},{id:"commendation",label:"⭐ Commendation"},{id:"michigan",label:"🔵 Michigan"},{id:"export",label:"📄 Generate Docs"}];
+  // Build tabs — show only tabs with content, badge with count where useful
+  var tabDefs=[
+    {id:"application",label:"📋 Application",always:true},
+    {id:"credits",label:"➕ Additional Credits",show:res.additionalCredits.length>0,count:res.additionalCredits.length},
+    {id:"board",label:"🏥 Board Credit",show:res.boardCredit&&res.boardCredit.length>0,count:res.boardCredit?res.boardCredit.length:0},
+    {id:"commendation",label:"⭐ Commendation",show:res.commendation.length>0,count:res.commendation.length},
+    {id:"michigan",label:"🔵 Michigan",show:res.michigan.length>0,count:res.michigan.length},
+    {id:"export",label:"📄 Generate Docs",always:true}
+  ];
+  // If active tab is now hidden, reset to application
+  var visibleTabIds = tabDefs.filter(function(t){return t.always||t.show;}).map(function(t){return t.id;});
+  if(visibleTabIds.indexOf(state.activeTab)===-1) state.activeTab="application";
   var tabBar=el("div",{style:{display:"flex",gap:"6px",marginBottom:"16px",flexWrap:"wrap"}});
   tabDefs.forEach(function(t){
+    if(!t.always && !t.show) return; // hide empty tabs
     var active=state.activeTab===t.id;
-    var tb=el("button",{style:{padding:"8px 14px",borderRadius:"8px",fontSize:"13px",fontWeight:"600",border:"none",background:active?"#2F65A7":"#fff",color:active?"#fff":"#1a3a5c",boxShadow:active?"0 2px 8px rgba(0,39,76,0.3)":"0 1px 3px rgba(0,0,0,0.08)",cursor:"pointer",transition:"all 0.15s"},onclick:function(){state.activeTab=t.id;render();}},[t.label]);
+    var label = t.label + (t.count>1?" ("+t.count+")":"");
+    var tb=el("button",{style:{padding:"8px 14px",borderRadius:"8px",fontSize:"13px",fontWeight:"600",border:"none",background:active?"#2F65A7":"#fff",color:active?"#fff":"#1a3a5c",boxShadow:active?"0 2px 8px rgba(0,39,76,0.3)":"0 1px 3px rgba(0,0,0,0.08)",cursor:"pointer",transition:"all 0.15s"},onclick:function(){state.activeTab=t.id;render();}},[label]);
     tabBar.appendChild(tb);
   });
   wrap.appendChild(tabBar);
@@ -472,6 +588,30 @@ function renderResults(){
         c.appendChild(el("div",{style:{fontWeight:"700",color:"#b45309",marginBottom:"10px"}},["⚠️ Hybrid Application Notes"]));
         item.parts.forEach(function(p){c.appendChild(el("p",{style:{fontSize:"14px",color:"#78350f",marginBottom:"8px",lineHeight:"1.5"}},[p]));});
         content.appendChild(c); return;
+      }
+      if(item.isCommercialSupport){
+        var c=card({border:"2px solid #fca5a5",background:"#fff5f5"});
+        c.appendChild(el("div",{style:{fontSize:"11px",fontWeight:"700",color:"#b91c1c",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"6px"}},["Commercial Support — Action Required"]));
+        c.appendChild(el("div",{style:{fontSize:"16px",fontWeight:"800",color:"#b91c1c",marginBottom:"10px"}},["⚠️ Commercial Support — Letter of Agreement required before activity proceeds"]));
+        c.appendChild(el("p",{style:{fontSize:"14px",color:"#1a3a5c",lineHeight:"1.6",marginBottom:"12px"}},[item.appNote]));
+        var ab=el("div",{style:{background:"#fee2e2",borderRadius:"8px",padding:"12px 14px",borderLeft:"3px solid #b91c1c"}});
+        ab.appendChild(el("div",{style:{fontSize:"12px",fontWeight:"700",color:"#b91c1c",marginBottom:"4px"}},["ACTION — CONTACT OCME&LL NOW"]));
+        ab.appendChild(el("div",{style:{fontSize:"14px",color:"#7f1d1d"}},[item.appAction]));
+        c.appendChild(ab); content.appendChild(c); return;
+      }
+      if(item.isProvidership){
+        var borderCol = item.isJoint ? "#fca5a5" : "#a8bdd4";
+        var bgCol = item.isJoint ? "#fff5f5" : "#f8fafc";
+        var iconLabel = item.isJoint ? "⚠️ Joint Providership — action required before you proceed" : "ℹ️ Co-Organisation with an Accredited Institution";
+        var labelCol = item.isJoint ? "#b91c1c" : "#2F65A7";
+        var c=card({border:"2px solid "+borderCol,background:bgCol});
+        c.appendChild(el("div",{style:{fontSize:"11px",fontWeight:"700",color:labelCol,letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"6px"}},[item.isJoint ? "Providership — Application Setup" : "Providership"]));
+        c.appendChild(el("div",{style:{fontSize:"16px",fontWeight:"800",color:labelCol,marginBottom:"10px"}},[iconLabel]));
+        c.appendChild(el("p",{style:{fontSize:"14px",color:"#1a3a5c",lineHeight:"1.6",marginBottom:"12px"}},[item.appNote]));
+        var ab=el("div",{style:{background:item.isJoint?"#fee2e2":"#eef2f7",borderRadius:"8px",padding:"12px 14px",borderLeft:"3px solid "+(item.isJoint?"#b91c1c":"#2F65A7")}});
+        ab.appendChild(el("div",{style:{fontSize:"12px",fontWeight:"700",color:item.isJoint?"#b91c1c":"#2F65A7",marginBottom:"4px"}},[item.isJoint?"ACTION — BEFORE ANYTHING ELSE":"ACTION"]));
+        ab.appendChild(el("div",{style:{fontSize:"14px",color:item.isJoint?"#7f1d1d":"#00274C"}},[item.appAction]));
+        c.appendChild(ab); content.appendChild(c); return;
       }
       var c=card({border:"2px solid #a8bdd4"});
       c.appendChild(el("div",{style:{fontSize:"11px",fontWeight:"700",color:"#2F65A7",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"6px"}},["Application Type"]));
@@ -509,42 +649,83 @@ function renderResults(){
     } else {
       res.additionalCredits.forEach(function(cr){
         var isHigh=cr.priority==="high";
-        var c=card({border:"2px solid "+(isHigh?"#fecdd3":"#d0d9e3")});
+        var isOpp=cr.priority==="opportunity";
+        var borderCol=isOpp?"#fde68a":isHigh?"#fecdd3":"#d0d9e3";
+        var c=card({border:"2px solid "+borderCol,background:isOpp?"#fffbeb":"#fff"});
         var hd=el("div",{style:{display:"flex",alignItems:"center",gap:"10px",marginBottom:"10px"}});
         hd.appendChild(span({fontSize:"24px"},cr.icon));
         var ht=el("div");
-        ht.appendChild(el("div",{style:{fontWeight:"700",color:"#00274C",fontSize:"16px"}},[cr.label]));
+        ht.appendChild(el("div",{style:{fontWeight:"700",color:isOpp?"#b45309":"#00274C",fontSize:"16px"}},[cr.label]));
         ht.appendChild(el("div",{style:{fontSize:"12px",color:"#4a6785"}},[cr.who]));
         hd.appendChild(ht); c.appendChild(hd);
         c.appendChild(el("p",{style:{fontSize:"14px",color:"#1a3a5c",lineHeight:"1.6",marginBottom:"12px"}},[cr.why]));
-        var fb=el("div",{style:{background:"#eef2f7",borderRadius:"8px",padding:"12px 14px",borderLeft:"3px solid #00274C"}});
-        fb.appendChild(el("div",{style:{fontSize:"12px",fontWeight:"700",color:"#2F65A7",marginBottom:"4px"}},["FLAG TO OCME&LL"]));
-        fb.appendChild(el("div",{style:{fontSize:"14px",color:"#00274C"}},[cr.flag]));
+        var fbBg=isOpp?"#fef3c7":"#eef2f7";
+        var fbBorder=isOpp?"#f59e0b":"#00274C";
+        var fbLabel=isOpp?"HOW TO UNLOCK THIS":"FLAG TO OCME&LL";
+        var fbLabelCol=isOpp?"#b45309":"#2F65A7";
+        var fb=el("div",{style:{background:fbBg,borderRadius:"8px",padding:"12px 14px",borderLeft:"3px solid "+fbBorder}});
+        fb.appendChild(el("div",{style:{fontSize:"12px",fontWeight:"700",color:fbLabelCol,marginBottom:"4px"}},[fbLabel]));
+        fb.appendChild(el("div",{style:{fontSize:"14px",color:isOpp?"#78350f":"#00274C"}},[cr.flag]));
         c.appendChild(fb); content.appendChild(c);
       });
     }
   }
 
   if(state.activeTab==="board"){
-    if(!res.boardCredit){
-      content.appendChild(el("div",{style:{textAlign:"center",padding:"40px",color:"#4a6785",fontSize:"15px"}},["No specific board (MOC) credit identified based on your specialty selection."]));
+    if(!res.boardCredit||!res.boardCredit.length){
+      content.appendChild(el("div",{style:{textAlign:"center",padding:"40px",color:"#4a6785",fontSize:"15px"}},["No physician specialties selected — select specialties in the audience questions to see MOC board credit guidance."]));
     } else {
-      var bc=res.boardCredit;
-      var c=card({border:"2px solid #ddd6fe"});
-      c.appendChild(el("div",{style:{fontSize:"11px",fontWeight:"700",color:"#6d28d9",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"6px"}},["Board Certification Credit (MOC)"]));
-      c.appendChild(el("div",{style:{fontSize:"17px",fontWeight:"800",color:"#4c1d95",marginBottom:"10px"}},[bc.boards]));
-      if(bc.evalWarning){var ew=card({background:"#fffbeb",border:"1px solid #fde68a",marginBottom:"12px"});ew.appendChild(el("p",{style:{fontSize:"13px",color:"#78350f",lineHeight:"1.5"}},["⚠️ "+bc.evalWarning]));c.appendChild(ew);}
-      c.appendChild(el("p",{style:{fontSize:"14px",color:"#1a3a5c",lineHeight:"1.6",marginBottom:"12px"}},[bc.flag]));
-      var steps=el("div",{style:{background:"#f5f3ff",borderRadius:"8px",padding:"14px"}});
-      steps.appendChild(el("div",{style:{fontSize:"12px",fontWeight:"700",color:"#6d28d9",marginBottom:"8px"}},["WHAT YOU NEED TO DO"]));
-      ["Tell your OCME&LL representative you want MOC credit designated for this activity","OCME&LL registers the activity with the relevant certifying board","After the activity, OCME&LL reports the credit","Physicians self-report or receive automatic credit in their board portfolio"].forEach(function(s,i){
-        var row=el("div",{style:{display:"flex",gap:"10px",alignItems:"flex-start",marginBottom:"8px"}});
-        var num=el("span",{style:{background:"#6d28d9",color:"#fff",borderRadius:"50%",width:"20px",height:"20px",fontSize:"11px",fontWeight:"700",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:"0",marginTop:"1px"}},[(i+1)+""]);
+      // Intro
+      var parsBoards = res.boardCredit.filter(function(b){return b.pars;});
+      var selfBoards = res.boardCredit.filter(function(b){return !b.pars;});
+      if(parsBoards.length>0){
+        var parsIntro=card({background:"#f0fdf4",border:"1px solid #bbf7d0",marginBottom:"0px"});
+        parsIntro.appendChild(el("div",{style:{fontWeight:"700",color:"#15803d",marginBottom:"4px"}},["✅ OCME&LL reports these boards directly through ACCME PARS — physicians do not need to self-report"]));
+        parsIntro.appendChild(el("div",{style:{fontSize:"13px",color:"#166534"}},[parsBoards.map(function(b){return b.boards;}).join(" · ")]));
+        content.appendChild(parsIntro);
+      }
+      if(selfBoards.length>0){
+        var selfIntro=card({background:"#fffbeb",border:"1px solid #fde68a",marginBottom:"0px"});
+        selfIntro.appendChild(el("div",{style:{fontWeight:"700",color:"#b45309",marginBottom:"4px"}},["⚠️ These boards are NOT in PARS — physicians must self-report directly to their board"]));
+        selfIntro.appendChild(el("div",{style:{fontSize:"13px",color:"#78350f"}},[selfBoards.map(function(b){return b.boards;}).join(" · ")]));
+        content.appendChild(selfIntro);
+      }
+      // One card per specialty
+      res.boardCredit.forEach(function(bc){
+        var borderCol = bc.pars ? "#ddd6fe" : "#fde68a";
+        var labelCol  = bc.pars ? "#6d28d9"  : "#b45309";
+        var bgCol     = bc.pars ? "#f5f3ff"  : "#fffbeb";
+        var textCol   = bc.pars ? "#4c1d95"  : "#78350f";
+        var c=card({border:"2px solid "+borderCol});
+        var hd=el("div",{style:{display:"flex",alignItems:"center",gap:"8px",marginBottom:"8px"}});
+        hd.appendChild(el("span",{style:{fontSize:"11px",fontWeight:"700",color:labelCol,letterSpacing:"0.5px",textTransform:"uppercase"}},
+          [bc.pars ? "Board Certification Credit · PARS-reported" : "Board Certification Credit · Self-report"]));
+        c.appendChild(hd);
+        c.appendChild(el("div",{style:{fontSize:"17px",fontWeight:"800",color:labelCol,marginBottom:"10px"}},[bc.boards]));
+        if(bc.evalWarning){
+          var ew=card({background:"#fffbeb",border:"1px solid #fde68a",marginBottom:"12px"});
+          ew.appendChild(el("p",{style:{fontSize:"13px",color:"#78350f",lineHeight:"1.5"}},["⚠️ "+bc.evalWarning]));
+          c.appendChild(ew);
+        }
+        var fb=el("div",{style:{background:bgCol,borderRadius:"8px",padding:"12px 14px",borderLeft:"3px solid "+labelCol,marginBottom:"0"}});
+        fb.appendChild(el("div",{style:{fontSize:"12px",fontWeight:"700",color:labelCol,marginBottom:"4px"}},[bc.pars?"FLAG TO OCME&LL":"ADVISE PHYSICIANS"]));
+        fb.appendChild(el("div",{style:{fontSize:"14px",color:textCol}},[bc.flag]));
+        c.appendChild(fb);
+        content.appendChild(c);
+      });
+      // Shared action steps
+      var steps=el("div",{style:{background:"#eef2f7",borderRadius:"10px",padding:"14px",marginTop:"4px"}});
+      steps.appendChild(el("div",{style:{fontSize:"12px",fontWeight:"700",color:"#2F65A7",marginBottom:"8px"}},["WHAT YOU NEED TO DO"]));
+      ["Tell your OCME&LL representative all physician specialties attending and that you want MOC credit designated",
+       "OCME&LL registers the activity with each applicable PARS board simultaneously",
+       "After the activity, OCME&LL reports completion data to PARS boards; physicians with non-PARS boards receive their certificate to self-report"].forEach(function(s,i){
+        var row=el("div",{style:{display:"flex",gap:"10px",alignItems:"flex-start",marginBottom:"6px"}});
+        var num=el("span",{style:{background:"#2F65A7",color:"#fff",borderRadius:"50%",width:"20px",height:"20px",fontSize:"11px",fontWeight:"700",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:"0",marginTop:"1px"}},[(i+1)+""]);
         row.appendChild(num);
-        row.appendChild(el("span",{style:{fontSize:"14px",color:"#4c1d95"}},[s]));
+        row.appendChild(el("span",{style:{fontSize:"13px",color:"#1a3a5c"}},[s]));
         steps.appendChild(row);
       });
-      c.appendChild(steps); content.appendChild(c);
+      content.appendChild(steps);
     }
   }
 
@@ -805,14 +986,18 @@ function buildPills(res, answers) {
   if (a.activity_structure==="rss") pills.push("RSS");
   if (a.activity_structure==="repeated") pills.push("Repeated course");
   res.additionalCredits.forEach(function(cr){
-    if (cr.label==="Joint Providership Agreement Required") yellowPills.push("⚠ Joint Providership");
-    else if (cr.label==="Interprofessional Continuing Education (IPCE)") yellowPills.push("IPCE");
+    if      (cr.label==="Interprofessional Continuing Education (IPCE)") yellowPills.push("IPCE");
     else if (cr.label==="ABA MOCA 2.0® Patient Safety CME Credit") yellowPills.push("Patient Safety CME");
     else if (cr.label==="Nursing CE (ANCC Contact Hours)") yellowPills.push("ANCC");
     else if (cr.label==="Pharmacy CE (ACPE Credit)") yellowPills.push("ACPE");
     else if (cr.label==="PA CME (AAPA Category 1 Credit)") yellowPills.push("AAPA");
   });
-  if (res.boardCredit && res.boardCredit.boards) yellowPills.push("MOC: "+res.boardCredit.boards);
+  if (res.boardCredit && res.boardCredit.length) {
+    var parsB = res.boardCredit.filter(function(b){return b.pars;}).map(function(b){return b.boards;});
+    var selfB = res.boardCredit.filter(function(b){return !b.pars;}).map(function(b){return b.boards;});
+    if (parsB.length) yellowPills.push("MOC (PARS): "+parsB.join(", "));
+    if (selfB.length) yellowPills.push("MOC (self-report): "+selfB.join(", "));
+  }
   if (res.commendation.length > 0) yellowPills.push("Commendation eligible");
   return {pills:pills, yellowPills:yellowPills};
 }
@@ -831,6 +1016,13 @@ function generatePlannerGuide(res, answers) {
 
   // ── URGENT flags first ──
   var urgentItems = [];
+  var funding = a.funding || [];
+  if (funding.includes("commercial_support_money") || funding.includes("commercial_support_inkind")) {
+    urgentItems.push(chk("Contact OCME&amp;LL to initiate the Letter of Agreement (LOA) for commercial support",
+      "The LOA must be signed by both the company and OCME&amp;LL before the activity begins — including before any speaker contracts involving company funds are issued", true));
+    urgentItems.push(chk("Do NOT allow the supporting company to pay speakers, faculty, or learners directly",
+      "All funds must flow through OCME&amp;LL. The company cannot dictate how funds are spent or which speakers receive honoraria", true));
+  }
   if ((a.planning_process||[]).includes("multi_org")) {
     urgentItems.push(chk("Contact OCME&amp;LL to initiate a Joint Providership Agreement",
       "Must be signed before planning materials, announcements, or save-the-dates are issued", true));
@@ -865,9 +1057,7 @@ function generatePlannerGuide(res, answers) {
   L.push(pul(prepItems));
 
   // ── Credits to flag ──
-  var creditRows = res.additionalCredits.filter(function(c){
-    return c.label!=="Joint Providership Agreement Required" && c.label!=="Co-Organization with Another Accredited Institution";
-  });
+  var creditRows = res.additionalCredits; // JP moved to application tab
   if (creditRows.length > 0 || res.boardCredit) {
     L.push(sec("💳","Credits — Flag to OCME&amp;LL on Submission"));
     L.push('<p class="sec-note">OCME&amp;LL will set these up in CloudCME — just mention each one when you submit.</p>');
@@ -875,8 +1065,12 @@ function generatePlannerGuide(res, answers) {
     creditItems.push(bul("AMA PRA Category 1 Credit™", "included automatically for all physician learner activities"));
     creditRows.forEach(function(cr){ creditItems.push(bul(cr.label, cr.flag)); });
     if (res.boardCredit) {
-      creditItems.push(bul("MOC / Board Certification Credit",
-        res.boardCredit.boards + (res.boardCredit.evalWarning ? " · ⚠ "+res.boardCredit.evalWarning : "")));
+      res.boardCredit.forEach(function(bc){
+        creditItems.push(bul(
+          (bc.pars ? "MOC — PARS-reported: " : "MOC — physician self-reports: ") + bc.boards,
+          bc.flag + (bc.evalWarning ? " · ⚠ "+bc.evalWarning : "")
+        ));
+      });
     }
     L.push(pul(creditItems));
   }
@@ -961,7 +1155,23 @@ function generateStaffBrief(res, answers) {
     L.push(bld("🩺","Simulation — accredited as Live Activity; application type is unchanged","Credit hours = supervised instructional time in simulation setting only.","action"));
   L.push(bld("📋","Confirm faculty disclosure forms before finalising","Every planning committee member and presenter must complete COI disclosure in MiCME before the activity date.","action"));
 
-  // ── 2. Providership ──
+  // ── 2. Providership & Funding ──
+  var fundingA = a.funding || [];
+  var hasCommSupport = fundingA.includes("commercial_support_money") || fundingA.includes("commercial_support_inkind");
+  if (hasCommSupport) {
+    L.push(sec("💰","Commercial Support"));
+    L.push(bld("⚠","Letter of Agreement required — must be in place before activity starts","OCME&LL must be the signatory. Company cannot control content, pay speakers directly, or pay learner expenses.","warn"));
+    L.push(sgroup([
+      srow("Support type", fundingA.includes("commercial_support_inkind") && !fundingA.includes("commercial_support_money") ? "In-kind" : fundingA.includes("commercial_support_inkind") ? "Financial + In-kind" : "Financial"),
+      srow("LOA status", "⚠ Confirm LOA is signed before proceeding"),
+      srow("Disclosure required", "Company name must be disclosed to learners before activity begins"),
+      srow("PARS reporting", "Commercial support must be reported in PARS activity record"),
+    ]));
+    if (fundingA.includes("exhibits") || fundingA.includes("advertising")) {
+      L.push(bld("📋","Also has associated promotion (exhibits/advertising) — outside CME, MM policy applies","Associated promotion must be physically or temporally separated from accredited education. Company branding and promotional materials cannot appear in any educational material. This is not commercial support and does not require an LOA — but must be clearly separated from the CME.","highlight"));
+    }
+  }
+  // ── 3. Providership ──
   var hasJoint = (a.planning_process||[]).includes("multi_org");
   var hasCo = (a.planning_process||[]).includes("multi_org_accredited");
   if (hasJoint || hasCo) {
@@ -982,22 +1192,27 @@ function generateStaffBrief(res, answers) {
   // ── 3. Credit Designations ──
   L.push(sec("💳","Credit Designations"));
   L.push('<p class="sec-note">Designate each applicable credit type in CloudCME.</p>');
-  var creditExtras = res.additionalCredits.filter(function(c){
-    return c.label!=="Joint Providership Agreement Required" && c.label!=="Co-Organization with Another Accredited Institution";
-  });
+  var creditExtras = res.additionalCredits; // JP moved to application tab
   var creditRows2 = [srow("AMA PRA Category 1 Credit™","Required for all physician learner activities")];
   var creditIcons = {"Nursing CE (ANCC Contact Hours)":"🏥","Pharmacy CE (ACPE Credit)":"💊","PA CME (AAPA Category 1 Credit)":"👩‍⚕️","Interprofessional Continuing Education (IPCE)":"🏅","ABA MOCA 2.0® Patient Safety CME Credit":"🛡️"};
   creditExtras.forEach(function(cr){ creditRows2.push(srow(cr.label, cr.who||cr.flag||"")); });
   L.push(sgroup(creditRows2));
 
   // ── 4. MOC ──
-  if (res.boardCredit && res.boardCredit.boards) {
+  if (res.boardCredit && res.boardCredit.length) {
     L.push(sec("🏥","MOC / Board Certification Credit"));
-    var mocRows = [srow("Board", res.boardCredit.boards)];
+    var mocRows = [];
+    res.boardCredit.forEach(function(bc){
+      mocRows.push(srow(bc.pars ? "Board (PARS-reported)" : "Board (physician self-reports)", bc.boards));
+    });
     L.push(sgroup(mocRows));
-    if (res.boardCredit.evalWarning)
-      L.push(bld("⚠","Evaluation requirement for MOC",res.boardCredit.evalWarning,"warn"));
-    L.push(bld("📤","Report credits to the board after activity completion","Follow standard board reporting workflow.","action"));
+    var abimEntry = res.boardCredit.find(function(b){return b.specialty==="internal_med";});
+    if (abimEntry && abimEntry.evalWarning)
+      L.push(bld("⚠","ABIM evaluation requirement",abimEntry.evalWarning,"warn"));
+    var parsEntries = res.boardCredit.filter(function(b){return b.pars;});
+    var selfEntries = res.boardCredit.filter(function(b){return !b.pars;});
+    if (parsEntries.length) L.push(bld("📤","PARS-reported boards — OCME&LL handles reporting","Register activity in PARS before the event. Report learner completion data within 30 days after.","action"));
+    if (selfEntries.length) L.push(bld("📋","Self-report boards — advise physicians","Ensure physicians receive their certificate of completion. They must self-report to "+selfEntries.map(function(b){return b.boards;}).join(", ")+".","highlight"));
   }
 
   // ── 5. IPCE ──
@@ -1052,7 +1267,7 @@ function generateStaffBrief(res, answers) {
   }
 
   // ── 9. Content Tags ──
-  var cTags2 = {clinical_knowledge:"Clinical Knowledge Update",procedural:"Procedural / Technical Skills",patient_safety:"Patient Safety",qi_activity:"Quality Improvement",communication:"Communication Skills",mental_health:"Mental Health / Behavioral Health",population_health:"Population Health",sdoh:"Health Equity / SDOH",pain_management:"Pain Management / Controlled Substances",ethics:"Medical Ethics",research:"Research / EBP",technology:"Health Technology / Innovation"};
+  var cTags2 = {clinical_knowledge:"Clinical Knowledge Update",procedural:"Procedural / Technical Skills",patient_safety:"Patient Safety",qi_activity:"Quality Improvement",communication:"Communication Skills",mental_health:"Mental Health / Behavioral Health",population_health:"Population Health",sdoh:"Health Equity / SDOH",pain_management:"Pain Management / Controlled Substances",ethics:"Medical Ethics",opioid_prescribing:"Opioid / Controlled Substance Awareness",implicit_bias:"Implicit Bias / Health Equity",human_trafficking:"Human Trafficking Identification",research:"Research / EBP",technology:"Health Technology / Innovation"};
   var tags2 = (a.content_focus||[]).filter(function(c){return cTags2[c];}).map(function(c){return cTags2[c];});
   if (tags2.length > 0) {
     L.push(sec("🏷","Content Tags"));
@@ -1235,6 +1450,13 @@ function render(){
   nav.appendChild(navMain);
   app.appendChild(nav);
   app.appendChild(state.done?renderResults():renderQuestion());
+  // Cross-tool wayfinding footer
+  var footer=el("div",{style:{maxWidth:"720px",margin:"0 auto",padding:"0 16px 24px",textAlign:"center"}});
+  footer.appendChild(el("p",{style:{fontSize:"12px",color:"#7a96b0",lineHeight:"1.5"}},
+    ["Need to write your application content? The ",
+     (function(){var a=el("span",{style:{color:"#2F65A7",fontWeight:"600",cursor:"default"}},["CME Content Helper"]);return a;})(),
+     " generates practice gap statements, educational needs, learning objectives, and eligibility analysis from a brief activity description."]));
+  app.appendChild(footer);
   // close tooltip on outside click
   setTimeout(function(){
     document.addEventListener("click",function closeTooltip(){
