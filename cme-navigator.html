@@ -6,7 +6,8 @@
 <title>CME Credit Application Navigator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" as="style" onload="this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet"></noscript>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{background:#f0f2f5;font-family:'Nunito Sans',Arial,sans-serif;color:#00274C;line-height:1.6;min-height:100vh}
@@ -27,17 +28,23 @@ input[type="checkbox"]:focus-visible{outline:3px solid #2F65A7;outline-offset:2p
 .opt-btn:hover:not([data-active="true"]){border-color:#a8bdd4 !important;background:#f7f9fb !important}
 
 /* ── Tooltip button ── */
-.nav-tip-btn{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;
-  border-radius:50%;background:rgba(47,101,167,0.12);border:none;font-size:10px;font-weight:800;
-  color:#2F65A7;cursor:pointer;flex-shrink:0;vertical-align:middle;margin-left:4px;
-  transition:background 0.12s,color 0.12s;line-height:1}
-.nav-tip-btn:hover,.nav-tip-btn[data-open="true"]{background:#2F65A7;color:#fff}
+.nav-tip-btn{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;
+  border-radius:50%;background:#2F65A7;border:none;font-size:9px;font-weight:800;
+  color:#fff;cursor:pointer;flex-shrink:0;vertical-align:middle;margin-left:5px;
+  transition:background 0.12s;line-height:1;position:relative;user-select:none}
+.nav-tip-btn::after{content:'';position:absolute;inset:-8px}
+.nav-tip-btn:hover{background:#1a4f8a}
 
 /* ── Fixed tooltip popup (body-appended, no clipping) ── */
-.nav-tip-pop{position:fixed;background:#1e293b;color:#f0f2f5;border-radius:10px;padding:12px 14px;
-  font-size:13px;line-height:1.6;width:280px;z-index:9999;
-  box-shadow:0 8px 24px rgba(0,0,0,0.28);white-space:pre-wrap;pointer-events:none;
-  transition:opacity 0.12s}
+.nav-tip-pop{position:fixed;background:#1e293b;color:#f0f2f5;border-radius:10px;padding:13px 15px;
+  font-size:12px;line-height:1.6;width:280px;z-index:99999;max-height:300px;overflow-y:auto;
+  box-shadow:0 8px 24px rgba(0,0,0,0.3);pointer-events:none;opacity:0;transition:opacity 0.15s}
+.nav-tip-pop.show{opacity:1;pointer-events:auto}
+.nav-tip-pop strong{color:#FFCB05;font-weight:700}
+.nav-tip-arrow{position:absolute;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent}
+.nav-tip-pop.below .nav-tip-arrow{top:-6px;border-bottom:6px solid #1e293b}
+.nav-tip-pop.above .nav-tip-arrow{bottom:-6px;border-top:6px solid #1e293b}
+@media(max-width:820px){.nav-tip-pop{width:240px}}
 
 /* ── Question hint text (distinct from option sublabels) ── */
 .q-hint{font-size:13px;color:#5a7a9a;margin-bottom:20px;line-height:1.5;font-style:italic;
@@ -467,7 +474,6 @@ function renderTooltip(text,id){
   var wrap=el("span",{style:{display:"inline-flex",alignItems:"center",verticalAlign:"middle"}});
   var btn=el("button",{className:"nav-tip-btn","aria-label":"More information","aria-expanded":isOpen?"true":"false"});
   btn.setAttribute("data-tip-id",id);
-  if(isOpen) btn.setAttribute("data-open","true");
   btn.appendChild(document.createTextNode("i"));
   btn.onclick=function(e){
     e.stopPropagation();
@@ -480,18 +486,29 @@ function renderTooltip(text,id){
         var btnEl=document.querySelector("button[data-tip-id='"+id+"']");
         if(!tipEl||!btnEl) return;
         var r=btnEl.getBoundingClientRect();
-        var popW=280;
+        var popW=tipEl.offsetWidth||280;
         var leftPos=r.left+(r.width/2)-(popW/2);
         leftPos=Math.max(8,Math.min(leftPos,window.innerWidth-popW-8));
         var spaceBelow=window.innerHeight-r.bottom;
-        if(spaceBelow<200&&r.top>spaceBelow){
+        var openAbove=spaceBelow<220&&r.top>spaceBelow;
+        tipEl.classList.remove("below","above");
+        tipEl.style.left=leftPos+"px";
+        if(openAbove){
           tipEl.style.top="auto";
           tipEl.style.bottom=(window.innerHeight-r.top+8)+"px";
+          tipEl.classList.add("above");
         } else {
           tipEl.style.top=(r.bottom+8)+"px";
           tipEl.style.bottom="auto";
+          tipEl.classList.add("below");
         }
-        tipEl.style.left=leftPos+"px";
+        var arrow=tipEl.querySelector(".nav-tip-arrow");
+        if(arrow){
+          var arrowLeft=(r.left+r.width/2)-leftPos-6;
+          arrowLeft=Math.max(10,Math.min(arrowLeft,popW-22));
+          arrow.style.left=arrowLeft+"px";
+        }
+        tipEl.classList.add("show");
       });
     }
   };
@@ -500,6 +517,8 @@ function renderTooltip(text,id){
   if(isOpen){
     var pop=el("div",{className:"nav-tip-pop",style:{top:"0",left:"-9999px"}});
     pop.setAttribute("data-tip-id",id);
+    var arrow=el("div",{className:"nav-tip-arrow"});
+    pop.appendChild(arrow);
     pop.appendChild(document.createTextNode(text));
     document.body.appendChild(pop);
   }
@@ -614,11 +633,17 @@ function renderResults(){
   if(summaryParts.length>0){
     hdr.appendChild(el("p",{style:{fontSize:"12px",opacity:"0.7",marginBottom:"10px",lineHeight:"1.4"}},[summaryParts.join(" · ")]));
   }
-  hdr.appendChild(el("p",{style:{fontSize:"13px",opacity:"0.85",marginBottom:"12px"}},[
-    res.application.some(function(i){return i.isCommercialSupport||i.isJoint;})
-    ? "⚠️ Action required — see Application tab first."
-    : "Review each tab, then use Generate Docs to produce documents for your OCME&LL representative."
-  ]));
+  var guidePara=el("p",{style:{fontSize:"13px",opacity:"0.85",marginBottom:"12px"}});
+  if(res.application.some(function(i){return i.isCommercialSupport||i.isJoint;})){
+    guidePara.appendChild(document.createTextNode("⚠️ Action required — see Application tab first."));
+  } else {
+    guidePara.appendChild(document.createTextNode("Review each tab, then "));
+    var genDocsBtn=el("button",{style:{background:"none",border:"none",color:"#FFCB05",fontWeight:"800",cursor:"pointer",fontSize:"inherit",fontFamily:"inherit",padding:"0",textDecoration:"underline",textUnderlineOffset:"2px"}},["open Generate Docs"]);
+    genDocsBtn.onclick=function(){state.activeTab="export";state.docPlannerOpen=true;render();scrollToTop();};
+    guidePara.appendChild(genDocsBtn);
+    guidePara.appendChild(document.createTextNode(" to produce documents for your OCME&LL representative."));
+  }
+  hdr.appendChild(guidePara);
   var btnRow=el("div",{style:{display:"flex",gap:"8px",flexWrap:"wrap",alignItems:"center"}});
   // "Edit Answers" is the primary recovery action — prominent border style
   var editBtn=el("button",{style:{padding:"7px 14px",borderRadius:"8px",border:"2px solid rgba(255,255,255,0.55)",background:"transparent",color:"#fff",fontSize:"12px",fontWeight:"700",cursor:"pointer"},onclick:function(){state.done=false;render();scrollToTop();}},["✏ Edit Answers"]);
@@ -647,7 +672,11 @@ function renderResults(){
     if(!t.always && !t.show) return;
     var active=state.activeTab===t.id;
     var label = t.label + (t.count>1?" ("+t.count+")":"");
-    var tb=el("button",{style:{padding:"8px 14px",borderRadius:"8px",fontSize:"13px",fontWeight:"600",border:"none",background:active?"#2F65A7":"#fff",color:active?"#fff":"#1a3a5c",boxShadow:active?"0 2px 8px rgba(0,39,76,0.3)":"0 1px 3px rgba(0,0,0,0.08)",cursor:"pointer",transition:"all 0.15s",whiteSpace:"nowrap",flexShrink:"0"},onclick:function(){state.activeTab=t.id;render();}},[label]);
+    var tb=el("button",{style:{padding:"8px 14px",borderRadius:"8px",fontSize:"13px",fontWeight:"600",border:"none",background:active?"#2F65A7":"#fff",color:active?"#fff":"#1a3a5c",boxShadow:active?"0 2px 8px rgba(0,39,76,0.3)":"0 1px 3px rgba(0,0,0,0.08)",cursor:"pointer",transition:"all 0.15s",whiteSpace:"nowrap",flexShrink:"0"},onclick:function(){
+      state.activeTab=t.id;
+      if(t.id==="export"&&!state.docPlannerOpen&&!state.docStaffOpen) state.docPlannerOpen=true;
+      render();
+    }},[label]);
     tabBar.appendChild(tb);
   });
   wrap.appendChild(tabBar);
@@ -1476,6 +1505,12 @@ function renderExportTab(res, answers) {
     + 'The <strong>MiCME Activity Build Brief</strong> is for your OCME&amp;LL representative — everything needed to build the activity correctly in CloudCME.';
   wrap.appendChild(intro);
 
+  // Hint — above the panels so it's the first thing users read
+  wrap.appendChild(el("div",{style:{
+    fontSize:"12px",color:"#4a6785",background:"#eef2f7",border:"1px solid #a8bdd4",
+    borderRadius:"8px",padding:"8px 13px",marginBottom:"14px",lineHeight:"1.5"
+  }},["👆 Click a document to expand it, then use Print / Save PDF to produce a clean copy. Only items relevant to your specific activity are included."]));
+
   // Doc 1 — Planner Preparation Guide
   wrap.appendChild(renderDocPanel({
     stateKey: "docPlannerOpen",
@@ -1506,9 +1541,6 @@ function renderExportTab(res, answers) {
     generateFn: function(){ return generateStaffBrief(res, answers); }
   }));
 
-  wrap.appendChild(el("div",{style:{
-    fontSize:"12px",color:"#7a96b0",textAlign:"center",marginTop:"10px",lineHeight:"1.5"
-  }},["Click either document to expand it. Use Print / Save PDF to produce a clean copy to share or file. Only items relevant to your specific activity are included."]));
 
   return wrap;
 }
@@ -1549,13 +1581,16 @@ function render(){
   footer.appendChild(footerInner);
   app.appendChild(footer);
 
-  // Close tooltip on outside click
-  setTimeout(function(){
-    document.addEventListener("click",function closeTooltip(){
-      if(state.openTooltip){state.openTooltip=null;render();}
-      document.removeEventListener("click",closeTooltip);
+  // Close tooltip on outside click or scroll — single persistent listeners
+  if (!window._navTooltipListenerAdded) {
+    window._navTooltipListenerAdded = true;
+    document.addEventListener("click", function() {
+      if (state.openTooltip) { state.openTooltip = null; render(); }
     });
-  },0);
+    document.addEventListener("scroll", function() {
+      if (state.openTooltip) { state.openTooltip = null; render(); }
+    }, true);
+  }
 }
 
 render();

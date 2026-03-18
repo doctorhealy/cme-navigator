@@ -4,7 +4,10 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>CME Content Helper — Quality Test Harness</title>
-<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" as="style" onload="this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"></noscript>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -149,7 +152,7 @@ body{background:var(--bg);font-family:"Nunito Sans",Arial,sans-serif;color:var(-
 
   <div id="loading" style="display:none" class="card" style="text-align:center;padding:40px">
     <div class="spinner"></div>
-    <div style="margin-top:12px;font-size:14px;font-weight:600;color:var(--sec);text-align:center">Calling claude-sonnet-4 · evaluating output quality…</div>
+    <div style="margin-top:12px;font-size:14px;font-weight:600;color:var(--sec);text-align:center">Calling claude-sonnet-4-20250514 · evaluating output quality…</div>
   </div>
 
   <div id="error-box" style="display:none" class="card">

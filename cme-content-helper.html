@@ -6,7 +6,8 @@
 <title>CME Content Helper · Michigan Medicine</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" as="style" onload="this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet"></noscript>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -19,7 +20,7 @@ body{background:var(--bg-main);font-family:"Nunito Sans",Arial,sans-serif;color:
 button{font-family:inherit;cursor:pointer}
 textarea,select{font-family:inherit}
 textarea{resize:vertical}
-@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1}}
 @keyframes spin{to{transform:rotate(360deg)}}
 .fade-up{animation:fadeUp 0.2s ease both}
 
@@ -82,6 +83,8 @@ textarea{resize:vertical}
 .btn-generate{width:100%;padding:14px;background:var(--michigan-blue);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:800;box-shadow:0 4px 14px rgba(0,39,76,0.3);transition:all 0.15s;display:flex;align-items:center;justify-content:center;gap:8px}
 .btn-generate:hover:not(:disabled){background:#1a3a5c;transform:translateY(-1px)}
 .btn-generate:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+@keyframes btnReady{0%,100%{box-shadow:0 4px 14px rgba(0,39,76,0.3)}50%{box-shadow:0 4px 28px rgba(0,39,76,0.55),0 0 0 6px rgba(47,101,167,0.15)}}
+.btn-generate.ready{animation:btnReady 1.4s ease-in-out 3}
 .btn-regen{padding:9px 16px;background:#fff;color:var(--arboretum-blue);border:1.5px solid var(--border-mid);border-radius:8px;font-size:13px;font-weight:700;transition:all 0.15s}
 .btn-regen:hover{background:var(--bg-blue-tint);border-color:var(--arboretum-blue)}
 .btn-print{padding:9px 18px;background:var(--michigan-blue);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;transition:all 0.15s;display:flex;align-items:center;gap:6px}
@@ -216,6 +219,29 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
   <div class="main-layout">
     <!-- ── INPUT PANEL ── -->
     <div class="input-panel">
+
+      <!-- How to use — shown first so new users see it before the form -->
+      <div class="card-tight" style="border-left:3px solid var(--michigan-maize)">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--arboretum-blue);margin-bottom:10px">How to use this tool</div>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <div style="display:flex;gap:10px;align-items:flex-start">
+            <span style="font-size:12px;font-weight:800;color:var(--michigan-blue);background:var(--michigan-maize);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1">1</span>
+            <span style="font-size:12px;color:var(--text-secondary);line-height:1.45">Fill in the topic, content, and audience — then click <strong style="color:var(--text-primary)">Generate</strong>. The AI drafts all seven application sections at once.</span>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start">
+            <span style="font-size:12px;font-weight:800;color:var(--michigan-blue);background:var(--michigan-maize);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1">2</span>
+            <span style="font-size:12px;color:var(--text-secondary);line-height:1.45">Review every section — all text boxes are editable. Select which practice gap version fits best (A, B, or C) and tick the learning objectives you want to keep.</span>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start">
+            <span style="font-size:12px;font-weight:800;color:var(--michigan-blue);background:var(--michigan-maize);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1">3</span>
+            <span style="font-size:12px;color:var(--text-secondary);line-height:1.45">Use <strong style="color:var(--text-primary)">Copy all sections</strong> or <strong style="color:var(--text-primary)">Print / Save PDF</strong> — each section is labelled with exactly where to paste it in your MiCME/CloudCME application.</span>
+          </div>
+          <div style="margin-top:2px;padding-top:8px;border-top:1px solid var(--border-light);font-size:11px;color:var(--text-muted);line-height:1.5">
+            Not sure which credit types or application type to use? Run the <strong style="color:var(--arboretum-blue)">CME Credit Application Navigator</strong> first — it identifies MOC board credits, commendation criteria, Michigan licensing topics, commercial support requirements, and Joint Accreditation opportunities for your activity.
+          </div>
+        </div>
+      </div>
+
       <div class="card">
         <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;line-height:1.5">
           Answer three questions and the AI will suggest application content and identify everything your activity may qualify for.
@@ -294,7 +320,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
           <div class="field-group">
             <div class="field-label">Is the planning committee interprofessional?
               <span class="tip-wrap">
-                <button class="tip-btn" onclick="toggleTip('tip-ipce',event)" aria-label="More information">i</button>
+                <button class="tip-btn" onclick="toggleTip('tip-ipce',event,this)" aria-label="More information">i</button>
                 <div class="tip-pop below" id="tip-ipce"><div class="tip-arrow"></div>
                   <strong>IPCE requires all three of the following:</strong><br><br>
                   <strong>Co-planned:</strong> two or more health professions are on the planning committee<br><br>
@@ -316,7 +342,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
             <div class="field-label">How was the gap identified?
               <span style="font-size:12px;font-weight:400;color:var(--text-muted)"> (optional — improves output)</span>
               <span class="tip-wrap">
-                <button class="tip-btn" onclick="toggleTip('tip-gap-src',event)" aria-label="More information">i</button>
+                <button class="tip-btn" onclick="toggleTip('tip-gap-src',event,this)" aria-label="More information">i</button>
                 <div class="tip-pop below" id="tip-gap-src"><div class="tip-arrow"></div>
                   <strong>Why this matters:</strong> ACCME requires CME to be based on a genuine, identified need. Describing how the gap was found strengthens your application and is required in the needs assessment.<br><br>
                   <strong>Quality / registry data</strong> — audit results, bundle compliance rates, quality metrics<br>
@@ -349,27 +375,6 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
         </div>
       </div>
 
-      <!-- How to use -->
-      <div class="card-tight" style="border-left:3px solid var(--michigan-maize)">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--arboretum-blue);margin-bottom:10px">How to use this tool</div>
-        <div style="display:flex;flex-direction:column;gap:9px">
-          <div style="display:flex;gap:10px;align-items:flex-start">
-            <span style="font-size:12px;font-weight:800;color:var(--michigan-blue);background:var(--michigan-maize);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1">1</span>
-            <span style="font-size:12px;color:var(--text-secondary);line-height:1.45">Fill in the topic, content, and audience — then click <strong style="color:var(--text-primary)">Generate</strong>. The AI drafts all seven application sections at once.</span>
-          </div>
-          <div style="display:flex;gap:10px;align-items:flex-start">
-            <span style="font-size:12px;font-weight:800;color:var(--michigan-blue);background:var(--michigan-maize);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1">2</span>
-            <span style="font-size:12px;color:var(--text-secondary);line-height:1.45">Review every section — all text boxes are editable. Select which practice gap version fits best (A, B, or C) and tick the learning objectives you want to keep.</span>
-          </div>
-          <div style="display:flex;gap:10px;align-items:flex-start">
-            <span style="font-size:12px;font-weight:800;color:var(--michigan-blue);background:var(--michigan-maize);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1">3</span>
-            <span style="font-size:12px;color:var(--text-secondary);line-height:1.45">Use <strong style="color:var(--text-primary)">Copy all sections</strong> or <strong style="color:var(--text-primary)">Print / Save PDF</strong> — each section is labelled with exactly where to paste it in your MiCME/CloudCME application.</span>
-          </div>
-          <div style="margin-top:2px;padding-top:8px;border-top:1px solid var(--border-light);font-size:11px;color:var(--text-muted);line-height:1.5">
-            Not sure which credit types or application type to use? Run the <strong style="color:var(--arboretum-blue)">CME Credit Application Navigator</strong> first — it identifies MOC board credits, commendation criteria, Michigan licensing topics, commercial support requirements, and Joint Accreditation opportunities for your activity.
-          </div>
-        </div>
-      </div>
     </div>
 
     <!-- ── OUTPUT PANEL ── -->
@@ -647,28 +652,14 @@ function specLabel(v) {
   return map[v] || v;
 }
 
-// ── GENERATE ──
-async function handleGenerate() {
-  var topic = document.getElementById("topic").value.trim();
-  var content = document.getElementById("content").value.trim();
-  var profs = getProfs();
-  var specs = getSpecs();
-  var errEl = document.getElementById("validationError");
-  if (!topic || !content || (!profs.length && !specs.length && !document.getElementById("audienceOther").value.trim())) {
-    errEl.textContent = "Please fill in the topic, content, and at least one audience group before generating.";
-    errEl.classList.add("show");
-    errEl.scrollIntoView({behavior:"smooth",block:"nearest"});
-    return;
-  }
-  errEl.classList.remove("show");
-  state.status = "loading"; renderOutput();
+// ── SHARED API CALL ──
+async function callAPI(btnLabel) {
   var btn = document.getElementById("generateBtn");
-  if (btn) { btn.disabled = true; document.getElementById("btnText").textContent = "Generating\u2026"; }
-
+  if (btn) { btn.disabled = true; document.getElementById("btnText").textContent = btnLabel; }
   try {
     var resp = await fetch("https://anthropic-proxy.doctorhealy.workers.dev", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "claude-sonnet-4-5", max_tokens: 5000, system: SYSTEM_PROMPT, messages: [{ role: "user", content: buildUserPrompt() }] })
+      body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 5000, system: SYSTEM_PROMPT, messages: [{ role: "user", content: buildUserPrompt() }] })
     });
     var data = await resp.json();
     if (!resp.ok) throw new Error((data.error ? data.error.message : "API request failed") + " [HTTP " + resp.status + "]");
@@ -709,8 +700,25 @@ async function handleGenerate() {
       state.errorMessage = msg;
     }
   }
-
   if (btn) { btn.disabled = false; document.getElementById("btnText").textContent = "Generate Application Content \u2192"; }
+}
+
+// ── GENERATE ──
+async function handleGenerate() {
+  var topic = document.getElementById("topic").value.trim();
+  var content = document.getElementById("content").value.trim();
+  var profs = getProfs();
+  var specs = getSpecs();
+  var errEl = document.getElementById("validationError");
+  if (!topic || !content || (!profs.length && !specs.length && !document.getElementById("audienceOther").value.trim())) {
+    errEl.textContent = "Please fill in the topic, content, and at least one audience group before generating.";
+    errEl.classList.add("show");
+    errEl.scrollIntoView({behavior:"smooth",block:"nearest"});
+    return;
+  }
+  errEl.classList.remove("show");
+  state.status = "loading"; renderOutput();
+  await callAPI("Generating\u2026");
   renderOutput();
 }
 
@@ -734,49 +742,7 @@ async function handleRegenerate() {
   }
   // Preserve all user form inputs — only refresh AI-generated output fields.
   state.status = "loading"; renderOutput();
-  var btn = document.getElementById("generateBtn");
-  if (btn) { btn.disabled = true; document.getElementById("btnText").textContent = "Regenerating\u2026"; }
-  try {
-    var resp = await fetch("https://anthropic-proxy.doctorhealy.workers.dev", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "claude-sonnet-4-5", max_tokens: 5000, system: SYSTEM_PROMPT, messages: [{ role: "user", content: buildUserPrompt() }] })
-    });
-    var data = await resp.json();
-    if (!resp.ok) throw new Error((data.error ? data.error.message : "API request failed") + " [HTTP " + resp.status + "]");
-    if (!data.content || !data.content.length) throw new Error("API returned an empty response. Full response: " + JSON.stringify(data).slice(0, 300));
-    var firstBlock = data.content[0];
-    if (firstBlock.type !== "text") throw new Error("API returned unexpected content type: " + firstBlock.type + ". Expected text.");
-    var raw = firstBlock.text.trim().replace(/^```json?\s*/i, "").replace(/\s*```$/i, "").trim();
-    if (data.stop_reason === "max_tokens") throw new Error("Response was cut off (max_tokens). Raw start: " + raw.slice(0, 200));
-    var p;
-    try { p = JSON.parse(raw); } catch(je) {
-      throw new Error("JSON parse failed: " + je.message + ". Raw response start: " + raw.slice(0, 300));
-    }
-    var en = p.educationalNeeds || {};
-    state.results = p;
-    state.selected = {
-      practiceGapOption: 0, practiceGapText: (p.practiceGap || [""])[0],
-      needsPrimaryType: en.primaryType || "Knowledge",
-      needsReasoning: en.reasoning || "",
-      needsPrimaryText: en.primaryText || "",
-      needsSecondaryType: en.secondaryType || null,
-      needsSecondaryText: en.secondaryText || "",
-      expectedResults: p.expectedResults || "",
-      formatJustification: p.formatJustification || "",
-      objectives: (p.learningObjectives || []).map(function(t) { return { text: t, checked: true }; }),
-      competencies: p.competencies || null,
-      summaryText: p.needsAssessmentSummary || "",
-      eligibility: p.eligibility || null
-    };
-    state.status = "done";
-  } catch(e) {
-    var msg2 = e.message || "Unexpected error.";
-    state.status = "error";
-    state.errorMessage = (e instanceof TypeError || msg2 === "Load failed" || msg2 === "Failed to fetch")
-      ? (location.protocol === "file:" ? "This tool must be opened from GitHub Pages, not a local file. Visit doctorhealy.github.io/cme-navigator to use it." : "Could not reach the AI service. Check your internet connection and try again.")
-      : msg2;
-  }
-  if (btn) { btn.disabled = false; document.getElementById("btnText").textContent = "Generate Application Content \u2192"; }
+  await callAPI("Regenerating\u2026");
   renderOutput();
 }
 
@@ -974,16 +940,19 @@ function hideTip(id) {
   var pop = document.getElementById(id);
   if (pop) { pop.classList.remove("show"); if (activeTip === id) activeTip = null; }
 }
-function toggleTip(id, event) {
+function toggleTip(id, event, btnEl) {
   event.stopPropagation();
   var pop = document.getElementById(id);
   if (!pop) return;
   if (pop.classList.contains("show")) { hideTip(id); return; }
   if (activeTip) hideTip(activeTip);
 
-  // Position fixed: calculate from button viewport coords
-  var btn = event.currentTarget;
+  // Get button rect BEFORE moving popup (moving is out-of-flow so won't affect it, but be explicit)
+  var btn = btnEl || event.currentTarget;
   var rect = btn.getBoundingClientRect();
+
+  // Move popup to document.body to escape any stacking context on animated ancestors
+  if (pop.parentNode !== document.body) document.body.appendChild(pop);
   var popW = 280;
   var spaceBelow = window.innerHeight - rect.bottom;
   var spaceAbove = rect.top;
@@ -1029,8 +998,8 @@ document.addEventListener("scroll", function() { if (activeTip) hideTip(activeTi
 function tip(id, html, position) {
   var pos = position || "below";
   return "<span class=\"tip-wrap\">"
-    + "<button class=\"tip-btn\" onclick=\"toggleTip('" + id + "',event)\" aria-label=\"More information\">i</button>"
-    + "<div class=\"tip-pop " + pos + "\" id=\"" + id + "\">"
+    + "<button class=\"tip-btn\" onclick=\"toggleTip('" + id + "',event,this)\" aria-label=\"More information\">i</button>"
+    + "<div class=\"tip-pop " + pos + "\" id=\"" + id + "\" data-dyn=\"1\">"
     + "<div class=\"tip-arrow\"></div>"
     + html
     + "</div></span>";
@@ -1047,6 +1016,8 @@ function showToast(msg) {
 // ── RENDER OUTPUT ──
 function renderOutput() {
   if (state.status !== "loading") stopLoadTimer();
+  if (activeTip) hideTip(activeTip);
+  document.querySelectorAll('body > .tip-pop[data-dyn]').forEach(function(el) { el.remove(); });
   var panel = document.getElementById("outputPanel");
   panel.innerHTML = "";
 
@@ -1055,7 +1026,7 @@ function renderOutput() {
     return;
   }
   if (state.status === "loading") {
-    panel.innerHTML = '<div class="card"><div class="loading-state"><div class="spinner"></div><div class="loading-text" id="loadStage">Analyzing your practice gap\u2026</div><div class="loading-progress-wrap"><div class="loading-progress-bar" id="loadBar"></div></div><div class="loading-meta"><span id="loadElapsed">0s</span>\u2002\u00b7\u2002Usually 20\u201330 seconds</div></div></div>';
+    panel.innerHTML = '<div class="card"><div class="loading-state"><div class="spinner"></div><div class="loading-text" id="loadStage">Analyzing your practice gap\u2026</div><div class="loading-progress-wrap"><div class="loading-progress-bar" id="loadBar"></div></div><div class="loading-meta"><span id="loadElapsed">0s</span>\u2002\u00b7\u2002Usually 40\u201350 seconds</div></div></div>';
     startLoadTimer();
     return;
   }
@@ -1477,6 +1448,43 @@ function escHtml(str) {
 }
 
 renderOutput();
+
+// ── GENERATE BUTTON PULSE ──
+// Adds a 3-cycle glow animation to the generate button once all required fields are filled,
+// signalling to new users that the tool is ready. Removed on first click or after generation.
+(function(){
+  function isReady(){
+    var topic=(document.getElementById("topic")||{}).value||"";
+    var content=(document.getElementById("content")||{}).value||"";
+    var profs=getProfs(), specs=getSpecs();
+    var other=(document.getElementById("audienceOther")||{}).value||"";
+    return topic.trim()&&content.trim()&&(profs.length||specs.length||other.trim());
+  }
+  function updatePulse(){
+    var btn=document.getElementById("generateBtn");
+    if(!btn||state.status==="done"||state.status==="loading") return;
+    if(isReady()){ btn.classList.add("ready"); }
+    else { btn.classList.remove("ready"); }
+  }
+  // Remove pulse permanently on click (user has seen it)
+  document.addEventListener("click",function(e){
+    if(e.target&&e.target.id==="generateBtn"){
+      var btn=document.getElementById("generateBtn");
+      if(btn) btn.classList.remove("ready");
+    }
+  });
+  // Watch all three required fields
+  ["topic","content"].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el) el.addEventListener("input",updatePulse);
+  });
+  // Profession/specialty checkboxes use change events
+  document.addEventListener("change",function(e){
+    if(e.target&&(e.target.closest("#profGrid")||e.target.closest("#specGrid")||e.target.id==="audienceOther")) updatePulse();
+  });
+  var other=document.getElementById("audienceOther");
+  if(other) other.addEventListener("input",updatePulse);
+})();
 
 // Warn immediately if opened as a local file
 if (location.protocol === "file:") {
