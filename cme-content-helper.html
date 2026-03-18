@@ -947,6 +947,9 @@ function toggleTip(id, event) {
   if (pop.classList.contains("show")) { hideTip(id); return; }
   if (activeTip) hideTip(activeTip);
 
+  // Move popup to document.body to escape any stacking context on animated ancestors
+  if (pop.parentNode !== document.body) document.body.appendChild(pop);
+
   // Position fixed: calculate from button viewport coords
   var btn = event.currentTarget;
   var rect = btn.getBoundingClientRect();
@@ -996,7 +999,7 @@ function tip(id, html, position) {
   var pos = position || "below";
   return "<span class=\"tip-wrap\">"
     + "<button class=\"tip-btn\" onclick=\"toggleTip('" + id + "',event)\" aria-label=\"More information\">i</button>"
-    + "<div class=\"tip-pop " + pos + "\" id=\"" + id + "\">"
+    + "<div class=\"tip-pop " + pos + "\" id=\"" + id + "\" data-dyn=\"1\">"
     + "<div class=\"tip-arrow\"></div>"
     + html
     + "</div></span>";
@@ -1013,6 +1016,8 @@ function showToast(msg) {
 // ── RENDER OUTPUT ──
 function renderOutput() {
   if (state.status !== "loading") stopLoadTimer();
+  if (activeTip) hideTip(activeTip);
+  document.querySelectorAll('body > .tip-pop[data-dyn]').forEach(function(el) { el.remove(); });
   var panel = document.getElementById("outputPanel");
   panel.innerHTML = "";
 
