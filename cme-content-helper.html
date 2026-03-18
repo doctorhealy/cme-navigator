@@ -700,7 +700,14 @@ async function handleGenerate() {
     state.status = "done";
   } catch(e) {
     state.status = "error";
-    state.errorMessage = (e.message || "Unexpected error.") + (e.message && e.message.length < 20 ? " — try pasting the file into a new Claude.ai chat and generating again." : "");
+    var msg = e.message || "Unexpected error.";
+    if (e instanceof TypeError || msg === "Load failed" || msg === "Failed to fetch" || msg.toLowerCase().includes("network")) {
+      state.errorMessage = location.protocol === "file:"
+        ? "This tool must be opened from GitHub Pages, not a local file. Visit doctorhealy.github.io/cme-navigator to use it."
+        : "Could not reach the AI service. Check your internet connection and try again.";
+    } else {
+      state.errorMessage = msg;
+    }
   }
 
   if (btn) { btn.disabled = false; document.getElementById("btnText").textContent = "Generate Application Content \u2192"; }
@@ -763,7 +770,11 @@ async function handleRegenerate() {
     };
     state.status = "done";
   } catch(e) {
-    state.status = "error"; state.errorMessage = e.message || "Unexpected error.";
+    var msg2 = e.message || "Unexpected error.";
+    state.status = "error";
+    state.errorMessage = (e instanceof TypeError || msg2 === "Load failed" || msg2 === "Failed to fetch")
+      ? (location.protocol === "file:" ? "This tool must be opened from GitHub Pages, not a local file. Visit doctorhealy.github.io/cme-navigator to use it." : "Could not reach the AI service. Check your internet connection and try again.")
+      : msg2;
   }
   if (btn) { btn.disabled = false; document.getElementById("btnText").textContent = "Generate Application Content \u2192"; }
   renderOutput();
@@ -1466,6 +1477,14 @@ function escHtml(str) {
 }
 
 renderOutput();
+
+// Warn immediately if opened as a local file
+if (location.protocol === "file:") {
+  var banner = document.createElement("div");
+  banner.style.cssText = "position:fixed;top:0;left:0;right:0;z-index:99999;background:#7f1d1d;color:#fff;font-size:13px;font-weight:600;padding:10px 20px;display:flex;align-items:center;gap:12px;line-height:1.4";
+  banner.innerHTML = '<span style="font-size:18px;flex-shrink:0">⚠</span><span>This tool must be used from <strong>GitHub Pages</strong> — the AI service will not work when opened as a local file. <a href="https://doctorhealy.github.io/cme-navigator/" style="color:#fca5a5;text-underline-offset:2px">Open the live version →</a></span>';
+  document.body.prepend(banner);
+}
 </script>
 <div id="copy-toast"></div>
 </body>
