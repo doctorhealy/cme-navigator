@@ -278,11 +278,11 @@ textarea{resize:vertical}
               <span class="tip-wrap">
                 <button class="tip-btn" onclick="toggleTip('tip-ipce',event)" aria-label="More information">i</button>
                 <div class="tip-pop below" id="tip-ipce"><div class="tip-arrow"></div>
-                  <strong>Three things must all be true &#8212; not just one or two:</strong><br><br>
-                  <strong>1. Planning committee:</strong> two or more professions involved in designing the activity &#8212; e.g. both a physician <em>and</em> a nurse, pharmacist, or social worker sit on the planning group.<br><br>
-                  <strong>2. Faculty presenters:</strong> two or more professions involved in delivering the content on the day &#8212; e.g. both a physician <em>and</em> a nurse present or facilitate sessions.<br><br>
-                  <strong>3. Team-focused design:</strong> the activity is designed to improve how the healthcare team works together, not just to update individual clinicians.<br><br>
-                  Planning collaboration alone is not enough. The interprofessional involvement must extend to who delivers the content as well.
+                  <strong>IPCE requires all three of the following:</strong><br><br>
+                  <strong>Co-planned:</strong> two or more health professions are on the planning committee<br><br>
+                  <strong>Co-delivered:</strong> two or more health professions present or facilitate on the day<br><br>
+                  <strong>Team-focused:</strong> the activity is designed to improve how the team works together — not just to update individual clinicians<br><br>
+                  A physician-only planning group does not qualify, even if nurses or pharmacists attend.
                 </div>
               </span>
             </div>
@@ -960,6 +960,7 @@ function toggleTip(id, event) {
   showTip(id);
 }
 document.addEventListener("click", function() { if (activeTip) hideTip(activeTip); });
+document.addEventListener("scroll", function() { if (activeTip) hideTip(activeTip); }, true);
 
 // Build tooltip HTML — call this inline in section headers
 function tip(id, html, position) {
@@ -1064,7 +1065,7 @@ function renderOutput() {
   if (s.competencies) {
     var cc = document.createElement("div"); cc.className = "card fade-up";
     var ch = secHead("\ud83c\udfdb\ufe0f", "Competency frameworks addressed", "ACGME/ABMS \u00b7 IOM \u00b7 IPEC", "Only the competencies your activity genuinely addresses. Tick these in the Competencies section of your CloudCME application.", "Learning Outcomes &amp; Competencies \u2192 Competencies", false, "tip-comp", "<strong>Competency frameworks</strong> are nationally recognised standards for physician and healthcare team capabilities.<br><br><strong>ACGME/ABMS</strong>: The six core competencies for US physicians \u2014 Medical Knowledge, Patient Care, Practice-Based Learning and Improvement, Interpersonal &amp; Communication Skills, Professionalism, Systems-Based Practice.<br><br><strong>IOM</strong>: Institute of Medicine competencies for healthcare quality \u2014 Patient-Centered Care, Interdisciplinary Teams, Evidence-Based Practice, Quality Improvement, Informatics.<br><br><strong>IPEC</strong>: Interprofessional Education Collaborative competencies for team-based care \u2014 Values/Ethics, Roles/Responsibilities, Communication, Teams &amp; Teamwork.<br><br>Only select those your activity <em>genuinely</em> addresses. Selecting all of them is always incorrect.");
-    var compDefs = [{ key: "acgme", label: "ACGME / ABMS Core Competencies", color: "#2F65A7" }, { key: "iom", label: "Institute of Medicine (IOM)", color: "#15803d" }, { key: "ipec", label: "Interprofessional Education Collaborative (IPEC)", color: "#6d28d9" }];
+    var compDefs = [{ key: "acgme", label: "ACGME / ABMS Core Competencies", color: "#2F65A7" }, { key: "iom", label: "Institute of Medicine (IOM)", color: "#15803d" }, { key: "ipec", label: "Interprofessional Education Collaborative (IPEC)", color: "#2F65A7" }];
     compDefs.forEach(function(cd) {
       var items = s.competencies[cd.key] || [];
       if (!items.length) return;
@@ -1130,11 +1131,11 @@ function renderEligibility(el) {
   // IPCE
   if (el.ipce && el.ipce.applies) {
     hasContent = true;
-    h += eligSection("\ud83e\udd1d", "Interprofessional Continuing Education (IPCE)", "#6d28d9", "#f5f3ff", "#ddd6fe",
+    h += eligSection("\ud83e\udd1d", "Interprofessional Continuing Education (IPCE)", "#2F65A7", "#eef2f7", "#a8bdd4",
       tip("tip-ipce-elig", "<strong>IPCE (Interprofessional Continuing Education)</strong> is formal recognition for education where members of two or more health professions learn with, from, and about each other to improve how they work together as a team.<br><br><strong>All three of the following must be true:</strong><br>\u2022 <strong>Planning committee</strong>: two or more professions involved in designing the activity (e.g. a physician planner and a nurse or pharmacist planner)<br>\u2022 <strong>Faculty presenters</strong>: two or more professions involved in delivering the content on the day (e.g. a physician and a nurse both present)<br>\u2022 <strong>Team-focused design</strong>: the activity is designed to improve how the healthcare team works together \u2014 not just to update individual clinician knowledge<br><br>Planning collaboration alone is not sufficient \u2014 the interprofessional involvement must extend to who delivers the content as well.<br><br>Michigan Medicine is building toward Joint Accreditation, which will allow the IPCE Credit Mark on certificates. Until then, qualifying activities are tracked and contribute to that portfolio.")
     );
-    h += eligItem("IPCE Recognition", el.ipce.rationale, [], el.ipce.steps || [], "#6d28d9", "#f5f3ff", "#ddd6fe", "high", "Applicable");
-    h += "<div style=\"font-size:12px;color:#6d28d9;font-style:italic;padding:0 2px 10px;line-height:1.5\">The formal IPCE Credit Mark on certificates requires Joint Accreditation, which OCME&amp;LL is actively pursuing. In the meantime, this activity will be tracked as interprofessional and contributes to the Joint Accreditation portfolio.</div>";
+    h += eligItem("IPCE Recognition", el.ipce.rationale, [], el.ipce.steps || [], "#2F65A7", "#eef2f7", "#a8bdd4", "high", "Applicable");
+    h += "<div style=\"font-size:12px;color:#2F65A7;font-style:italic;padding:0 2px 10px;line-height:1.5\">The formal IPCE Credit Mark on certificates requires Joint Accreditation, which OCME&amp;LL is actively pursuing. In the meantime, this activity will be tracked as interprofessional and contributes to the Joint Accreditation portfolio.</div>";
     h += "</div>";
   } else if (el.ipce && !el.ipce.applies) {
     // IPCE doesn't apply — but check if audience is multi-profession (opportunity to unlock)
@@ -1259,7 +1260,7 @@ function handlePrint() {
     + "</div>";
 
   if (s.competencies) {
-    var compDefs = [{ key: "acgme", label: "ACGME / ABMS", color: "#2F65A7" }, { key: "iom", label: "IOM", color: "#15803d" }, { key: "ipec", label: "IPEC", color: "#6d28d9" }];
+    var compDefs = [{ key: "acgme", label: "ACGME / ABMS", color: "#2F65A7" }, { key: "iom", label: "IOM", color: "#15803d" }, { key: "ipec", label: "IPEC", color: "#2F65A7" }];
     var hasComps = compDefs.some(function(cd) { return (s.competencies[cd.key] || []).length; });
     if (hasComps) {
       body += "<div class=\"sec\">" + ph("Competency frameworks addressed", "ACGME/ABMS &middot; IOM &middot; IPEC", "Learning Outcomes &rarr; Competencies");

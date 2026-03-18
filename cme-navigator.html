@@ -38,7 +38,7 @@ const SPECIALTY_MOC = {
 };
 
 const COMMENDATION = [
-  {category:"Team-Based & Interprofessional Education",color:"#6d28d9",colorLight:"#f5f3ff",colorBorder:"#ddd6fe",icon:"🤝",
+  {category:"Team-Based & Interprofessional Education",color:"#2F65A7",colorLight:"#eef2f7",colorBorder:"#a8bdd4",icon:"🤝",
    whyItMatters:"Activities that bring different professions together in planning and delivery are a foundation of Accreditation with Commendation. Flag any of these to your OCME&LL representative.",
    criteria:[
      {code:"C23",label:"Interprofessional planning committee",triggers:["multi_prof"]},
@@ -695,10 +695,10 @@ function renderResults(){
       }
       // One card per specialty
       res.boardCredit.forEach(function(bc){
-        var borderCol = bc.pars ? "#ddd6fe" : "#fde68a";
-        var labelCol  = bc.pars ? "#6d28d9"  : "#b45309";
-        var bgCol     = bc.pars ? "#f5f3ff"  : "#fffbeb";
-        var textCol   = bc.pars ? "#4c1d95"  : "#78350f";
+        var borderCol = bc.pars ? "#b8cfe8" : "#fde68a";
+        var labelCol  = bc.pars ? "#00274C"  : "#b45309";
+        var bgCol     = bc.pars ? "#e8f0f8"  : "#fffbeb";
+        var textCol   = bc.pars ? "#1a3a5c"  : "#78350f";
         var c=card({border:"2px solid "+borderCol});
         var hd=el("div",{style:{display:"flex",alignItems:"center",gap:"8px",marginBottom:"8px"}});
         hd.appendChild(el("span",{style:{fontSize:"11px",fontWeight:"700",color:labelCol,letterSpacing:"0.5px",textTransform:"uppercase"}},
