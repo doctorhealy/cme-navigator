@@ -6,7 +6,8 @@
 <title>CME Content Helper · Michigan Medicine</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" as="style" onload="this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet"></noscript>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -647,28 +648,14 @@ function specLabel(v) {
   return map[v] || v;
 }
 
-// ── GENERATE ──
-async function handleGenerate() {
-  var topic = document.getElementById("topic").value.trim();
-  var content = document.getElementById("content").value.trim();
-  var profs = getProfs();
-  var specs = getSpecs();
-  var errEl = document.getElementById("validationError");
-  if (!topic || !content || (!profs.length && !specs.length && !document.getElementById("audienceOther").value.trim())) {
-    errEl.textContent = "Please fill in the topic, content, and at least one audience group before generating.";
-    errEl.classList.add("show");
-    errEl.scrollIntoView({behavior:"smooth",block:"nearest"});
-    return;
-  }
-  errEl.classList.remove("show");
-  state.status = "loading"; renderOutput();
+// ── SHARED API CALL ──
+async function callAPI(btnLabel) {
   var btn = document.getElementById("generateBtn");
-  if (btn) { btn.disabled = true; document.getElementById("btnText").textContent = "Generating\u2026"; }
-
+  if (btn) { btn.disabled = true; document.getElementById("btnText").textContent = btnLabel; }
   try {
     var resp = await fetch("https://anthropic-proxy.doctorhealy.workers.dev", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "claude-sonnet-4-5", max_tokens: 5000, system: SYSTEM_PROMPT, messages: [{ role: "user", content: buildUserPrompt() }] })
+      body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 5000, system: SYSTEM_PROMPT, messages: [{ role: "user", content: buildUserPrompt() }] })
     });
     var data = await resp.json();
     if (!resp.ok) throw new Error((data.error ? data.error.message : "API request failed") + " [HTTP " + resp.status + "]");
@@ -709,8 +696,25 @@ async function handleGenerate() {
       state.errorMessage = msg;
     }
   }
-
   if (btn) { btn.disabled = false; document.getElementById("btnText").textContent = "Generate Application Content \u2192"; }
+}
+
+// ── GENERATE ──
+async function handleGenerate() {
+  var topic = document.getElementById("topic").value.trim();
+  var content = document.getElementById("content").value.trim();
+  var profs = getProfs();
+  var specs = getSpecs();
+  var errEl = document.getElementById("validationError");
+  if (!topic || !content || (!profs.length && !specs.length && !document.getElementById("audienceOther").value.trim())) {
+    errEl.textContent = "Please fill in the topic, content, and at least one audience group before generating.";
+    errEl.classList.add("show");
+    errEl.scrollIntoView({behavior:"smooth",block:"nearest"});
+    return;
+  }
+  errEl.classList.remove("show");
+  state.status = "loading"; renderOutput();
+  await callAPI("Generating\u2026");
   renderOutput();
 }
 
@@ -734,49 +738,7 @@ async function handleRegenerate() {
   }
   // Preserve all user form inputs — only refresh AI-generated output fields.
   state.status = "loading"; renderOutput();
-  var btn = document.getElementById("generateBtn");
-  if (btn) { btn.disabled = true; document.getElementById("btnText").textContent = "Regenerating\u2026"; }
-  try {
-    var resp = await fetch("https://anthropic-proxy.doctorhealy.workers.dev", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "claude-sonnet-4-5", max_tokens: 5000, system: SYSTEM_PROMPT, messages: [{ role: "user", content: buildUserPrompt() }] })
-    });
-    var data = await resp.json();
-    if (!resp.ok) throw new Error((data.error ? data.error.message : "API request failed") + " [HTTP " + resp.status + "]");
-    if (!data.content || !data.content.length) throw new Error("API returned an empty response. Full response: " + JSON.stringify(data).slice(0, 300));
-    var firstBlock = data.content[0];
-    if (firstBlock.type !== "text") throw new Error("API returned unexpected content type: " + firstBlock.type + ". Expected text.");
-    var raw = firstBlock.text.trim().replace(/^```json?\s*/i, "").replace(/\s*```$/i, "").trim();
-    if (data.stop_reason === "max_tokens") throw new Error("Response was cut off (max_tokens). Raw start: " + raw.slice(0, 200));
-    var p;
-    try { p = JSON.parse(raw); } catch(je) {
-      throw new Error("JSON parse failed: " + je.message + ". Raw response start: " + raw.slice(0, 300));
-    }
-    var en = p.educationalNeeds || {};
-    state.results = p;
-    state.selected = {
-      practiceGapOption: 0, practiceGapText: (p.practiceGap || [""])[0],
-      needsPrimaryType: en.primaryType || "Knowledge",
-      needsReasoning: en.reasoning || "",
-      needsPrimaryText: en.primaryText || "",
-      needsSecondaryType: en.secondaryType || null,
-      needsSecondaryText: en.secondaryText || "",
-      expectedResults: p.expectedResults || "",
-      formatJustification: p.formatJustification || "",
-      objectives: (p.learningObjectives || []).map(function(t) { return { text: t, checked: true }; }),
-      competencies: p.competencies || null,
-      summaryText: p.needsAssessmentSummary || "",
-      eligibility: p.eligibility || null
-    };
-    state.status = "done";
-  } catch(e) {
-    var msg2 = e.message || "Unexpected error.";
-    state.status = "error";
-    state.errorMessage = (e instanceof TypeError || msg2 === "Load failed" || msg2 === "Failed to fetch")
-      ? (location.protocol === "file:" ? "This tool must be opened from GitHub Pages, not a local file. Visit doctorhealy.github.io/cme-navigator to use it." : "Could not reach the AI service. Check your internet connection and try again.")
-      : msg2;
-  }
-  if (btn) { btn.disabled = false; document.getElementById("btnText").textContent = "Generate Application Content \u2192"; }
+  await callAPI("Regenerating\u2026");
   renderOutput();
 }
 
