@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>CME Content Helper · Michigan Medicine</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -37,8 +38,8 @@ textarea{resize:vertical}
 .header-badge{color:var(--michigan-maize);font-size:12px;font-weight:700;margin-left:auto}
 
 /* CARDS */
-.card{background:var(--bg-card);border-radius:14px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,0.07);position:relative;overflow:visible}
-.card-tight{background:var(--bg-card);border-radius:14px;padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,0.07)}
+.card{background:var(--bg-card);border-radius:14px;padding:20px;box-shadow:0 1px 3px rgba(0,39,76,0.06), 0 2px 8px rgba(0,39,76,0.04);position:relative;overflow:visible}
+.card-tight{background:var(--bg-card);border-radius:14px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,39,76,0.06), 0 2px 8px rgba(0,39,76,0.04)}
 
 /* INPUTS */
 .field-group{display:flex;flex-direction:column;gap:5px}
@@ -49,24 +50,24 @@ textarea{resize:vertical}
 .field-textarea::placeholder{color:var(--text-muted)}
 
 /* REQUIRED BADGE */
-.req-badge{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.4px;background:var(--michigan-maize);color:var(--michigan-blue);border-radius:4px;padding:1px 6px;margin-left:6px;vertical-align:middle}
+.req-badge{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.4px;background:var(--michigan-maize);color:var(--michigan-blue);border-radius:4px;padding:1px 6px;margin-left:6px;vertical-align:middle}
 
 /* CHECK TILES — audience professions and physician specialties */
 .check-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:4px}
-.check-tile{display:flex;align-items:center;gap:7px;padding:7px 10px;border:1.5px solid var(--border-light);border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text-secondary);transition:all 0.12s;user-select:none;border-left:3px solid var(--border-light)}
+.check-tile{display:flex;align-items:center;gap:7px;padding:7px 10px;border:1.5px solid var(--border-light);border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text-secondary);transition:background-color 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;user-select:none;border-left:3px solid var(--border-light)}
 .check-tile:hover{border-color:var(--border-mid);border-left-color:var(--border-mid);background:var(--bg-blue-tint)}
 .check-tile.checked{border-color:var(--arboretum-blue);border-left:4px solid var(--michigan-maize);background:var(--bg-blue-tint);color:var(--arboretum-blue)}
 .check-tile input{accent-color:var(--arboretum-blue);width:13px;height:13px;flex-shrink:0;pointer-events:none}
 
 /* FORMAT CHIPS */
 .chip-grid{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
-.chip{display:flex;align-items:center;gap:5px;padding:5px 10px;border:1.5px solid var(--border-light);border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text-secondary);transition:all 0.12s;user-select:none}
+.chip{display:flex;align-items:center;gap:5px;padding:5px 10px;border:1.5px solid var(--border-light);border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text-secondary);transition:background-color 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;user-select:none}
 .chip:hover{border-color:var(--border-mid);background:var(--bg-blue-tint)}
 .chip.checked{border-color:var(--arboretum-blue);border-left:3px solid var(--michigan-maize);background:var(--bg-blue-tint);color:var(--arboretum-blue)}
 .chip input{accent-color:var(--arboretum-blue);width:12px;height:12px;flex-shrink:0;pointer-events:none}
 
 /* SECTION DIVIDER inside input card */
-.input-divider{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);padding:4px 0 2px;border-top:1px solid var(--border-light);margin-top:4px}
+.input-divider{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);padding:4px 0 2px;border-top:1px solid var(--border-light);margin-top:4px}
 
 
 /* BUTTONS */
@@ -104,7 +105,7 @@ textarea{resize:vertical}
 
 /* OPTION PILLS */
 .option-pills{display:flex;gap:7px;margin-bottom:10px;flex-wrap:wrap}
-.option-pill{padding:5px 14px;border-radius:20px;font-size:13px;font-weight:700;border:2px solid var(--border-mid);background:#fff;color:var(--text-secondary);transition:all 0.12s;cursor:pointer}
+.option-pill{padding:5px 14px;border-radius:20px;font-size:13px;font-weight:700;border:2px solid var(--border-mid);background:#fff;color:var(--text-secondary);transition:background-color 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;cursor:pointer}
 .option-pill.active{background:var(--arboretum-blue);border-color:var(--arboretum-blue);color:#fff;box-shadow:0 2px 8px rgba(47,101,167,0.25);border-bottom:3px solid var(--michigan-maize)}
 
 /* EDITABLES */
@@ -132,7 +133,7 @@ textarea{resize:vertical}
 .comp-chip{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;padding:4px 10px;border-radius:5px;border:1.5px solid;background:#f8f9fb}
 
 /* ELIGIBILITY PANEL */
-.elig-panel{background:var(--bg-card);border-radius:14px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,0.07);border-top:4px solid var(--michigan-maize)}
+.elig-panel{background:var(--bg-card);border-radius:14px;padding:20px;box-shadow:0 1px 3px rgba(0,39,76,0.06), 0 2px 8px rgba(0,39,76,0.04);border-top:4px solid var(--michigan-maize)}
 .elig-item{border-radius:10px;overflow:hidden;margin-bottom:10px}
 .elig-header{padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .elig-body{padding:12px 14px}
@@ -146,7 +147,7 @@ textarea{resize:vertical}
 
 /* TOOLTIPS */
 .tip-wrap{position:relative;display:inline-flex;align-items:center;vertical-align:middle}
-.tip-btn{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:var(--arboretum-blue);color:#fff;font-size:9px;font-weight:800;cursor:pointer;flex-shrink:0;border:none;line-height:1;margin-left:5px;user-select:none;transition:background 0.12s}
+.tip-btn{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:var(--arboretum-blue);color:#fff;font-size:9px;font-weight:800;cursor:pointer;flex-shrink:0;border:none;line-height:1;margin-left:5px;user-select:none;transition:background 0.12s;padding:6px;margin:-6px;box-sizing:content-box}
 .tip-btn:hover{background:#1a4f8a}
 .tip-pop{position:fixed;z-index:99999;width:280px;background:#1e293b;color:#f0f2f5;border-radius:10px;padding:13px 15px;font-size:12px;line-height:1.6;box-shadow:0 8px 24px rgba(0,0,0,0.3);pointer-events:none;opacity:0;transition:opacity 0.15s}
 .tip-pop.show{opacity:1;pointer-events:auto}
@@ -164,6 +165,18 @@ textarea{resize:vertical}
 .copy-btn:hover{background:#fff;border-color:var(--arboretum-blue);color:var(--arboretum-blue)}
 .copy-btn.copied{opacity:1;background:#dcfce7;border-color:#86efac;color:#15803d}
 .copy-btn svg{width:13px;height:13px;flex-shrink:0}
+#copy-toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: #1e293b; color: #f0f2f5;
+  padding: 10px 18px; border-radius: 10px;
+  font-size: 13px; font-weight: 600;
+  opacity: 0; transform: translateY(8px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none; z-index: 9999;
+}
+#copy-toast.show {
+  opacity: 1; transform: translateY(0);
+}
 </style>
 </head>
 <body>
@@ -318,7 +331,7 @@ textarea{resize:vertical}
 
       <!-- How to use -->
       <div class="card-tight" style="border-left:3px solid var(--michigan-maize)">
-        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--arboretum-blue);margin-bottom:10px">How to use this tool</div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--arboretum-blue);margin-bottom:10px">How to use this tool</div>
         <div style="display:flex;flex-direction:column;gap:9px">
           <div style="display:flex;gap:10px;align-items:flex-start">
             <span style="font-size:12px;font-weight:800;color:var(--michigan-blue);background:var(--michigan-maize);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1">1</span>
@@ -642,10 +655,21 @@ async function handleGenerate() {
 }
 
 async function handleRegenerate() {
-  // Confirm if user has edited the gap textarea
   if (state.status === "done") {
-    var gapTA = document.getElementById("gapTextarea");
-    var hasEdits = gapTA && gapTA.value && state.results && gapTA.value !== (state.results.practiceGap||[])[state.selected.practiceGapOption||0];
+    var hasEdits = false;
+    var taIds = ["gapTextarea","needPrimaryTA","needSecondaryTA","expectedResultsTA","formatJustTA","summaryTA"];
+    var storedValues = {
+      gapTextarea: (state.results && state.results.practiceGap) ? (state.results.practiceGap[state.selected.practiceGapOption||0]||"") : "",
+      needPrimaryTA: (state.results && state.results.educationalNeeds) ? (state.results.educationalNeeds.primaryText||"") : "",
+      needSecondaryTA: (state.results && state.results.educationalNeeds) ? (state.results.educationalNeeds.secondaryText||"") : "",
+      expectedResultsTA: (state.results) ? (state.results.expectedResults||"") : "",
+      formatJustTA: (state.results) ? (state.results.formatJustification||"") : "",
+      summaryTA: (state.results) ? (state.results.needsAssessmentSummary||"") : ""
+    };
+    taIds.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el && el.value && el.value !== storedValues[id]) hasEdits = true;
+    });
     if (hasEdits && !confirm("Generate a new AI draft? Your edits to the current version will be replaced.")) return;
   }
   // Preserve all user form inputs — only refresh AI-generated output fields.
@@ -713,6 +737,7 @@ function copyText(btnEl, sourceId) {
     btnEl.classList.add("copied");
     btnEl.innerHTML = CHECK_ICON;
     btnEl.title = "Copied!";
+    showToast('Section copied');
     setTimeout(function() {
       btnEl.classList.remove("copied");
       btnEl.innerHTML = COPY_ICON;
@@ -725,6 +750,7 @@ function copyText(btnEl, sourceId) {
       document.execCommand("copy");
       btnEl.classList.add("copied");
       btnEl.innerHTML = CHECK_ICON;
+      showToast('Section copied');
       setTimeout(function() {
         btnEl.classList.remove("copied");
         btnEl.innerHTML = COPY_ICON;
@@ -840,6 +866,7 @@ function copyAllSections(btnEl) {
     var orig = btnEl.innerHTML;
     btnEl.classList.add("copied");
     btnEl.innerHTML = CHECK_ICON + " Copied!";
+    showToast('All sections copied to clipboard');
     setTimeout(function() { btnEl.classList.remove("copied"); btnEl.innerHTML = orig; }, 2500);
   }
 
@@ -944,6 +971,14 @@ function tip(id, html, position) {
     + "</div></span>";
 }
 
+function showToast(msg) {
+  var t = document.getElementById('copy-toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(function() { t.classList.remove('show'); }, 2200);
+}
+
 // ── RENDER OUTPUT ──
 function renderOutput() {
   var panel = document.getElementById("outputPanel");
@@ -971,6 +1006,7 @@ function renderOutput() {
   };
   // Top action bar
   var tb = document.createElement("div"); tb.className = "action-bar no-print";
+  tb.style.cssText = "position:sticky;top:0;z-index:10;background:#f0f2f5;";
   tb.innerHTML = "<button class=\"btn-regen\" title=\"Re-runs the AI with the same inputs — your form fields are not affected.\" onclick=\"handleRegenerate()\">&#8635; New AI Draft</button>" + "<button class=\"btn-copy-all\" onclick=\"copyAllSections(this)\" title=\"Copy all sections as plain text\">" + COPY_ICON + " Copy all sections</button>" + "<button class=\"btn-print\" onclick=\"handlePrint()\">&#128424; Print / Save PDF</button>";
   panel.appendChild(tb);
 
@@ -1308,7 +1344,7 @@ function printDocument(title, bodyHtml) {
     ".dtl{font-size:23px;font-weight:800;color:#fff;margin-bottom:3px}",
     ".dmt{font-size:12px;color:rgba(255,255,255,0.5)}",
     ".activity-box{margin:22px 36px 0;padding:13px 16px;background:#f0f4f9;border-radius:8px;border-left:4px solid #2F65A7}",
-    ".ab-label{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#2F65A7;margin-bottom:5px}",
+    ".ab-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#2F65A7;margin-bottom:5px}",
     ".ab-row{font-size:13px;color:#1a3a5c;line-height:1.5;margin-bottom:1px}",
     ".ab-row strong{color:#00274C}",
     ".page-body{padding:18px 36px 32px}",
@@ -1375,5 +1411,6 @@ function escHtml(str) {
 
 renderOutput();
 </script>
+<div id="copy-toast"></div>
 </body>
 </html>

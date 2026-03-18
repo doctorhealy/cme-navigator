@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>CME Credit Application Navigator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -391,7 +392,8 @@ function toggle(qid,value,type){
   }
   // Clear cached documents whenever answers change so docs always reflect current state
   state.docPlannerHtml=null;state.docStaffHtml=null;
-  render();
+  cancelAnimationFrame(window._renderRaf);
+  window._renderRaf = requestAnimationFrame(function() { render(); });
 }
 function goNext(){var qs=getVisibleQuestions();if(state.step<qs.length-1){state.step++;render();scrollToTop();}else{state.done=true;render();scrollToTop();}}
 function goBack(){if(state.step>0){state.step--;render();scrollToTop();}}
@@ -419,14 +421,14 @@ function span(style,text){return el("span",{style:style},[text]);}
 function txt(t){return document.createTextNode(t);}
 
 function card(extra,children){
-  return el("div",{style:Object.assign({background:"#fff",borderRadius:"14px",padding:"20px",boxShadow:"0 1px 4px rgba(0,0,0,0.07)",marginBottom:"14px"},extra||{})},children);
+  return el("div",{style:Object.assign({background:"#fff",borderRadius:"14px",padding:"20px",boxShadow:"0 1px 3px rgba(0,39,76,0.06), 0 2px 8px rgba(0,39,76,0.04)",marginBottom:"14px"},extra||{})},children);
 }
 
 // ─── TOOLTIP ──────────────────────────────────────────────────────────────────
 function renderTooltip(text,id){
   var isOpen=state.openTooltip===id;
   var wrap=el("span",{style:{position:"relative",display:"inline-flex",alignItems:"center",verticalAlign:"middle"}});
-  var btn=el("span",{style:{cursor:"pointer",padding:"0 4px",color:isOpen?"#2F65A7":"#7a96b0",fontSize:"13px",userSelect:"none",lineHeight:"1",display:"inline-flex",alignItems:"center"},role:"button",tabindex:"0"},["ⓘ"]);
+  var btn=el("span",{style:{cursor:"pointer",padding:"6px",margin:"-6px",boxSizing:"content-box",color:isOpen?"#2F65A7":"#7a96b0",fontSize:"13px",userSelect:"none",lineHeight:"1",display:"inline-flex",alignItems:"center"},role:"button",tabindex:"0"},["ⓘ"]);
   btn.onclick=function(e){e.stopPropagation();var next=isOpen?null:id;if(state.openTooltip===next)return;state.openTooltip=next;render();};
   btn.onkeydown=function(e){if(e.key==="Enter"||e.key===" "){e.stopPropagation();var next=isOpen?null:id;if(state.openTooltip===next)return;state.openTooltip=next;render();}};
   wrap.appendChild(btn);
@@ -446,7 +448,7 @@ function renderOptionBtn(q,opt){
   var active=isMulti?(val||[]).includes(opt.value):val===opt.value;
   var brand="#2F65A7";
 
-  var btn=el("button",{style:{display:"flex",alignItems:"center",gap:"14px",padding:"14px 16px",width:"100%",borderRadius:"10px",textAlign:"left",background:active?"#eef2f7":"#fff",border:"2px solid "+(active?brand:"#d0d9e3"),borderLeft:active?"4px solid #FFCB05":"2px solid #d0d9e3",boxShadow:active?"0 0 0 3px rgba(29,78,216,0.12)":"none",transition:"all 0.15s",marginBottom:"8px",cursor:"pointer"},onclick:function(){toggle(q.id,opt.value,q.type);}});
+  var btn=el("button",{style:{display:"flex",alignItems:"center",gap:"14px",padding:"14px 16px",width:"100%",borderRadius:"10px",textAlign:"left",background:active?"#eef2f7":"#fff",border:"2px solid "+(active?brand:"#d0d9e3"),borderLeft:active?"4px solid #FFCB05":"2px solid #d0d9e3",boxShadow:active?"0 0 0 3px rgba(29,78,216,0.12)":"none",transition:"background-color 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease",marginBottom:"8px",cursor:"pointer"},onclick:function(){toggle(q.id,opt.value,q.type);}});
 
   // checkbox/radio indicator
   var chk=el("div",{style:{width:"20px",height:"20px",flexShrink:"0",borderRadius:isMulti?"5px":"50%",border:"2px solid "+(active?brand:"#7a96b0"),background:active?brand:"transparent",display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.15s"}});
@@ -476,8 +478,8 @@ function renderQuestion(){
   var maxQ = 11; // total questions including conditionals — use fixed max so counter never shifts
   var pct=Math.round(((state.step+1)/maxQ)*100);
   var pbWrap=el("div",{style:{marginBottom:"24px"}});
-  var pbBg=el("div",{style:{height:"6px",background:"#d0d9e3",borderRadius:"99px",marginBottom:"8px"}});
-  var pbFill=el("div",{style:{height:"100%",width:pct+"%",background:"linear-gradient(90deg,#00274C,#2F65A7)",borderRadius:"99px",transition:"width 0.3s"}});
+  var pbBg=el("div",{style:{height:"3px",background:"#d0d9e3",borderRadius:"99px",marginBottom:"8px"}});
+  var pbFill=el("div",{style:{height:"100%",width:pct+"%",background:"#FFCB05",borderRadius:"99px",transition:"width 0.3s ease"}});
   pbBg.appendChild(pbFill);
   pbWrap.appendChild(pbBg);
   pbWrap.appendChild(el("div",{style:{fontSize:"12px",color:"#4a6785",textAlign:"right"}},["Question "+(state.step+1)+" of "+maxQ]));
@@ -793,14 +795,14 @@ function docStyles() {
     +'.page{max-width:620px;margin:0 auto;padding:32px 40px}'
 
     /* ── Document header ── */
-    +'.doc-kicker{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1.4px;color:#7a96b0;margin-bottom:6px}'
+    +'.doc-kicker{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.4px;color:#7a96b0;margin-bottom:6px}'
     +'.doc-title{font-size:22px;font-weight:800;color:#00274C;line-height:1.15;margin-bottom:5px}'
     +'.doc-sub{font-size:12px;color:#5a7a9a;margin-bottom:0}'
     +'.doc-rule{border:none;border-top:2.5px solid #FFCB05;margin:12px 0 20px}'
 
     /* ── Summary card ── */
     +'.summary{background:#00274C;color:#fff;border-radius:8px;padding:16px 20px;margin-bottom:24px}'
-    +'.summary-label{font-size:9px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,0.55);margin-bottom:4px}'
+    +'.summary-label{font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,0.55);margin-bottom:4px}'
     +'.summary-type{font-size:18px;font-weight:800;margin-bottom:12px;line-height:1.2}'
     +'.summary-pills{display:flex;flex-wrap:wrap;gap:6px}'
     +'.pill{font-size:10.5px;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(255,255,255,0.15);color:#fff;letter-spacing:0.2px}'
@@ -878,7 +880,7 @@ function docStyles() {
 
     /* ── Tag chips ── */
     +'.tag-container{background:#f8f9fb;border:1.5px solid #dde4ed;border-radius:7px;padding:11px 14px;margin-top:4px}'
-    +'.tag-container-label{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.7px;color:#5a7a9a;margin-bottom:8px}'
+    +'.tag-container-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.7px;color:#5a7a9a;margin-bottom:8px}'
     +'.tag{display:inline-block;font-size:11px;font-weight:700;background:#fff;border:1.5px solid #a8bdd4;'
     +'     border-radius:4px;padding:3px 9px;margin:2px 4px 2px 0;color:#2F65A7}'
     +'.tag-gold{background:#fffbe6;border-color:#c8a900;color:#7a5c00}'
