@@ -1,23 +1,24 @@
 # CME Application Tools — Master Specification
 ## Michigan Medicine · Office of CME & Lifelong Learning (OCME&LL)
 
-**Version:** 3.0 · March 2026  
-**Status:** Production — deployed on GitHub Pages via Cloudflare Worker proxy  
-**Live URL:** https://doctorhealy.github.io/cme-navigator/  
+**Version:** 3.0 · March 2026
+**Status:** Production — deployed on GitHub Pages via Cloudflare Worker proxy
+**Live URL:** https://doctorhealy.github.io/cme-navigator/
 **Files:** `cme-navigator.html` · `cme-content-helper.html` · `cloudflare-worker.js`
 
 ---
 
 ## 1. SUITE OVERVIEW
 
-Two standalone single-page HTML tools that together cover the full CME application planning workflow at Michigan Medicine.
+Three tools planned as a coordinated suite covering the full CME application workflow at Michigan Medicine. Two are in production; the third is in planning.
 
-| Tool | Purpose | When to use |
-|---|---|---|
-| **CME Application Navigator** | Wizard that determines application type, all credit categories, MOC board eligibility, commendation criteria, Michigan licensing topics, commercial support compliance, and IPCE opportunity | Before or during planning — run first |
-| **CME Content Helper** | AI generates all narrative application content — practice gap, educational needs, learning objectives, expected results, format justification, competency mapping, eligibility analysis | When writing the MiCME/CloudCME application |
+| # | Tool | Purpose | When to use | Status |
+|---|---|---|---|---|
+| 1 | **CME Application Navigator** | Wizard that determines application type, all credit categories, MOC board eligibility, commendation criteria, Michigan licensing topics, commercial support compliance, and IPCE opportunity | Before or during planning — run first | Production |
+| 2 | **CME Content Helper** | AI generates all narrative application content — practice gap, educational needs, learning objectives, expected results, format justification, competency mapping, eligibility analysis | When writing the MiCME/CloudCME application | Production |
+| 3 | **CME Submission Assistant** | Planned — guides final review and submission steps before entering MiCME/CloudCME | Before submitting | Planned |
 
-**Design principle:** Both tools feel like the same product — identical branding, design tokens, interaction patterns, and clinical/regulatory knowledge. Different function; shared understanding.
+**Design principle:** All tools in the suite share identical branding, design tokens, interaction patterns, and clinical/regulatory knowledge. Different function; shared understanding.
 
 **Strategic context:** Michigan Medicine OCME&LL is working toward Joint Accreditation for Interprofessional Continuing Education, which requires 25% of activities to qualify as interprofessional. Both tools actively surface IPCE opportunities and explain their value to planners.
 
@@ -129,7 +130,7 @@ letter-spacing: 0.5px; color: #2F65A7;
 
 ---
 
-## 4. CME CREDIT APPLICATION NAVIGATOR
+## 4. CME APPLICATION NAVIGATOR
 
 ### 4a. Purpose
 
@@ -468,12 +469,13 @@ The following usability improvements were implemented as of March 2026:
 
 ## 11. FILE INVENTORY
 
-| File | Lines | Purpose |
-|---|---|---|
-| `cme-navigator.html` | ~1,490 | CME Application Navigator |
-| `cme-content-helper.html` | ~1,379 | CME Content Helper |
-| `cloudflare-worker.js` | ~65 | Anthropic API proxy |
-| `cme-content-helper-spec.md` | this file | Master specification |
+| File | Lines | Purpose | Status |
+|---|---|---|---|
+| `cme-navigator.html` | ~1,490 | CME Application Navigator (Tool 1) | Production |
+| `cme-content-helper.html` | ~1,379 | CME Content Helper (Tool 2) | Production |
+| `cloudflare-worker.js` | ~65 | Anthropic API proxy (Content Helper backend) | Production |
+| `cme-content-helper-spec.md` | this file | Master specification | Current |
+| *(planned)* | — | CME Submission Assistant (Tool 3) | Planned |
 
 **Stack:** Pure vanilla JS, no frameworks, no build step. CSS and JS inline. Google Fonts (Nunito Sans) is the only external dependency beyond the Anthropic API.
 

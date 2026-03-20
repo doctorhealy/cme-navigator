@@ -2,8 +2,10 @@
 ## Michigan Medicine · Office of CME & Lifelong Learning (OCME&LL)
 
 **Version:** 1.0 · March 2026
-**Status:** Production-ready single-file web app
-**Companion tool to:** CME Application Navigator (`cme-navigator.html`)
+**Status:** Production — deployed on GitHub Pages via Cloudflare Worker proxy
+**Live URL:** https://doctorhealy.github.io/cme-navigator/cme-content-helper.html
+**Suite:** Tool 2 of 3 · CME Application Navigator · **CME Content Helper** · CME Submission Assistant *(planned)*
+**Companion tool:** CME Application Navigator (`cme-navigator.html`) — run this first
 
 ---
 
@@ -21,9 +23,9 @@ The tool also runs a second-pass eligibility analysis that identifies MOC credit
 
 ## Project Context
 
-This tool was built for the Michigan Medicine Office of CME & Lifelong Learning (OCME&LL) to reduce the time and uncertainty planners experience when completing the "Gap and Needs" and "Learning Outcomes" sections of a CloudCME application. It is designed as a sibling to `cme-navigator.html` (the CME Application Navigator) and shares the same Michigan Medicine design system.
+This tool was built for the Michigan Medicine Office of CME & Lifelong Learning (OCME&LL) to reduce the time and uncertainty planners experience when completing the "Gap and Needs" and "Learning Outcomes" sections of a CloudCME application. It is the second tool in a planned suite of three, designed as a sibling to `cme-navigator.html` (the CME Application Navigator), sharing the same Michigan Medicine design system.
 
-Both tools are intended to be deployed as Claude.ai artifacts within a shared project accessible to OCME&LL staff and educational planners. The Anthropic API key is injected via the Claude.ai artifact proxy and is not embedded in the HTML — no separate API key management is required for internal use.
+**Deployment:** The tool is hosted on GitHub Pages. The Anthropic API key is held server-side in a Cloudflare Worker proxy (`cloudflare-worker.js`) — no API key is embedded in the HTML. The tool can also run inside a Claude.ai Project, where the artifact proxy handles authentication automatically.
 
 ---
 
@@ -304,27 +306,29 @@ Inherits the Michigan Medicine design language from `cme-navigator.html`. The tw
 
 ## Files in This Project
 
-| File | Description |
-|---|---|
-| `cme-content-helper.html` | **Main deliverable** — the fully functional single-file web app |
-| `CME-Content-Helper-README.md` | This document |
-| `cme-content-helper-spec.md` | Original design specification. Note: the implemented app extends beyond this spec in several areas (richer eligibility review, format justification section, competency framework mapping, educational need reasoning box). Use the HTML and this README as the source of truth for current behaviour |
-| `cme-navigator.html` | Companion tool — CME Application Navigator. Source of truth for the shared design system, CSS patterns, print architecture, and Michigan Medicine branding |
+| File | Description | Status |
+|---|---|---|
+| `cme-content-helper.html` | **This tool** — fully functional single-file web app | Production |
+| `cme-navigator.html` | CME Application Navigator (Tool 1) — source of truth for the shared design system, CSS patterns, print architecture, and Michigan Medicine branding | Production |
+| `cloudflare-worker.js` | Anthropic API proxy — holds the API key server-side, restricts origin to GitHub Pages | Production |
+| `CME-Content-Helper-README.md` | This document | Current |
+| `cme-content-helper-spec.md` | Master specification (v3.0). The implemented app extends beyond the original spec in several areas: richer eligibility review, format justification section, competency framework mapping, educational need reasoning box. Use the HTML and this README as the source of truth for current behaviour |  Current |
 
 ---
 
 ## How to Run
 
-### Inside Claude.ai (intended deployment)
+### GitHub Pages (primary deployment)
+Visit **https://doctorhealy.github.io/cme-navigator/cme-content-helper.html** — no installation or account required. API calls are routed through the Cloudflare Worker proxy; the Anthropic API key is held server-side.
+
+### Inside Claude.ai (alternative)
 1. Upload `cme-content-helper.html` to a Claude.ai Project
-2. Open the file as an artifact — the Anthropic API proxy handles authentication automatically
+2. Open the file as an artifact — the Claude.ai proxy handles authentication automatically
 3. No additional configuration required
 
-### Outside Claude.ai (local or hosted deployment)
-1. Open `cme-content-helper.html` in any modern browser
-2. Locate the `fetch("https://api.anthropic.com/v1/messages", ...)` call in the `<script>` section
-3. Add your Anthropic API key as a header: `"x-api-key": "sk-ant-..."` 
-4. Note: browser-based API calls require appropriate CORS configuration or a thin proxy server
+### Local development
+1. Open `cme-content-helper.html` in any modern browser — the UI renders fully
+2. AI generation will fail without a proxy; either point the fetch URL at the Cloudflare Worker or add `"x-api-key": "sk-ant-..."` directly for local testing only (never commit a key)
 
 ---
 

@@ -1,14 +1,14 @@
 # CME Tools Reference Document
 ## Michigan Medicine · Office of CME & Lifelong Learning
-**Last updated:** March 2026  
-**Covers:** CME Application Navigator · CME Content Helper  
-**Status:** Both tools in active testing  
+**Last updated:** March 2026
+**Covers:** CME Application Navigator · CME Content Helper · CME Submission Assistant (planned)
+**Status:** Tools 1 and 2 in production; Tool 3 in planning
 
 ---
 
 ## 1. What These Tools Are
 
-Two companion HTML files that together support the complete CME application workflow at Michigan Medicine. Both run as artifacts inside Claude.ai — they require no installation, no server, and no technical setup. Each planner downloads the file, attaches it to a Claude.ai chat, and the tool opens immediately.
+A suite of three coordinated tools covering the full CME application workflow at Michigan Medicine. Tools 1 and 2 are deployed on GitHub Pages; Tool 3 is planned. Tools 1 and 2 are also available as artifacts inside Claude.ai — they require no installation, no server, and no technical setup when used that way.
 
 ### CME Application Navigator (`cme-navigator.html`)
 A **pre-application decision tool**. The planner answers a structured sequence of questions about their activity and receives a complete picture of: which application type to submit, every credit type the activity qualifies for, board certification (MOC) requirements, Michigan mandatory licensing topics, and which ACCME Commendation criteria apply. Produces two printable supporting documents — a Planner Preparation Checklist and an OCME Staff Build Brief.
@@ -20,11 +20,17 @@ An **in-application content generation tool**. The planner describes their topic
 
 **When to use it:** While completing the MiCME/CloudCME application. Generates content the planner reviews, edits, and pastes directly into CloudCME.
 
-### How they relate
-The Navigator answers *"what do I need to do and apply for?"*  
-The Content Helper answers *"how do I write it?"*  
+### CME Submission Assistant *(planned — Tool 3)*
+A **pre-submission review and guidance tool**. Planned to guide planners through a final checklist before entering MiCME/CloudCME, flag any missing required elements, and confirm readiness with OCME&LL.
 
-They share the same design system, terminology, and understanding of ACCME requirements. A planner would typically use the Navigator first, then the Content Helper while completing the application.
+**When to use it:** After completing the application content, before submitting in MiCME.
+
+### How they relate
+The Navigator answers *"what do I need to do and apply for?"*
+The Content Helper answers *"how do I write it?"*
+The Submission Assistant answers *"am I ready to submit?"*
+
+All three share the same design system, terminology, and understanding of ACCME requirements. A planner would typically use them in order: Navigator → Content Helper → Submission Assistant.
 
 ---
 
@@ -353,11 +359,13 @@ At least one Achieves Outcomes criterion (C36, C37, or C38) is required as part 
 
 | File | Description | Status |
 |---|---|---|
-| `cme-navigator.html` | CME Application Navigator | Active — in testing |
-| `cme-content-helper.html` | CME Content Helper | Active — in testing |
+| `cme-navigator.html` | CME Application Navigator (Tool 1) | Production |
+| `cme-content-helper.html` | CME Content Helper (Tool 2) | Production |
+| `cloudflare-worker.js` | Anthropic API proxy (Content Helper backend) | Production |
 | `cme-tools-reference.md` | This document | Current |
+| *(planned)* | CME Submission Assistant (Tool 3) | Planned |
 
-Both HTML files are hosted in the Michigan Medicine OCME&LL GitHub repository and shared with planners as email attachments for testing.
+Tools 1 and 2 are deployed on GitHub Pages at https://doctorhealy.github.io/cme-navigator/ and shared with planners for use. Tool 3 is in planning.
 
 ---
 
