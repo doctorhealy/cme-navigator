@@ -1,7 +1,7 @@
 # CME Tools Reference Document
 ## Michigan Medicine · Office of CME & Lifelong Learning
 **Last updated:** March 2026  
-**Covers:** CME Credit Application Navigator · CME Content Helper  
+**Covers:** CME Application Navigator · CME Content Helper  
 **Status:** Both tools in active testing  
 
 ---
@@ -10,7 +10,7 @@
 
 Two companion HTML files that together support the complete CME application workflow at Michigan Medicine. Both run as artifacts inside Claude.ai — they require no installation, no server, and no technical setup. Each planner downloads the file, attaches it to a Claude.ai chat, and the tool opens immediately.
 
-### CME Credit Application Navigator (`cme-navigator.html`)
+### CME Application Navigator (`cme-navigator.html`)
 A **pre-application decision tool**. The planner answers a structured sequence of questions about their activity and receives a complete picture of: which application type to submit, every credit type the activity qualifies for, board certification (MOC) requirements, Michigan mandatory licensing topics, and which ACCME Commendation criteria apply. Produces two printable supporting documents — a Planner Preparation Checklist and an OCME Staff Build Brief.
 
 **When to use it:** Before submitting a MiCME application. Typically 5–10 minutes to complete.
@@ -353,7 +353,7 @@ At least one Achieves Outcomes criterion (C36, C37, or C38) is required as part 
 
 | File | Description | Status |
 |---|---|---|
-| `cme-navigator.html` | CME Credit Application Navigator | Active — in testing |
+| `cme-navigator.html` | CME Application Navigator | Active — in testing |
 | `cme-content-helper.html` | CME Content Helper | Active — in testing |
 | `cme-tools-reference.md` | This document | Current |
 

@@ -3,7 +3,7 @@
 
 **Version:** 1.0 · March 2026
 **Status:** Production-ready single-file web app
-**Companion tool to:** CME Credit Application Navigator (`cme-navigator.html`)
+**Companion tool to:** CME Application Navigator (`cme-navigator.html`)
 
 ---
 
@@ -21,7 +21,7 @@ The tool also runs a second-pass eligibility analysis that identifies MOC credit
 
 ## Project Context
 
-This tool was built for the Michigan Medicine Office of CME & Lifelong Learning (OCME&LL) to reduce the time and uncertainty planners experience when completing the "Gap and Needs" and "Learning Outcomes" sections of a CloudCME application. It is designed as a sibling to `cme-navigator.html` (the CME Credit Application Navigator) and shares the same Michigan Medicine design system.
+This tool was built for the Michigan Medicine Office of CME & Lifelong Learning (OCME&LL) to reduce the time and uncertainty planners experience when completing the "Gap and Needs" and "Learning Outcomes" sections of a CloudCME application. It is designed as a sibling to `cme-navigator.html` (the CME Application Navigator) and shares the same Michigan Medicine design system.
 
 Both tools are intended to be deployed as Claude.ai artifacts within a shared project accessible to OCME&LL staff and educational planners. The Anthropic API key is injected via the Claude.ai artifact proxy and is not embedded in the HTML — no separate API key management is required for internal use.
 
@@ -309,7 +309,7 @@ Inherits the Michigan Medicine design language from `cme-navigator.html`. The tw
 | `cme-content-helper.html` | **Main deliverable** — the fully functional single-file web app |
 | `CME-Content-Helper-README.md` | This document |
 | `cme-content-helper-spec.md` | Original design specification. Note: the implemented app extends beyond this spec in several areas (richer eligibility review, format justification section, competency framework mapping, educational need reasoning box). Use the HTML and this README as the source of truth for current behaviour |
-| `cme-navigator.html` | Companion tool — CME Credit Application Navigator. Source of truth for the shared design system, CSS patterns, print architecture, and Michigan Medicine branding |
+| `cme-navigator.html` | Companion tool — CME Application Navigator. Source of truth for the shared design system, CSS patterns, print architecture, and Michigan Medicine branding |
 
 ---
 

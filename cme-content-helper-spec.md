@@ -14,7 +14,7 @@ Two standalone single-page HTML tools that together cover the full CME applicati
 
 | Tool | Purpose | When to use |
 |---|---|---|
-| **CME Credit Application Navigator** | Wizard that determines application type, all credit categories, MOC board eligibility, commendation criteria, Michigan licensing topics, commercial support compliance, and IPCE opportunity | Before or during planning — run first |
+| **CME Application Navigator** | Wizard that determines application type, all credit categories, MOC board eligibility, commendation criteria, Michigan licensing topics, commercial support compliance, and IPCE opportunity | Before or during planning — run first |
 | **CME Content Helper** | AI generates all narrative application content — practice gap, educational needs, learning objectives, expected results, format justification, competency mapping, eligibility analysis | When writing the MiCME/CloudCME application |
 
 **Design principle:** Both tools feel like the same product — identical branding, design tokens, interaction patterns, and clinical/regulatory knowledge. Different function; shared understanding.
@@ -470,7 +470,7 @@ The following usability improvements were implemented as of March 2026:
 
 | File | Lines | Purpose |
 |---|---|---|
-| `cme-navigator.html` | ~1,490 | CME Credit Application Navigator |
+| `cme-navigator.html` | ~1,490 | CME Application Navigator |
 | `cme-content-helper.html` | ~1,379 | CME Content Helper |
 | `cloudflare-worker.js` | ~65 | Anthropic API proxy |
 | `cme-content-helper-spec.md` | this file | Master specification |
