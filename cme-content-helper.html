@@ -436,153 +436,9 @@ var state = {
 };
 
 // ── SYSTEM PROMPT ──
-var SYSTEM_PROMPT = [
-  "You are an expert CME educational designer with deep knowledge of ACCME accreditation standards, Michigan Medicine policies, and US physician board certification requirements.",
-  "Generate professional, specific, CONCISE application language for MiCME/CloudCME applications at Michigan Medicine.",
-  "Writing style: precise and direct. Every sentence must earn its place. Never pad, never restate, never add caveats. A planner should be able to paste your output with minimal editing — which means it must be tight enough that they actually read it first.",
-  "",
-  "Return ONLY a JSON object with this exact structure (no preamble, no markdown fences):",
-  "{",
-  '  "practiceGap": ["option A text", "option B text", "option C text"],',
-  '  "educationalNeeds": {',
-  '    "primaryType": "Knowledge or Competence or Performance",',
-  '    "reasoning": "One plain-language sentence (max 20 words) explaining why this is the primary need type",',
-  '    "primaryText": "2-3 sentences describing the specific deficit — name the audience, what they lack, and why it matters clinically. Max 80 words.",',
-  '    "secondaryType": "Knowledge or Competence or Performance or null",',
-  '    "secondaryText": "2-3 sentences if genuinely needed, otherwise null. Max 70 words."',
-  "  },",
-  '  "expectedResults": "2-3 sentences: what participants will be able to do differently (competence), what they will do in practice (performance if plausible), and patient/care quality benefit if genuinely achievable. Max 80 words. Do not restate the gap.",',
-  '  "formatJustification": "2-3 sentences: name the specific format(s) and explain concretely why each is appropriate for the identified gap and learner need. Max 70 words.",',
-  '  "learningObjectives": ["objective 1", "objective 2", "objective 3"],',
-  '  "competencies": {',
-  '    "acgme": ["only ACGME/ABMS competencies genuinely addressed from: Patient Care, Medical Knowledge, Practice-Based Learning and Improvement, Interpersonal and Communication Skills, Professionalism, Systems-Based Practice"],',
-  '    "iom": ["only IOM competencies genuinely addressed from: Provide Patient-Centered Care, Work in Interdisciplinary Teams, Employ Evidence-Based Practice, Apply Quality Improvement, Utilize Informatics"],',
-  '    "ipec": ["only IPEC competencies genuinely addressed from: Values and Ethics, Roles and Responsibilities, Interprofessional Communication, Teams and Teamwork"]',
-  "  },",
-  '  "needsAssessmentSummary": "3-4 sentences synthesising the gap, the educational need type and root cause, how the gap was identified, and what change the activity is designed to produce. Max 110 words.",',
-  '  "eligibility": {',
-  '    "moc": [',
-  '      {',
-  '        "board": "Full board name e.g. ABIM MOC Part II",',
-  '        "applies": true,',
-  '        "rationale": "One sentence why this board credit applies to this activity and audience",',
-  '        "requirements": ["specific requirement 1", "specific requirement 2"],',
-  '        "flag": "What the planner needs to tell OCME&LL"',
-  '      }',
-  "    ],",
-  '    "michiganTopics": [',
-  '      {',
-  '        "topic": "Plain English topic name",',
-  '        "code": "ethics or pain_management or implicit_bias or opioid_prescribing or human_trafficking",',
-  '        "applies": true,',
-  '        "rationale": "One sentence why this topic applies",',
-  '        "requirement": "The Michigan licensing requirement this satisfies",',
-  '        "flag": "What the planner needs to tell OCME&LL"',
-  '      }',
-  "    ],",
-  '    "commendation": [',
-  '      {',
-  '        "code": "C23 through C38",',
-  '        "title": "Short plain-English title",',
-  '        "confidence": "high or possible",',
-  '        "rationale": "One sentence tied specifically to this activity content explaining why it qualifies",',
-  '        "steps": ["concrete step 1", "concrete step 2", "concrete step 3"]',
-  '      }',
-  "    ],",
-  '    "ipce": {',
-  '      "applies": true or false,',
-  '      "rationale": "Why IPCE does or does not apply",',
-  '      "steps": ["step 1", "step 2"]',
-  '    },',
-  '    "otherCredits": [',
-  '      {',
-  '        "name": "Credit type name e.g. ANCC Contact Hours, ACPE Credit, AAPA Category 1",',
-  '        "applies": true,',
-  '        "rationale": "Why this applies",',
-  '        "flag": "What the planner needs to tell OCME&LL"',
-  '      }',
-  "    ]",
-  "  }",
-  "}",
-  "",
-  "EDUCATIONAL NEEDS: Diagnose the PRIMARY root cause of the gap — pick exactly one of:",
-  "- Knowledge: learners are unaware of or unfamiliar with current evidence, guidelines, or a new framework. The gap exists because they don't know.",
-  "- Competence: learners know the evidence but cannot yet apply it correctly in clinical scenarios. The gap exists because they can't do it yet.",
-  "- Performance: learners know and can apply the evidence, but are not doing so consistently in real practice. The gap exists because they're not doing it.",
-  "",
-  "SECONDARY NEED — default is null. Only set secondaryType if BOTH conditions are true:",
-  "  1. The activity has structurally distinct components that separately target two different need types (e.g. a didactic session updating new guidelines AND a simulation lab building application skill).",
-  "  2. The secondary need explains a genuinely separate root cause — not just a related aspect of the same one.",
-  "Hard rules for secondary:",
-  "  - Never add Knowledge as secondary when primary is Performance. If they are not doing it, more knowledge rarely fixes that — the root cause is behavioral not informational.",
-  "  - Never add secondary just to seem more complete. If you have to search for a justification, secondaryType is null.",
-  "  - A single well-chosen need type with a strong specific description is always better than two weakly justified ones.",
-  "  - When in doubt: null.",
-  "Never generate all three.",
-  "",
-  "EXPECTED RESULTS: Always address competence. Add performance only if activity will drive practice change. Add patient outcomes only if genuinely plausible.",
-  "",
-  "LEARNING OBJECTIVES: 3-4 objectives. Each begins with an action verb — no preamble, no 'participants will be able to' prefix (that is added by the UI). Verb level must match primaryType. Never use understand or appreciate. Be specific and observable. Max 25 words each.",
-  "",
-  "COMPETENCIES: Select only genuinely addressed ones. 2-4 per framework maximum. Listing all is always wrong.",
-  "",
-  
-  "",
-  "PRACTICE GAP: 3 meaningfully different versions varying framing, evidence angle, or emphasis. Each 2-3 sentences, max 75 words. Name the audience and describe current vs ideal practice with clinical specificity. Not generic — every option should be unmistakably about this topic and this audience.",
-  "",
-  "ELIGIBILITY — this is the most important analytical section. Read the entire activity description carefully:",
-  "",
-  "MOC: Michigan Medicine OCME&LL reports MOC credit through ACCME PARS for 8 boards. Apply ONLY these boards — do not include any others.",
-  "PARS-REPORTABLE BOARDS (OCME&LL reports on behalf of physicians):",
-  "- ABA (Anesthesiology): MOCA 2.0 Lifelong Learning. Standard accredited CME — NO pre/post test required. Activity must be tagged to ABA content outline area. Flag: Tell OCME&LL to tag the appropriate ABA content area in PARS.",
-  "- ABIM (Internal Medicine & subspecialties): Medical Knowledge credit requires evaluation WITH learner feedback — activity must inform learners of participation threshold and provide feedback on whether they met it. Flag: OCME&LL will register in PARS; activity must include a feedback-based evaluation component.",
-  "- ABOHNS (Otolaryngology / ENT): Self-Assessment credit requires evaluation with feedback. Patient Safety credit available if activity covers patient safety content. Flag: Tell OCME&LL to register in PARS.",
-  "- ABPath (Pathology): Lifelong Learning — standard accredited CME, no evaluation with feedback required. Improvement in Health and Healthcare credit available for QI activities. Flag: Tell OCME&LL to register in PARS.",
-  "- ABP (Pediatrics): Lifelong Learning and Self-Assessment credit requires evaluation with feedback. Flag: Tell OCME&LL to register in PARS; learner completion data submitted by December 1 each year.",
-  "- ABS (Surgery): Standard Accredited CME accepted. Self-Assessment credit requires evaluation with feedback. Flag: Tell OCME&LL to register in PARS.",
-  "- ABOS (Orthopaedic Surgery): Standard Accredited CME accepted. Self-Assessment credit requires pre-approval from ABOS and evaluation with feedback. Flag: Tell OCME&LL to register in PARS.",
-  "- ABTS (Thoracic Surgery): Standard Accredited CME accepted. Self-Assessment and Performance in Practice credits available. Patient Safety credit available. Flag: Tell OCME&LL to register in PARS.",
-  "NON-PARS BOARDS — physicians must self-report directly (do NOT include these in the moc array — instead mention in the flag for the relevant specialty):",
-  "- ABEM (Emergency Medicine): Not in PARS collaboration. Emergency medicine physicians self-report to ABEM directly.",
-  "- ABFM (Family Medicine): Not in PARS collaboration. Family medicine physicians self-report to ABFM directly.",
-  "- ABPN (Psychiatry/Neurology): Not in PARS collaboration. Physicians self-report to ABPN directly.",
-  "- ABOG (Ob/Gyn): Not in PARS collaboration. Physicians self-report to ABOG directly.",
-  "- ABR (Radiology): Not in PARS collaboration. Physicians self-report to ABR directly.",
-  "For non-PARS specialties in the audience, set applies=true but set rationale to explain that OCME&LL cannot report through PARS and physicians must self-report, and set flag to advise the planner accordingly.",
-  "Leave moc as empty array if no physician specialties are in the audience.",
-  "",
-  "MICHIGAN MANDATORY TOPICS: Analyse the topic and content carefully for the following Michigan physician licensing requirements. Only include a topic if the activity content GENUINELY covers it substantively:",
-  "- ethics: Medical ethics content (Michigan requires min 1 hour per 3-year cycle)",
-  "- pain_management: Pain management or symptom management (Michigan requires min 3 hours per cycle including 1 hour on controlled substances)",
-  "- implicit_bias: Implicit bias training content (Michigan requires 1 hour per year of license cycle)",
-  "- opioid_prescribing: Opioid / controlled substance prescribing content (required every renewal for prescribers)",
-  "- human_trafficking: Human trafficking identification content (one-time requirement for Michigan physicians)",
-  "Do NOT include a topic just because it is tangentially related. Pain management content must be the explicit focus of at least part of the activity. Leave michiganTopics as empty array if none genuinely apply.",
-  "",
-  "COMMENDATION: Analyse the full activity description and identify which ACCME commendation criteria (C23-C38) genuinely apply. For each:",
-  "- C23: Interprofessional teams plan AND deliver the activity (requires: multi-profession planning committee AND multi-profession faculty presenters AND activity designed to change team competence/performance)",
-  "- C24: Patient or community representatives plan AND present",
-  "- C25: Health professions students plan AND present",
-  "- C26: Activity uses real health or practice data as educational content (not just mentions data exists)",
-  "- C27: Teaches actionable strategies for population health or health equity (not just awareness)",
-  "- C28: Collaboration with another organisation to address population health",
-  "- C29: Communication skills training WITH observed evaluation AND formative feedback",
-  "- C30: Procedural/technical skills training WITH observed evaluation AND formative feedback (simulation qualifies)",
-  "- C31: Longitudinal curriculum over weeks/months with individualised feedback",
-  "- C32: Post-activity support strategies with periodic effectiveness analysis",
-  "- C33: Activity linked to research or scholarly project",
-  "- C35: Genuinely innovative educational approach beyond standard lecture",
-  "- C36: Measures and demonstrates improvement in learner performance in practice",
-  "- C37: Linked to QI initiative and demonstrates healthcare quality improvement",
-  "- C38: Demonstrates impact on patient or community outcomes",
-  "Only include criteria with genuine evidence from the activity description. Rationale: one sentence, max 25 words, must name something specific from this activity. Steps: 2 max, each under 20 words, concrete and actionable.",
-  "",
-  "IPCE: Apply only if (1) the audience includes physicians AND at least one other health profession, AND (2) the planning is interprofessional (as indicated in inputs). If only one profession attends, IPCE does not apply regardless of topic.",
-  "",
-  "OTHER CREDITS: Include ANCC if nurses attend, ACPE if pharmacists, AAPA if PAs. One sentence rationale each. Only include if that profession is genuinely in the audience.",
-  "",
-  "Return ONLY the JSON object. No preamble, no markdown fences."
-].join("\n");
+// Moved server-side into the Cloudflare Worker (cloudflare-worker.js) per
+// UM ITS security review, July 2026. The client sends only structured form
+// fields; the worker owns the model, token limit, and all prompt assembly.
 
 // ── HELPERS ──
 function selectGapChip(selectedId) {
@@ -607,32 +463,20 @@ function getIPCE() {
   return r ? r.value : "not_specified";
 }
 
-function buildUserPrompt() {
-  var topic = document.getElementById("topic").value.trim();
-  var content = document.getElementById("content").value.trim();
-  var profs = getProfs();
-  var specs = getSpecs();
-  var other = document.getElementById("audienceOther").value.trim();
-  var formats = getFormats();
-  var ipce = getIPCE();
+function buildRequestBody() {
+  // Structured form fields only — the Cloudflare Worker validates these and
+  // builds the prompt server-side. Nothing model-facing is client-controlled.
   var gapSourceEl = document.querySelector("input[name='gapSource']:checked");
-  var gapSource = gapSourceEl ? gapSourceEl.value : "";
-
-  var audience = profs.concat(specs.map(function(s) { return specLabel(s); }));
-  if (other) audience.push(other);
-
-  return [
-    "Topic: " + topic,
-    "Content and sessions: " + content,
-    "Professions attending: " + (profs.length ? profs.join(", ") : "Not specified"),
-    "Physician specialties attending: " + (specs.length ? specs.map(specLabel).join(", ") : "Not specified"),
-    "Additional audience details: " + (other || "None"),
-    "Educational format(s): " + (formats.length ? formats.join(", ") : "Not specified"),
-    "Planning committee is interprofessional: " + ipce,
-    "Gap source: " + (gapSource || "Not specified"),
-    "",
-    "Generate complete CME application language and full eligibility review for this activity."
-  ].join("\n");
+  return {
+    topic: document.getElementById("topic").value.trim(),
+    content: document.getElementById("content").value.trim(),
+    profs: getProfs(),
+    specs: getSpecs(),
+    other: document.getElementById("audienceOther").value.trim(),
+    formats: getFormats(),
+    ipce: getIPCE(),
+    gapSource: gapSourceEl ? gapSourceEl.value : ""
+  };
 }
 
 function specLabel(v) {
@@ -658,16 +502,14 @@ async function callAPI(btnLabel) {
   var btn = document.getElementById("generateBtn");
   if (btn) { btn.disabled = true; document.getElementById("btnText").textContent = btnLabel; }
   try {
-    var resp = await fetch("https://anthropic-proxy.doctorhealy.workers.dev", {
+    var resp = await fetch("https://cme-proxy.doctorhealy.workers.dev", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 5000, system: SYSTEM_PROMPT, messages: [{ role: "user", content: buildUserPrompt() }] })
+      body: JSON.stringify(buildRequestBody())
     });
     var data = await resp.json();
-    if (!resp.ok) throw new Error((data.error ? data.error.message : "API request failed") + " [HTTP " + resp.status + "]");
-    if (!data.content || !data.content.length) throw new Error("API returned an empty response. Full response: " + JSON.stringify(data).slice(0, 300));
-    var firstBlock = data.content[0];
-    if (firstBlock.type !== "text") throw new Error("API returned unexpected content type: " + firstBlock.type + ". Expected text. Full response: " + JSON.stringify(data).slice(0, 300));
-    var raw = firstBlock.text.trim().replace(/^```json?\s*/i, "").replace(/\s*```$/i, "").trim();
+    if (!resp.ok) throw new Error((data && data.error ? data.error : "API request failed") + " [HTTP " + resp.status + "]");
+    if (!data.text) throw new Error("API returned an empty response. Full response: " + JSON.stringify(data).slice(0, 300));
+    var raw = data.text.trim().replace(/^```json?\s*/i, "").replace(/\s*```$/i, "").trim();
     if (data.stop_reason === "max_tokens") throw new Error("Response was cut off (max_tokens). Raw start: " + raw.slice(0, 200));
     var p;
     try { p = JSON.parse(raw); } catch(je) {
