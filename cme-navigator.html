@@ -63,19 +63,11 @@ input[type="checkbox"]:focus-visible{outline:3px solid #2F65A7;outline-offset:2p
 <div id="app"></div>
 <script>
 const SPECIALTY_MOC = {
-  // PARS-REPORTABLE: OCME&LL reports these directly through ACCME PARS
-  internal_med:    {boards:"ABIM — Medical Knowledge",pars:true,flag:"ABIM credit is reported by OCME&LL directly through ACCME PARS — physicians do not need to self-report. This requires evaluation with learner feedback (not just a satisfaction survey). Confirm the activity includes a feedback-based evaluation component informing learners whether they met the participation threshold."},
+  // OCME&LL currently registers MOC credit for these four boards — all reported directly through ACCME PARS
+  internal_med:    {boards:"ABIM — Medical Knowledge",pars:true,flag:"ABIM credit is reported by OCME&LL directly through ACCME PARS — physicians do not need to self-report. This requires evaluation with learner feedback (not just the standard evaluation survey). Confirm the activity includes a feedback-based evaluation component informing learners whether they met the participation threshold."},
   anesthesiology:  {boards:"ABA — MOCA 2.0® Lifelong Learning",pars:true,flag:"ABA credit is reported by OCME&LL directly through ACCME PARS. Standard accredited CME qualifies — no pre/post test required. The activity must be tagged to at least one ABA content outline area. If the activity covers patient safety topics, Patient Safety CME credit may also be available — flag both to OCME&LL at submission."},
   pediatrics:      {boards:"ABP — Lifelong Learning & Self-Assessment",pars:true,flag:"ABP credit is reported by OCME&LL directly through ACCME PARS. Requires evaluation with learner feedback. Learner completion data must be submitted to PARS by December 1 each year."},
   surgery:         {boards:"ABS / ABOS / ABTS — varies by subspecialty",pars:true,flag:"All three surgical boards are reported by OCME&LL directly through ACCME PARS. ABS and ABTS accept standard accredited CME. ABOS Self-Assessment credit requires pre-approval from ABOS — flag this to OCME&LL early. Specify all surgical subspecialties in your audience so the correct boards are registered."},
-  ent:             {boards:"ABOHNS — Continuing Certification",pars:true,flag:"ABOHNS credit is reported by OCME&LL directly through ACCME PARS. Self-Assessment credit requires evaluation with learner feedback. Patient Safety CME credit is also available if the activity includes patient safety content — flag both to OCME&LL at submission."},
-  pathology:       {boards:"ABPath — Continuing Certification (Lifelong Learning)",pars:true,flag:"ABPath credit is reported by OCME&LL directly through ACCME PARS. Standard accredited CME qualifies for Lifelong Learning credit — no evaluation with feedback required. If the activity includes a quality improvement component, Improvement in Health and Healthcare credit may also be available."},
-  // NON-PARS: Physicians must self-report directly to their board
-  family_med:      {boards:"ABFM Continuing Certification",pars:false,flag:"ABFM is NOT in the ACCME PARS reporting system. OCME&LL cannot report credits directly to ABFM. Family medicine physicians must self-report to ABFM directly using their certificate of completion."},
-  psychiatry_neuro:{boards:"ABPN Continuing Certification",pars:false,flag:"ABPN is NOT in the ACCME PARS reporting system. OCME&LL cannot report credits directly to ABPN. Psychiatrists and neurologists must self-report to ABPN directly using their certificate of completion."},
-  ob_gyn:          {boards:"ABOG Continuing Certification",pars:false,flag:"ABOG is NOT in the ACCME PARS reporting system. OCME&LL cannot report credits directly to ABOG. OB/GYN physicians must self-report to ABOG directly using their certificate of completion."},
-  radiology:       {boards:"ABR Continuing Certification",pars:false,flag:"ABR is NOT in the ACCME PARS reporting system. OCME&LL cannot report credits directly to ABR. Radiologists and radiation oncologists must self-report to ABR directly using their certificate of completion."},
-  emergency_med:   {boards:"ABEM Continuing Certification",pars:false,flag:"ABEM is NOT in the ACCME PARS reporting system. OCME&LL cannot report credits directly to ABEM. Emergency medicine physicians must self-report to ABEM directly using their certificate of completion."},
   other_spec:      {boards:null,flag:null},
 };
 
@@ -122,29 +114,27 @@ const QUESTIONS = [
    hint:"This is the most important first question — it determines which application type you need.",
    type:"single",options:[
     {value:"single",icon:"📌",label:"A one-time event",tag:"Live Course",sublabel:"A conference, course, symposium, or workshop offered once to one group"},
-    {value:"repeated",icon:"🔁",label:"The same course, running multiple times",tag:"Live Course (Repeated)",sublabel:"Identical content, offered again for a new group — e.g. a skills course run 4×/year. Each run needs its own separate application."},
+    {value:"repeated",icon:"🔁",label:"The same course, running multiple times",tag:"Live Course (Repeated)",sublabel:"Identical content, offered again for a new group — e.g. a skills course run 4×/year"},
     {value:"rss",icon:"📅",label:"A recurring series with changing content",tag:"Regularly Scheduled Series (RSS)",sublabel:"Regular sessions where topics and presenters vary — grand rounds, tumor board, M&M, journal club"},
+    {value:"enduring",icon:"💻",label:"An online, on-demand activity (no live session)",tag:"Enduring Material",sublabel:"Learners complete it independently at their own pace — recorded lecture, online module, podcast, or similar"},
   ]},
   {id:"delivery_format",question:"How will people attend?",
-   hint:"This is about access and attendance — not what they will do when they get there. You'll describe the learning environment next.",
-   type:"single",options:[
-    {value:"live",icon:"🏛️",label:"In person",tag:"Live Activity",sublabel:"All attendees physically present in the same location"},
+   hint:"This is about access and attendance — not what they will do when they get there. You'll describe the learning environment next. Select in person even if some attendees will also join by live stream — a hybrid presentation format does not change the activity type or the application.",
+   type:"single",showIf:function(a){return a.activity_structure!=="enduring";},options:[
+    {value:"live",icon:"🏛️",label:"In person",tag:"Live Activity",sublabel:"Attendees physically present in the same location — with or without a simultaneous live stream for remote participants"},
     {value:"livestream",icon:"📡",label:"Virtual / live streamed",tag:"Live Activity — Virtual",sublabel:"All attendees join remotely via live stream — no in-person component"},
-    {value:"hybrid",icon:"🔀",label:"Hybrid — in person and live streamed simultaneously",tag:"Live Activity — Hybrid",sublabel:"Some attend in the room; others join via live stream at the same time"},
-    {value:"enduring",icon:"💻",label:"Online / on-demand (no live session)",tag:"Enduring Material",sublabel:"Learners complete it independently at their own pace — recorded lecture, online module, podcast, or similar"},
   ]},
-  {id:"hybrid_components",question:"Which of these apply to your activity?",
+  {id:"recording",question:"Will a recording of the session be shared afterward?",
    hint:"Whether a recording is available to everyone (or just registered attendees) affects whether you need one application or two.",
-   type:"multi",showIf:function(a){return a.delivery_format==="hybrid";},options:[
-    {value:"hybrid_inperson",icon:"🏛️",label:"In-person attendees on the day"},
-    {value:"hybrid_livestream",icon:"📡",label:"Live stream for remote participants joining as it happens"},
-    {value:"hybrid_enduring",icon:"🎬",label:"Recording made publicly available afterward (anyone can access, not just registered attendees)"},
-    {value:"hybrid_enduring_bundled",icon:"🔒",label:"Recording available only to people who already registered"},
+   type:"single",showIf:function(a){return a.activity_structure!=="enduring";},options:[
+    {value:"recording_none",icon:"🚫",label:"No recording shared with learners",sublabel:"The session is not recorded, or the recording is for internal use only"},
+    {value:"recording_registered",icon:"🔒",label:"Recording available only to people who already registered",sublabel:"Access is limited to registered attendees of the live activity"},
+    {value:"recording_public",icon:"🎬",label:"Recording made publicly available afterward",sublabel:"Anyone can access it — not just registered attendees"},
   ]},
   {id:"learning_environment",question:"What kind of learning environment is this?",
    hint:"Select all that apply. This affects commendation criteria and how OCME&LL will describe the activity — it does not change the application type.",
    type:"multi",
-   showIf:function(a){return a.delivery_format==="live"||a.delivery_format==="livestream"||a.delivery_format==="hybrid";},
+   showIf:function(a){return a.activity_structure!=="enduring";},
    options:[
     {value:"didactic",icon:"🎤",label:"Lecture or didactic presentation",sublabel:"Traditional speaker-led sessions, grand rounds, symposia"},
     {value:"workshop",icon:"👥",label:"Small group, workshop, or case-based learning",sublabel:"Interactive breakouts, case discussions, problem-based learning, or flipped classroom"},
@@ -153,7 +143,7 @@ const QUESTIONS = [
     {value:"self_assessment_learning",icon:"✅",label:"Structured self-assessment or reflective practice",sublabel:"Learners assess their own knowledge gaps, review performance data, or complete a guided self-evaluation before or during the activity"},
   ]},
   {id:"audience_professions",question:"Which professional groups will attend? Select all that apply.",
-   hint:"If nurses, pharmacists, or other healthcare professionals attend, additional credit types may be available beyond standard physician CME.",
+   hint:"This determines which credit guidance applies to your audience — and whether the activity can qualify as interprofessional education (IPCE), one of the most valuable designations.",
    type:"multi",options:[
     {value:"physicians",label:"Physicians (MD or DO)"},
     {value:"nurses",label:"Nurses (RN, NP, CRNA)"},
@@ -165,20 +155,13 @@ const QUESTIONS = [
     {value:"students",label:"Health professions students"},
     {value:"other_hcp",label:"Other healthcare professionals"},
   ]},  {id:"physician_specialties",question:"Which physician specialties will attend? Select all that apply.",
-   hint:"All selected specialties will be checked for MOC board credit eligibility. Activities can be registered for multiple boards simultaneously through PARS.",
+   hint:"OCME&LL currently registers MOC board credit for these four specialty boards, all reported directly through ACCME PARS. Activities can be registered for multiple boards simultaneously.",
    type:"multi",options:[
     {value:"internal_med",label:"Internal Medicine or subspecialties (cardiology, GI, rheumatology, etc.)"},
-    {value:"anesthesiology",label:"Anesthesiology, Pain Medicine, or Critical Care"},
     {value:"pediatrics",label:"Pediatrics"},
-    {value:"emergency_med",label:"Emergency Medicine"},
+    {value:"anesthesiology",label:"Anesthesiology, Pain Medicine, or Critical Care"},
     {value:"surgery",label:"Surgery — General, Orthopaedic, Thoracic, or Vascular"},
-    {value:"psychiatry_neuro",label:"Psychiatry or Neurology"},
-    {value:"ob_gyn",label:"Obstetrics & Gynecology"},
-    {value:"radiology",label:"Radiology or Radiation Oncology"},
-    {value:"family_med",label:"Family Medicine"},
-    {value:"ent",label:"Otolaryngology / Head & Neck Surgery (ENT)"},
-    {value:"pathology",label:"Pathology"},
-    {value:"other_spec",label:"Another physician specialty"},
+    {value:"other_spec",label:"Another physician specialty",sublabel:"MOC registration is currently offered for the four boards above — physicians in other specialties still earn AMA PRA Category 1 Credit™"},
   ]},
   {id:"content_focus",question:"What will this activity cover? Select all that apply.",
    hint:"Be generous — select everything that fits. The more you flag now, the more credit opportunities your OCME&LL representative can identify.",
@@ -190,7 +173,6 @@ const QUESTIONS = [
     {value:"qi_activity",label:"📊 Quality improvement or reducing variation in care"},
     {divider:"Audience & communication focus"},
     {value:"communication",label:"💬 Communication skills — with patients, families, or care teams"},
-    {value:"mental_health",label:"🧠 Mental health or behavioral health"},
     {divider:"Population health & equity"},
     {value:"population_health",label:"🌍 Population health, public health, or community health"},
     {value:"sdoh",label:"⚖️ Health equity, disparities, or social determinants of health"},
@@ -207,11 +189,11 @@ const QUESTIONS = [
   {id:"evaluation_plan",question:"How will you measure whether the activity worked?",
    hint:"This affects which credit types and commendation criteria are available. Choose the most robust method you plan to use.",
    type:"single",options:[
-    {value:"survey_only",label:"A satisfaction survey — attendees rate the session",sublabel:"Standard post-activity evaluation asking whether they found it useful. Note: a satisfaction survey is automatically built into every MiCME activity — you don't need to create one separately."},
-    {value:"pre_post",label:"A knowledge test before and after",sublabel:"Attendees answer questions before the activity and again afterward to measure learning"},
+    {value:"survey_only",label:"The standard MiCME evaluation survey",sublabel:"Automatically built into every MiCME activity — you don't need to create one separately. It measures satisfaction plus learners' self-reported change in knowledge and competence."},
+    {value:"pre_post",label:"A knowledge test before and after",sublabel:"Attendees answer questions before the activity and again afterward to objectively measure learning"},
     {value:"performance_outcome",label:"Measuring whether clinical practice actually changed",sublabel:"Follow-up data collected weeks or months later showing attendees did something differently"},
     {value:"patient_outcome",label:"Measuring impact on patients or care quality",sublabel:"Data showing the activity led to better patient outcomes or improved quality metrics"},
-    {value:"self_assessment_format",label:"A formal self-assessment or reflective practice component",sublabel:"Participants assess their own competency or create a personal learning plan"},
+    {value:"self_assessment_format",label:"A formal self-assessment or reflective practice component",sublabel:"A structured instrument beyond the standard survey — participants formally assess their own competency against a standard or create a personal learning plan"},
   ]},
   {id:"planning_process",question:"How was this activity planned? Select all that apply.",
    hint:"Planning details unlock commendation criteria that are often missed — take a moment to check everything that applies.",
@@ -241,7 +223,7 @@ const QUESTIONS = [
     {divider:"Commercial support — governed by ACCME Standard 4, requires a signed Letter of Agreement"},
     {value:"commercial_support_money",label:"💰 Commercial support — a company is providing money to help pay for this activity",
      badge:"📄 LOA required",
-     tooltip:"<strong>Commercial support</strong> is financial or in-kind support from an ineligible company (pharmaceutical, device, or healthcare product company) used to pay costs of the CME activity.\n\nThis is an <strong>ACCME-governed relationship</strong> with strict rules:\n\n• A written <strong>Letter of Agreement (LOA)</strong> must be signed by both the company <strong>and OCME&LL</strong> before the activity — the department or planner <strong>cannot</strong> sign on behalf of Michigan Medicine\n• <strong>OCME&LL</strong> — not the sponsoring company — controls how the funds are used\n• The company <strong>cannot</strong> direct, influence, or control educational content, speaker selection, objectives, or evaluation\n• The company <strong>cannot</strong> pay speakers, faculty, or learners directly\n• You must <strong>disclose the company's name</strong> to learners before the activity — not their logo, just their name\n\n<strong>Example:</strong> A pharmaceutical company provides $5,000 toward symposium catering costs."},
+     tooltip:"<strong>Commercial support</strong> is financial or in-kind support from an ineligible company (pharmaceutical, device, or healthcare product company) used to pay costs of the CME activity.\n\nThis is an <strong>ACCME-governed relationship</strong> with strict rules:\n\n• A written <strong>Letter of Agreement (LOA)</strong> must be signed by both the company <strong>and OCME&LL</strong> before the activity — the department or planner <strong>cannot</strong> sign on behalf of Michigan Medicine\n• <strong>OCME&LL</strong> — not the sponsoring company — controls how the funds are used\n• The company <strong>cannot</strong> direct, influence, or control educational content, speaker selection, objectives, or evaluation\n• The company <strong>cannot</strong> pay speakers, faculty, or learners directly\n• You must <strong>disclose the company's name</strong> to learners before the activity — not their logo, just their name\n\n<strong>Example:</strong> A pharmaceutical company provides $5,000 via an educational grant toward symposium speaker honoraria."},
     {value:"commercial_support_inkind",label:"🎁 Commercial support — a company is providing equipment, food, materials, or other in-kind support",
      badge:"📄 LOA required",
      tooltip:"<strong>In-kind commercial support</strong> follows exactly the same ACCME rules as financial support — a signed <strong>Letter of Agreement (LOA)</strong> is required before the activity.\n\n<strong>Common examples:</strong> a device company lending simulation equipment, a company providing catering, a sponsor covering AV or venue costs.\n\n<strong>Additional rules for in-kind support:</strong>\n• Company <strong>logos must be obscured</strong> on any equipment used during the CME activity\n• Company employees may only participate as <strong>technicians</strong> demonstrating safe use of their own equipment — they <strong>cannot</strong> present educational content, make clinical recommendations, or influence learning objectives"},
@@ -269,13 +251,13 @@ const QUESTIONS = [
 function deriveResults(answers) {
   var a=answers, res={application:[],additionalCredits:[],boardCredit:null,commendation:[],michigan:[],flags:[]};
   var isRSS=a.activity_structure==="rss", isRepeated=a.activity_structure==="repeated";
-  var fmt=a.delivery_format, isHybrid=fmt==="hybrid", isEnduring=fmt==="enduring";
+  var isEnduring=a.activity_structure==="enduring";
+  var fmt=a.delivery_format;
   var isLive=fmt==="live", isVirtual=fmt==="livestream";
   var learnEnv=a.learning_environment||[];
   var isSimulation=learnEnv.includes("simulation");
-  var hybridComponents=a.hybrid_components||[];
-  var hasPublicRecording=hybridComponents.includes("hybrid_enduring");
-  var hasBundledRecording=hybridComponents.includes("hybrid_enduring_bundled");
+  var hasPublicRecording=a.recording==="recording_public";
+  var hasBundledRecording=a.recording==="recording_registered";
   var content=a.content_focus||[], hasPatientSafety=content.includes("patient_safety"), hasQI=content.includes("qi_activity");
   var profs=a.audience_professions||[], planning=a.planning_process||[];
   var followUp=a.follow_up||[], evalMethod=a.evaluation_plan;
@@ -286,7 +268,11 @@ function deriveResults(answers) {
   else if (isSimulation) envSuffix=" — including Simulation";
 
   var appType="",appNote="",appAction="";
-  if (isRSS) {
+  if (isEnduring) {
+    appType="Enduring Material (online/self-paced)";
+    appNote="An enduring material is self-paced with no live component. The credit period typically cannot exceed 3 years, and learners must complete the evaluation before receiving credit.";
+    appAction="Submit an Enduring Material application to OCME&LL.";
+  } else if (isRSS) {
     appType="Regularly Scheduled Series (RSS)";
     appNote="A Regularly Scheduled Series is registered as a single series — not as individual events. Each individual session date needs to be logged, and attendance must be tracked per session.";
     appAction="Contact your OCME&LL representative to register the series before the first session. Keep attendance records for every individual session throughout the year.";
@@ -295,24 +281,22 @@ function deriveResults(answers) {
     appNote="Because you are running the same course multiple times, each run requires its own separate CME application — even if the content, faculty presenters, and credit hours are completely identical.";
     appAction="Submit a separate application to OCME&LL for each individual run of the course. Keep separate attendance records and evaluation forms for each run.";
   } else {
-    if (isLive)        {appType="Live Activity"+envSuffix;appNote="A standard in-person event. One application covers all in-person attendees."+(isSimulation?" Simulation activities are accredited as live activities — the application type does not change.":"");appAction="Submit one CME application to OCME&LL for this event.";}
+    if (isLive)        {appType="Live Activity"+envSuffix;appNote="A standard in-person event. One application covers all attendees — including any remote participants joining by simultaneous live stream."+(isSimulation?" Simulation activities are accredited as live activities — the application type does not change.":"");appAction="Submit one CME application to OCME&LL for this event.";}
     else if (isVirtual){appType="Live Activity — Virtual"+envSuffix;appNote="A fully online synchronous event. All attendees join via live stream. One application covers all participants.";appAction="Submit one CME application to OCME&LL for this event.";}
-    else if (isHybrid) {appType="Live Activity — Hybrid"+envSuffix;appNote="See the application note below about hybrid events.";appAction="Contact your OCME&LL representative — the number of applications needed depends on whether a recording will be publicly released.";}
-    else if (isEnduring){appType="Enduring Material (online/self-paced)";appNote="An enduring material is self-paced with no live component. The credit period typically cannot exceed 3 years, and learners must complete the evaluation before receiving credit.";appAction="Submit an Enduring Material application to OCME&LL.";}
   }
   res.application.push({appType:appType,appNote:appNote,appAction:appAction});
 
-  if (isHybrid) {
-    var parts=["In-person and live-streamed attendees on the day are covered under a single Live Activity application."];
+  if (!isEnduring && (hasPublicRecording||hasBundledRecording)) {
+    var parts=[];
     if (hasPublicRecording) parts.push("⚠️ Because the recording will be publicly released to anyone (beyond just registered attendees), this creates a SECOND activity — an Enduring Material — which needs its own separate CME application, its own evaluation, and its own credit designation. Alert your OCME&LL representative to this as early as possible.");
     if (hasBundledRecording) parts.push("A recording available only to people who already registered is generally treated as part of the original live activity — but confirm this with your OCME&LL representative if access will extend beyond 30 days after the event.");
-    if (isRepeated) parts.push("Because this is a repeated course, each run will need its own application for both the live and (if applicable) the enduring recording component.");
-    res.application.push({isHybridNote:true,parts:parts});
+    if (isRepeated && hasPublicRecording) parts.push("Because this is a repeated course, each run will need its own application for both the live activity and the enduring recording component.");
+    res.application.push({isRecordingNote:true,parts:parts});
   }
 
-  if (profs.includes("nurses"))     res.additionalCredits.push({icon:"🏥",label:"Nursing CE (ANCC Contact Hours)",who:"For nurses (RN, NP, CRNA)",why:"Nurses have their own CE credit system — ANCC Contact Hours — separate from physician CME. If nurses are attending, they may be able to earn nursing CE credit, which counts toward their licensure requirements.",flag:"Ask your OCME&LL representative whether your organization can offer ANCC Contact Hours for this activity, or whether a jointly accredited provider is needed.",priority:"high"});
-  if (profs.includes("pharmacists")) res.additionalCredits.push({icon:"💊",label:"Pharmacy CE (ACPE Credit)",who:"For pharmacists",why:"Pharmacists earn continuing pharmacy education (CPE) credit through ACPE — not physician CME. If pharmacists are attending, this is a separate credit type they need for licensure renewal.",flag:"Let your OCME&LL representative know pharmacists will attend. Offering ACPE credit typically requires Joint Accreditation status.",priority:"high"});
-  if (profs.includes("pas"))         res.additionalCredits.push({icon:"👩‍⚕️",label:"PA CME (AAPA Category 1 Credit)",who:"For Physician Assistants / Physician Associates",why:"PAs need AAPA Category 1 CME credit — different from standard AMA physician CME. Many accredited activities already qualify, but it needs to be officially designated.",flag:"Mention to your OCME&LL representative that PAs will attend and ask about designating AAPA Category 1 credit.",priority:"medium"});
+  if (profs.includes("nurses"))     res.additionalCredits.push({icon:"🏥",label:"Nurses — AMA PRA Category 1 Credit™ Applies",who:"For nurses (RN, NP, CRNA)",why:"OCME&LL does not offer ANCC nursing contact hours. However, Michigan nurses can use AMA PRA Category 1 Credit™ toward their licensure CE requirements — so nurses attending this activity are already covered by the standard credit designation.",flag:"No separate designation is needed. Let nursing attendees know their certificate of AMA PRA Category 1 Credit™ counts toward Michigan nursing licensure requirements.",priority:"info",info:true});
+  if (profs.includes("pharmacists")) res.additionalCredits.push({icon:"💊",label:"Pharmacists — ACPE Credit Not Offered",who:"For pharmacists",why:"Pharmacists earn continuing pharmacy education (CPE) credit through ACPE, which OCME&LL does not offer — offering ACPE credit requires Joint Accreditation status, which our office does not yet hold. Pharmacists are welcome to attend and will receive a certificate of attendance.",flag:"If your pharmacist attendees need ACPE credit, they must obtain it through an ACPE-accredited provider. Consider whether a certificate of attendance meets their needs before promising pharmacy CE.",priority:"info",info:true});
+  if (profs.includes("pas"))         res.additionalCredits.push({icon:"👩‍⚕️",label:"Physician Assistants — AAPA Credit Not Offered",who:"For Physician Assistants / Physician Associates",why:"OCME&LL does not designate AAPA Category 1 credit. However, NCCPA accepts AMA PRA Category 1 Credit™ toward PA certification maintenance — so PAs attending this activity can generally use the standard physician credit.",flag:"No separate designation is needed for most PAs. If an attendee specifically requires AAPA Category 1 credit, that designation must come from an AAPA-approved provider.",priority:"info",info:true});
 
   var nonPhysProfs=profs.filter(function(p){return !["physicians","residents_fellows","students"].includes(p);});
   var hasInterprofPlanning=planning.includes("multi_prof");
@@ -376,7 +360,7 @@ function deriveResults(answers) {
     var mocInfo = SPECIALTY_MOC[sp];
     if (!mocInfo || !mocInfo.boards) return;
     var evalWarning = (sp === "internal_med" && !hasRobustEval)
-      ? "ABIM requires evaluation with learner feedback — a satisfaction survey alone is not sufficient. Confirm the activity includes a feedback-based evaluation component."
+      ? "ABIM requires evaluation with learner feedback — the standard MiCME evaluation survey alone is not sufficient. Confirm the activity includes a feedback-based evaluation component."
       : null;
     boardCredits.push({ specialty: sp, boards: mocInfo.boards, pars: mocInfo.pars, flag: mocInfo.flag, evalWarning: evalWarning });
   });
@@ -396,9 +380,9 @@ function deriveResults(answers) {
   if (content.includes("human_trafficking")) res.michigan.push({icon:"🔴",label:"Human Trafficking Identification",req:"One-time requirement for Michigan physicians",note:"Flag this on your application. Physicians who have not yet completed this one-time requirement can use your activity to fulfil it."});
 
   if (planning.includes("needs_assessment")) res.flags.push("You conducted a formal needs assessment — include this documentation with your application. It strengthens your application and supports several commendation criteria.");
-  if (evalMethod==="survey_only"&&(hasQI||hasPatientSafety)) res.flags.push("Your activity includes quality improvement or patient safety content. If an outcomes measure or pre/post assessment is feasible, mention this to OCME&LL — it may support additional commendation criteria. A satisfaction survey alone is perfectly valid.");
+  if (evalMethod==="survey_only"&&(hasQI||hasPatientSafety)) res.flags.push("Your activity includes quality improvement or patient safety content. If an outcomes measure or pre/post assessment is feasible, mention this to OCME&LL — it may support additional commendation criteria. The standard MiCME evaluation alone is perfectly valid.");
   if (isRepeated) res.flags.push("Remember: each run of this course needs its own separate application, even if the content is identical. Plan your application timeline accordingly.");
-  if (isRSS&&isHybrid&&hasPublicRecording) res.flags.push("For your RSS: each time a session recording is publicly released, a separate Enduring Material application is needed for that recording. Discuss the workflow for this with your OCME&LL representative upfront.");
+  if (isRSS&&hasPublicRecording) res.flags.push("For your RSS: each time a session recording is publicly released, a separate Enduring Material application is needed for that recording. Discuss the workflow for this with your OCME&LL representative upfront.");
 
   return res;
 }
@@ -620,12 +604,13 @@ function renderResults(){
   hdr.appendChild(el("h1",{style:{fontSize:"20px",fontWeight:"800",marginBottom:"4px"}},["CME Navigator Results"]));
   // Compact activity summary
   var a=state.answers;
-  var fmtLabels={live:"In person",livestream:"Virtual",hybrid:"Hybrid",enduring:"On-demand"};
+  var fmtLabels={live:"In person",livestream:"Virtual"};
   var summaryParts=[];
   if(a.activity_structure==="rss") summaryParts.push("RSS");
   else if(a.activity_structure==="repeated") summaryParts.push("Repeated course");
+  else if(a.activity_structure==="enduring") summaryParts.push("Enduring material · On-demand");
   if(a.delivery_format) summaryParts.push(fmtLabels[a.delivery_format]||a.delivery_format);
-  var specLabels={internal_med:"Internal Medicine",anesthesiology:"Anesthesiology",pediatrics:"Pediatrics",emergency_med:"Emergency Medicine",surgery:"Surgery",psychiatry_neuro:"Psychiatry/Neurology",ob_gyn:"Ob/Gyn",radiology:"Radiology",family_med:"Family Medicine",ent:"ENT",pathology:"Pathology"};
+  var specLabels={internal_med:"Internal Medicine",anesthesiology:"Anesthesiology",pediatrics:"Pediatrics",surgery:"Surgery"};
   var specs=(a.physician_specialties||[]).filter(function(s){return s!=="other_spec";}).map(function(s){return specLabels[s]||s;});
   if(specs.length) summaryParts.push(specs.join(", "));
   if((a.physician_specialties||[]).includes("other_spec")) summaryParts.push("other specialty");
@@ -687,9 +672,9 @@ function renderResults(){
 
   if(state.activeTab==="application"){
     res.application.forEach(function(item){
-      if(item.isHybridNote){
+      if(item.isRecordingNote){
         var c=card({borderLeft:"4px solid #f59e0b",background:"#fffbeb"});
-        c.appendChild(el("div",{style:{fontWeight:"700",color:"#b45309",marginBottom:"10px"}},["⚠️ Hybrid Application Notes"]));
+        c.appendChild(el("div",{style:{fontWeight:"700",color:"#b45309",marginBottom:"10px"}},["🎬 Recording Notes"]));
         item.parts.forEach(function(p){c.appendChild(el("p",{style:{fontSize:"14px",color:"#78350f",marginBottom:"8px",lineHeight:"1.5"}},[p]));});
         content.appendChild(c); return;
       }
@@ -758,6 +743,7 @@ function renderResults(){
       res.additionalCredits.forEach(function(cr){
         var isHigh=cr.priority==="high";
         var isOpp=cr.priority==="opportunity";
+        var isInfo=cr.priority==="info";
         var borderCol=isOpp?"#fde68a":isHigh?"#fecdd3":"#d0d9e3";
         var c=card({border:"2px solid "+borderCol,background:isOpp?"#fffbeb":"#fff"});
         var hd=el("div",{style:{display:"flex",alignItems:"center",gap:"10px",marginBottom:"10px"}});
@@ -769,7 +755,7 @@ function renderResults(){
         c.appendChild(el("p",{style:{fontSize:"14px",color:"#1a3a5c",lineHeight:"1.6",marginBottom:"12px"}},[cr.why]));
         var fbBg=isOpp?"#fef3c7":"#eef2f7";
         var fbBorder=isOpp?"#f59e0b":"#00274C";
-        var fbLabel=isOpp?"HOW TO UNLOCK THIS":"FLAG TO OCME&LL";
+        var fbLabel=isOpp?"HOW TO UNLOCK THIS":isInfo?"WHAT THIS MEANS FOR YOUR ATTENDEES":"FLAG TO OCME&LL";
         var fbLabelCol=isOpp?"#b45309":"#2F65A7";
         var fb=el("div",{style:{background:fbBg,borderRadius:"8px",padding:"12px 14px",borderLeft:"3px solid "+fbBorder}});
         fb.appendChild(el("div",{style:{fontSize:"12px",fontWeight:"700",color:fbLabelCol,marginBottom:"4px"}},[fbLabel]));
@@ -1087,8 +1073,9 @@ function sgroup(rows) {
 function buildPills(res, answers) {
   var a = answers;
   var pills = [], yellowPills = [];
-  var fmtMap = {live:"In person",livestream:"Virtual / live stream",hybrid:"Hybrid",enduring:"On-demand / self-paced"};
-  if (a.delivery_format) pills.push(fmtMap[a.delivery_format]||a.delivery_format);
+  var fmtMap = {live:"In person",livestream:"Virtual / live stream"};
+  if (a.activity_structure==="enduring") pills.push("On-demand / self-paced");
+  else if (a.delivery_format) pills.push(fmtMap[a.delivery_format]||a.delivery_format);
   var envMap = {didactic:"Lecture/didactic",workshop:"Workshop/small group",simulation:"Simulation lab",performance_improvement:"Performance improvement",self_assessment_learning:"Self-assessment"};
   (a.learning_environment||[]).forEach(function(e){ if(envMap[e]) pills.push(envMap[e]); });
   if (a.activity_structure==="rss") pills.push("RSS");
@@ -1096,9 +1083,6 @@ function buildPills(res, answers) {
   res.additionalCredits.forEach(function(cr){
     if      (cr.label==="Interprofessional Continuing Education (IPCE)") yellowPills.push("IPCE");
     else if (cr.label==="ABA MOCA 2.0® Patient Safety CME Credit") yellowPills.push("Patient Safety CME");
-    else if (cr.label==="Nursing CE (ANCC Contact Hours)") yellowPills.push("ANCC");
-    else if (cr.label==="Pharmacy CE (ACPE Credit)") yellowPills.push("ACPE");
-    else if (cr.label==="PA CME (AAPA Category 1 Credit)") yellowPills.push("AAPA");
   });
   if (res.boardCredit && res.boardCredit.length) {
     var parsB = res.boardCredit.filter(function(b){return b.pars;}).map(function(b){return b.boards;});
@@ -1135,7 +1119,7 @@ function generatePlannerGuide(res, answers) {
     urgentItems.push(chk("Contact OCME&amp;LL to initiate a Joint Providership Agreement",
       "Must be signed before planning materials, announcements, or save-the-dates are issued", true));
   }
-  if ((a.hybrid_components||[]).includes("hybrid_enduring")) {
+  if (a.recording==="recording_public") {
     urgentItems.push(chk("Discuss the public recording with OCME&amp;LL before recording begins",
       "A publicly available recording requires a separate Enduring Material application", true));
   }
@@ -1152,7 +1136,7 @@ function generatePlannerGuide(res, answers) {
   prepItems.push(chk("Needs assessment or practice gap", "Any written rationale: quality data, literature, survey results, or a prior evaluation gap"));
   prepItems.push(chk("Session agenda with start and end times", "Credit hours = instructional minutes ÷ 60, rounded to nearest 0.25"));
   prepItems.push(chk("Faculty disclosure forms for all educational planners and presenters", "All planning committee members and presenters must complete COI disclosure in MiCME before the activity — paper forms not accepted"));
-  prepItems.push(chk("Evaluation method", "Satisfaction survey is automatic — note on application if also using pre/post test or outcomes measure"));
+  prepItems.push(chk("Evaluation method", "The standard MiCME evaluation (satisfaction + self-reported knowledge and competence change) is automatic — note on application if also using pre/post test or outcomes measure"));
   if (a.activity_structure==="rss") {
     prepItems.push(chk("Full series schedule", "RSS is registered once — include all planned session dates"));
   }
@@ -1165,7 +1149,8 @@ function generatePlannerGuide(res, answers) {
   L.push(pul(prepItems));
 
   // ── Credits to flag ──
-  var creditRows = res.additionalCredits; // JP moved to application tab
+  var creditRows = res.additionalCredits.filter(function(c){return !c.info;}); // JP moved to application tab; info-only guidance shown separately
+  var creditInfoRows = res.additionalCredits.filter(function(c){return c.info;});
   if (creditRows.length > 0 || res.boardCredit) {
     L.push(sec("💳","Credits — Flag to OCME&amp;LL on Submission"));
     L.push('<p class="sec-note">OCME&amp;LL will set these up in CloudCME — just mention each one when you submit.</p>');
@@ -1181,6 +1166,13 @@ function generatePlannerGuide(res, answers) {
       });
     }
     L.push(pul(creditItems));
+  }
+
+  // ── Credit guidance for non-physician attendees (no OCME&LL designation involved) ──
+  if (creditInfoRows.length > 0) {
+    L.push(sec("ℹ️","Credit Guidance for Non-Physician Attendees"));
+    L.push('<p class="sec-note">No OCME&amp;LL designation is involved for these groups — this is guidance to share with your attendees.</p>');
+    L.push(pul(creditInfoRows.map(function(cr){ return bul(cr.label, cr.flag); })));
   }
 
   // ── Michigan mandatory topics ──
@@ -1240,13 +1232,13 @@ function generateStaffBrief(res, answers) {
   L.push(sec("📂","Application Setup"));
   L.push('<p class="sec-note">Enter these values into the corresponding fields in CloudCME when creating the activity record.</p>');
 
-  var fmtFull = {live:"Live Educational Activity — In Person",livestream:"Live Educational Activity — Virtual (synchronous)",hybrid:"Live Educational Activity — Hybrid (in person + simultaneous live stream)",enduring:"Enduring Material"};
+  var fmtFull = {live:"Live Educational Activity — In Person",livestream:"Live Educational Activity — Virtual (synchronous)"};
   var envMap2 = {didactic:"Lecture / Didactic",workshop:"Workshop / Small Group / Case-Based",simulation:"Simulation / Hands-On Skills Lab",performance_improvement:"Performance Improvement / QI",self_assessment_learning:"Structured Self-Assessment"};
   var envList2 = (a.learning_environment||[]).map(function(e){return envMap2[e]||e;}).filter(Boolean);
 
   var setupRows = [];
   setupRows.push(srow("Application Type", appType));
-  setupRows.push(srow("Delivery Format", fmtFull[a.delivery_format]||a.delivery_format||"—"));
+  setupRows.push(srow("Delivery Format", a.activity_structure==="enduring" ? "Enduring Material — on-demand / self-paced" : (fmtFull[a.delivery_format]||a.delivery_format||"—")));
   if (envList2.length) setupRows.push(srow("Learning Environment", envList2.join(" + ")));
   L.push(sgroup(setupRows));
 
@@ -1255,9 +1247,9 @@ function generateStaffBrief(res, answers) {
     L.push(bld("📅","RSS — register the series once","Log individual session dates and attendance throughout the year. Periodic evaluation is compliant per ACCME RSS policy.","highlight"));
   if (a.activity_structure==="repeated")
     L.push(bld("⚠","Repeated course — each run needs its own application","Independent attendance record and evaluation required per run.","warn"));
-  if ((a.hybrid_components||[]).includes("hybrid_enduring"))
+  if (a.recording==="recording_public")
     L.push(bld("⚠","Public recording requires a second Enduring Material application","Separate credit designation, expiration date (max 3 years), and independent evaluation required.","warn"));
-  if ((a.hybrid_components||[]).includes("hybrid_enduring_bundled"))
+  if (a.recording==="recording_registered")
     L.push(bld("🔒","Bundled recording (registered attendees only) — include under live activity","Confirm access duration does not exceed 30 days; if it does, an Enduring Material application is required.","highlight"));
   if ((a.learning_environment||[]).includes("simulation"))
     L.push(bld("🩺","Simulation — accredited as Live Activity; application type is unchanged","Credit hours = supervised instructional time in simulation setting only.","action"));
@@ -1300,11 +1292,13 @@ function generateStaffBrief(res, answers) {
   // ── 3. Credit Designations ──
   L.push(sec("💳","Credit Designations"));
   L.push('<p class="sec-note">Designate each applicable credit type in CloudCME.</p>');
-  var creditExtras = res.additionalCredits; // JP moved to application tab
+  // Info-only guidance (nursing/pharmacy/PA) and unrealized IPCE opportunities are not designations — exclude from build fields
+  var creditExtras = res.additionalCredits.filter(function(c){return !c.info && c.priority!=="opportunity";});
   var creditRows2 = [srow("AMA PRA Category 1 Credit™","Required for all physician learner activities")];
-  var creditIcons = {"Nursing CE (ANCC Contact Hours)":"🏥","Pharmacy CE (ACPE Credit)":"💊","PA CME (AAPA Category 1 Credit)":"👩‍⚕️","Interprofessional Continuing Education (IPCE)":"🏅","ABA MOCA 2.0® Patient Safety CME Credit":"🛡️"};
   creditExtras.forEach(function(cr){ creditRows2.push(srow(cr.label, cr.who||cr.flag||"")); });
   L.push(sgroup(creditRows2));
+  var creditInfo2 = res.additionalCredits.filter(function(c){return c.info;});
+  if (creditInfo2.length) creditInfo2.forEach(function(cr){ L.push(bld("ℹ", cr.label, cr.flag, "action")); });
 
   // ── 4. MOC ──
   if (res.boardCredit && res.boardCredit.length) {
@@ -1338,7 +1332,7 @@ function generateStaffBrief(res, answers) {
   // ── 6. Evaluation ──
   L.push(sec("📊","Evaluation Setup"));
   var evalLabels = {
-    survey_only:"Satisfaction survey — auto-generated in MiCME, no additional setup required",
+    survey_only:"Standard MiCME evaluation survey — auto-generated; captures satisfaction plus self-reported knowledge and competence change; no additional setup required",
     pre_post:"Pre/post knowledge assessment + satisfaction survey — document results in the activity record",
     performance_outcome:"Performance / practice change outcome measure + satisfaction survey — follow-up data collection required",
     patient_outcome:"Patient or quality outcome measure + satisfaction survey — follow-up data collection required",
@@ -1375,7 +1369,7 @@ function generateStaffBrief(res, answers) {
   }
 
   // ── 9. Content Tags ──
-  var cTags2 = {clinical_knowledge:"Clinical Knowledge Update",procedural:"Procedural / Technical Skills",patient_safety:"Patient Safety",qi_activity:"Quality Improvement",communication:"Communication Skills",mental_health:"Mental Health / Behavioral Health",population_health:"Population Health",sdoh:"Health Equity / SDOH",pain_management:"Pain Management / Controlled Substances",ethics:"Medical Ethics",opioid_prescribing:"Opioid / Controlled Substance Awareness",implicit_bias:"Implicit Bias / Health Equity",human_trafficking:"Human Trafficking Identification",research:"Research / EBP",technology:"Health Technology / Innovation"};
+  var cTags2 = {clinical_knowledge:"Clinical Knowledge Update",procedural:"Procedural / Technical Skills",patient_safety:"Patient Safety",qi_activity:"Quality Improvement",communication:"Communication Skills",population_health:"Population Health",sdoh:"Health Equity / SDOH",pain_management:"Pain Management / Controlled Substances",ethics:"Medical Ethics",opioid_prescribing:"Opioid / Controlled Substance Awareness",implicit_bias:"Implicit Bias / Health Equity",human_trafficking:"Human Trafficking Identification",research:"Research / EBP",technology:"Health Technology / Innovation"};
   var tags2 = (a.content_focus||[]).filter(function(c){return cTags2[c];}).map(function(c){return cTags2[c];});
   if (tags2.length > 0) {
     L.push(sec("🏷","Content Tags"));
